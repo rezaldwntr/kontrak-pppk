@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Kontrak PPPK | Aplikasi Perpanjangan Kontrak</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="src/css/styles.css">
+    <!-- Docx Templating, Zip & Save Libraries (jsDelivr) -->
+    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.49.1/build/docxtemplater.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <!-- Excel Parsing Library (SheetJS) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js for Dashboard Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <div class="brand-name">
+                    <h3>E-Kontrak</h3>
+                    <span>PPPK Manager</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="menu-item auth-required" data-tab="pegawai" style="display: none;">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Data PPPK</span>
+                </a>
+                <a href="#" class="menu-item auth-required" data-tab="perpanjangan" style="display: none;">
+                    <i class="fa-solid fa-file-signature"></i>
+                    <span>Perpanjangan Kontrak</span>
+                </a>
+                <a href="#" class="menu-item auth-required" data-tab="riwayat" style="display: none;">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Riwayat Perpanjangan</span>
+                </a>
+                <a href="#" class="menu-item auth-required" data-tab="pengaturan" style="display: none;">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="theme-switch-wrapper">
+                    <i class="fa-solid fa-sun"></i>
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" />
+                        <div class="slider round"></div>
+                    </label>
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+                <div class="user-profile-summary">
+                    <div class="avatar">ADM</div>
+                    <div class="user-info">
+                        <strong>Administrator</strong>
+                        <span>Kepegawaian</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="page-title">Dashboard Analisis</h1>
+                    <p id="page-subtitle" class="text-muted">Ringkasan status perpanjangan kontrak kerja PPPK</p>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-box auth-required" style="display: none;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK...">
+                    </div>
+                    <button class="btn btn-primary" id="btn-login-modal">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login
+                    </button>
+                    <button class="btn btn-secondary auth-required" id="btn-logout" style="display: none;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </button>
+                    <button class="btn btn-primary auth-required" id="btn-import-trigger" style="display: none;">
+                        <i class="fa-solid fa-file-import"></i> Impor Data
+                    </button>
+                    <button class="btn btn-secondary auth-required" id="btn-export" style="display: none;">
+                        <i class="fa-solid fa-file-export"></i> Ekspor CSV
+                    </button>
+                    <button class="btn btn-danger auth-required" id="btn-clear-all" style="display: none; background-color: var(--danger-color); color: #ffffff;">
+                        <i class="fa-solid fa-trash-can"></i> Hapus Semua
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="tab-dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-indigo">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3 id="stat-total-pppk">0</h3>
+                            <span>Total PPPK</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon bg-warning">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3 id="stat-warning-contract">0</h3>
+                            <span>Kontrak Hampir Habis</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon bg-success">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3 id="stat-approved">0</h3>
+                            <span>Kontrak Masih Berlaku</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon bg-info">
+                            <i class="fa-solid fa-file-circle-exclamation"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3 id="stat-drafts">0</h3>
+                            <span>Kontrak Habis</span>
+                        </div>
+                    </div>
+                </div> <!-- Close stats-grid -->
+                
+                <!-- Dashboard Charts -->
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 35px; margin-top: 24px;">
+                    <div class="widget-card" style="margin-bottom: 0;">
+                        <div class="widget-header">
+                            <h3><i class="fa-solid fa-chart-pie"></i> Komposisi Jabatan PPPK</h3>
+                        </div>
+                        <div class="widget-body" style="position: relative; height: 320px; width: 100%; padding: 20px;">
+                            <canvas id="chart-jabatan"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="widget-card" style="margin-bottom: 0;">
+                        <div class="widget-header">
+                            <h3><i class="fa-solid fa-calendar-check"></i> Jadwal Perpanjangan</h3>
+                        </div>
+                        <div class="widget-body" style="position: relative; height: 320px; width: 100%; padding: 20px;">
+                            <canvas id="chart-kontrak"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="widget-card" style="margin-bottom: 0;">
+                        <div class="widget-header">
+                            <h3><i class="fa-solid fa-user-clock"></i> Proyeksi Pensiun (BUP)</h3>
+                        </div>
+                        <div class="widget-body" style="position: relative; height: 320px; width: 100%; padding: 20px;">
+                            <canvas id="chart-bup"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Perpanjangan Kontrak View -->
+            <section id="tab-perpanjangan" class="tab-content">
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <h3><i class="fa-solid fa-file-signature"></i> Proses Perpanjangan Kontrak PPPK</h3>
+                        <span class="badge badge-warning">Aksi Diperlukan</span>
+                    </div>
+                    <div class="widget-body">
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-circle-info"></i>
+                            Daftar di bawah menampilkan pegawai PPPK yang masa kontraknya segera berakhir, sudah berakhir, atau dibatasi oleh Batas Usia Pensiun (BUP).
+                        </div>
+                        <div class="filter-panel" style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                            <div style="display: flex; gap: 16px; align-items: flex-end;">
+                                <div class="filter-group">
+                                    <label for="filter-due-jenis-pppk" style="font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 5px; display: block;">Jenis PPPK</label>
+                                    <select id="filter-due-jenis-pppk" class="form-control" style="min-width: 200px;">
+                                        <option value="all">Semua Jenis</option>
+                                        <option value="PPPK (Penuh Waktu)">PPPK (Penuh Waktu)</option>
+                                        <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="widget-header-actions" style="margin-bottom: 15px; display: none;" id="due-bulk-actions-bar-container">
+                            <div class="bulk-actions" id="due-bulk-actions-bar" style="display: flex;">
+                                <span id="due-bulk-selected-count">0 terpilih</span>
+                                <button class="btn btn-sm btn-success" id="btn-due-bulk-approve">
+                                    <i class="fa-solid fa-check-double"></i> Perpanjang Massal
+                                </button>
+                                <button class="btn btn-sm btn-primary" id="btn-due-bulk-merge" style="background-color: #2b579a;">
+                                    <i class="fa-solid fa-file-contract"></i> Gabung & Unduh Kontrak (.docx)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="due-contracts-table">
+                                <thead>
+                                    <tr>
+                                        <th width="40"><input type="checkbox" id="check-all-due"></th>
+                                        <th>NIP & Nama</th>
+                                        <th>Awal Kontrak</th>
+                                        <th>Akhir Kontrak</th>
+                                        <th>Masa Sisa / Keterangan</th>
+                                        <th>Status PPPK</th>
+                                        <th>Gaji Pokok</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="due-contracts-body">
+                                    <!-- Dynamic data load -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data PPPK View -->
+            <section id="tab-pegawai" class="tab-content">
+                <div class="filter-panel">
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end;">
+                        <div class="filter-group">
+                            <label for="filter-jenis-pppk">Jenis PPPK</label>
+                            <select id="filter-jenis-pppk">
+                                <option value="all">Semua Jenis PPPK</option>
+                                <option value="PPPK">PPPK (Penuh Waktu)</option>
+                                <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-status">Status Kontrak</label>
+                            <select id="filter-status">
+                                <option value="all">Semua Status</option>
+                                <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
+                                <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
+                                <option value="Kontrak Habis">Kontrak Habis</option>
+                                <option value="Kontrak Habis (BUP)">Kontrak Habis (BUP)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-unor-induk">Unor Induk</label>
+                            <select id="filter-unor-induk">
+                                <option value="all">Semua Unor Induk</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-jabatan">Jabatan</label>
+                            <select id="filter-jabatan">
+                                <option value="all">Semua Jabatan</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-icon-only" id="btn-toggle-filters" title="Tampilkan/Sembunyikan Filter Lanjutan" style="background-color: var(--primary-color); color: white; border: none;">
+                                <i class="fa-solid fa-sliders"></i>
+                            </button>
+                            <button class="btn btn-icon-only" id="btn-reset-filters" title="Reset Filter">
+                                <i class="fa-solid fa-filter-circle-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="advanced-filters" style="display: none; flex-wrap: wrap; gap: 16px; width: 100%; margin-top: 16px; border-top: 1px dashed var(--border-color); padding-top: 16px; align-items: flex-end;">
+                        <div class="filter-group">
+                            <label for="filter-unor-atasan">Unor Atasan</label>
+                            <select id="filter-unor-atasan" disabled>
+                                <option value="all">Semua Unor Atasan</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-periode">Perpanjangan Kontrak</label>
+                            <select id="filter-periode">
+                                <option value="all">Semua Perpanjangan</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-status-pppk">Status PPPK</label>
+                            <select id="filter-status-pppk">
+                                <option value="all">Semua Status PPPK</option>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Tidak Diperpanjang">Tidak Diperpanjang</option>
+                                <option value="Meninggal">Meninggal</option>
+                                <option value="Pensiun">Pensiun</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget-card table-widget">
+                    <div class="widget-header-actions">
+                        <div class="bulk-actions" style="display: none;" id="bulk-actions-bar">
+                            <span id="bulk-selected-count">0 terpilih</span>
+                            <button class="btn btn-sm btn-success" id="btn-bulk-approve">
+                                <i class="fa-solid fa-check-double"></i> Perpanjang Massal
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="btn-bulk-merge" style="background-color: #2b579a;">
+                                <i class="fa-solid fa-file-contract"></i> Gabung & Unduh Kontrak (.docx)
+                            </button>
+                        </div>
+                        <div class="total-rows text-muted">
+                            Total: <strong id="total-rows-count">0</strong> PPPK
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive main-table-container">
+                        <table class="table" id="main-pppk-table">
+                            <thead>
+                                <tr>
+                                    <th width="40"><input type="checkbox" id="check-all-pppk"></th>
+                                    <th>NIP Baru / ID</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>TMT CPNS / Mulai</th>
+                                    <th>Akhir Kontrak</th>
+                                    <th>Jabatan</th>
+                                    <th>Status Kontrak</th>
+                                    <th>Status PPPK</th>
+                                    <th width="150">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="main-pppk-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Menampilkan <span id="pag-start">0</span> - <span id="pag-end">0</span> dari <span id="pag-total">0</span> data
+                        </div>
+                        <div class="pagination-buttons">
+                            <button class="btn btn-secondary btn-sm" id="btn-prev-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                            <span id="page-indicator">Halaman 1 dari 1</span>
+                            <button class="btn btn-secondary btn-sm" id="btn-next-page" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Riwayat View -->
+            <section id="tab-riwayat" class="tab-content">
+                <div class="widget-card">
+                    <div class="widget-header">
+                        <h3><i class="fa-solid fa-list-check"></i> Log Riwayat Perpanjangan Kontrak</h3>
+                    </div>
+                    <div class="widget-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal Aksi</th>
+                                        <th>Nama PPPK / NIP</th>
+                                        <th>Nomor Kontrak Baru</th>
+                                        <th>Nomor SK Baru</th>
+                                        <th>Gaji Baru</th>
+                                        <th>Masa Perpanjangan</th>
+                                        <th>Operator</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-log-body">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Belum ada riwayat perpanjangan yang diproses.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pengaturan View -->
+            <section id="tab-pengaturan" class="tab-content">
+                <div class="settings-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1100px; margin: 0 auto;">
+                    <!-- Column 1: Configs -->
+                    <div style="display: flex; flex-direction: column; gap: 30px;">
+                        <!-- Regent Config -->
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <h3><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</h3>
+                            </div>
+                            <div class="widget-body">
+                                <div class="alert alert-info">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    Atur identitas Pihak Pertama (Bupati / Pj. Bupati) yang akan menandatangani dokumen kontrak.
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label>Nama Lengkap Bupati / Pj. Bupati</label>
+                                    <input type="text" id="cfg-nama-bupati" class="form-control" placeholder="Contoh: H. SUDIRMAN, S.E., M.Si.">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label>Jabatan Pihak Pertama</label>
+                                    <select id="cfg-jabatan-bupati" class="form-control">
+                                        <option value="Bupati">Bupati</option>
+                                        <option value="Pj. Bupati">Pj. Bupati</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" id="btn-save-bupati" style="width: 100%;">
+                                    <i class="fa-solid fa-floppy-disk"></i> Simpan Data Pihak Pertama
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Template Upload Config F4 -->
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <h3><i class="fa-solid fa-file-word"></i> Upload Template Perjanjian Kerja F4 (.docx)</h3>
+                            </div>
+                            <div class="widget-body">
+                                <div class="import-dropzone" id="template-f4-dropzone" style="padding: 20px; min-height: auto;">
+                                    <i class="fa-solid fa-file-arrow-up" style="font-size: 24px;"></i>
+                                    <span style="font-size: 13px;">Klik untuk memilih berkas template F4 (.docx)</span>
+                                    <input type="file" id="template-f4-file-input" accept=".docx" style="display: none;">
+                                </div>
+                                <div id="template-f4-file-details" class="import-file-details" style="display: none; margin-top: 15px;">
+                                    <i class="fa-solid fa-file-word" style="color: #2b579a;"></i>
+                                    <div class="file-info">
+                                        <strong id="template-f4-filename">template_f4.docx</strong>
+                                        <span id="template-f4-filesize">0 KB</span>
+                                    </div>
+                                    <button class="btn-remove-file" id="btn-remove-template-f4">&times;</button>
+                                </div>
+                                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                    <button class="btn btn-primary" id="btn-save-template-f4" style="flex: 1;" disabled>
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Template F4
+                                    </button>
+                                    <button class="btn btn-secondary" id="btn-delete-template-f4" style="display: none; border-color: var(--danger-color); color: var(--danger-color);">
+                                        <i class="fa-solid fa-trash"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template Upload Config A4 -->
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <h3><i class="fa-solid fa-file-word"></i> Upload Template Perjanjian Kerja A4 (.docx)</h3>
+                            </div>
+                            <div class="widget-body">
+                                <div class="import-dropzone" id="template-a4-dropzone" style="padding: 20px; min-height: auto;">
+                                    <i class="fa-solid fa-file-arrow-up" style="font-size: 24px;"></i>
+                                    <span style="font-size: 13px;">Klik untuk memilih berkas template A4 (.docx)</span>
+                                    <input type="file" id="template-a4-file-input" accept=".docx" style="display: none;">
+                                </div>
+                                <div id="template-a4-file-details" class="import-file-details" style="display: none; margin-top: 15px;">
+                                    <i class="fa-solid fa-file-word" style="color: #2b579a;"></i>
+                                    <div class="file-info">
+                                        <strong id="template-a4-filename">template_a4.docx</strong>
+                                        <span id="template-a4-filesize">0 KB</span>
+                                    </div>
+                                    <button class="btn-remove-file" id="btn-remove-template-a4">&times;</button>
+                                </div>
+                                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                    <button class="btn btn-primary" id="btn-save-template-a4" style="flex: 1;" disabled>
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Template A4
+                                    </button>
+                                    <button class="btn btn-secondary" id="btn-delete-template-a4" style="display: none; border-color: var(--danger-color); color: var(--danger-color);">
+                                        <i class="fa-solid fa-trash"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template Upload Config Paruh Waktu F4 -->
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <h3><i class="fa-solid fa-file-word" style="color: var(--warning-color);"></i> Upload Template Paruh Waktu F4 (.docx)</h3>
+                            </div>
+                            <div class="widget-body">
+                                <div class="import-dropzone" id="template-paruh-f4-dropzone" style="padding: 20px; min-height: auto;">
+                                    <i class="fa-solid fa-file-arrow-up" style="font-size: 24px;"></i>
+                                    <span style="font-size: 13px;">Klik untuk memilih berkas template Paruh Waktu F4 (.docx)</span>
+                                    <input type="file" id="template-paruh-f4-file-input" accept=".docx" style="display: none;">
+                                </div>
+                                <div id="template-paruh-f4-file-details" class="import-file-details" style="display: none; margin-top: 15px;">
+                                    <i class="fa-solid fa-file-word" style="color: #2b579a;"></i>
+                                    <div class="file-info">
+                                        <strong id="template-paruh-f4-filename">template_paruh_f4.docx</strong>
+                                        <span id="template-paruh-f4-filesize">0 KB</span>
+                                    </div>
+                                    <button class="btn-remove-file" id="btn-remove-template-paruh-f4">&times;</button>
+                                </div>
+                                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                    <button class="btn btn-primary" id="btn-save-template-paruh-f4" style="flex: 1; background-color: var(--warning-color);" disabled>
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Template Paruh Waktu F4
+                                    </button>
+                                    <button class="btn btn-secondary" id="btn-delete-template-paruh-f4" style="display: none; border-color: var(--danger-color); color: var(--danger-color);">
+                                        <i class="fa-solid fa-trash"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Template Upload Config Paruh Waktu A4 -->
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <h3><i class="fa-solid fa-file-word" style="color: var(--warning-color);"></i> Upload Template Paruh Waktu A4 (.docx)</h3>
+                            </div>
+                            <div class="widget-body">
+                                <div class="import-dropzone" id="template-paruh-a4-dropzone" style="padding: 20px; min-height: auto;">
+                                    <i class="fa-solid fa-file-arrow-up" style="font-size: 24px;"></i>
+                                    <span style="font-size: 13px;">Klik untuk memilih berkas template Paruh Waktu A4 (.docx)</span>
+                                    <input type="file" id="template-paruh-a4-file-input" accept=".docx" style="display: none;">
+                                </div>
+                                <div id="template-paruh-a4-file-details" class="import-file-details" style="display: none; margin-top: 15px;">
+                                    <i class="fa-solid fa-file-word" style="color: #2b579a;"></i>
+                                    <div class="file-info">
+                                        <strong id="template-paruh-a4-filename">template_paruh_a4.docx</strong>
+                                        <span id="template-paruh-a4-filesize">0 KB</span>
+                                    </div>
+                                    <button class="btn-remove-file" id="btn-remove-template-paruh-a4">&times;</button>
+                                </div>
+                                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                                    <button class="btn btn-primary" id="btn-save-template-paruh-a4" style="flex: 1; background-color: var(--warning-color);" disabled>
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Simpan Template Paruh Waktu A4
+                                    </button>
+                                    <button class="btn btn-secondary" id="btn-delete-template-paruh-a4" style="display: none; border-color: var(--danger-color); color: var(--danger-color);">
+                                        <i class="fa-solid fa-trash"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Config -->
+                        <div class="widget-card">
+                            <div class="widget-header">
+                                <h3><i class="fa-solid fa-key"></i> Pengaturan Keamanan</h3>
+                            </div>
+                            <div class="widget-body">
+                                <div class="alert alert-info">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                    Atur password konfirmasi yang akan digunakan untuk menghapus semua data pegawai.
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label>Password Saat Ini</label>
+                                    <input type="password" id="cfg-old-password" class="form-control" placeholder="Masukkan password saat ini">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label>Password Baru</label>
+                                    <input type="password" id="cfg-new-password" class="form-control" placeholder="Masukkan password baru">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 25px;">
+                                    <label>Konfirmasi Password Baru</label>
+                                    <input type="password" id="cfg-confirm-password" class="form-control" placeholder="Ulangi password baru">
+                                </div>
+                                <button class="btn btn-primary" id="btn-save-password" style="width: 100%;">
+                                    <i class="fa-solid fa-lock"></i> Perbarui Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Template Variables Reference -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <h3><i class="fa-solid fa-code"></i> Daftar Variabel Template Kontrak (Word/SK)</h3>
+                        </div>
+                        <div class="widget-body" style="padding: 0;">
+                            <div style="padding: 20px 24px;">
+                                <p class="text-muted" style="margin-bottom: 10px;">Gunakan tag/variabel di bawah ini dalam draf Microsoft Word (`.docx`) Anda agar dapat terisi otomatis oleh sistem saat melakukan penggabungan data:</p>
+                            </div>
+                            <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+                                <table class="table" style="font-size: 13px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Variabel</th>
+                                            <th>Keterangan Data</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Lengkap Bupati / Pj. Bupati aktif</td></tr>
+                                        <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Status Jabatan (Bupati / Pj. Bupati)</td></tr>
+                                        <tr><td><code>{{NO_KONTRAK_BARU}}</code></td><td>Nomor Perjanjian Kontrak Baru</td></tr>
+                                        <tr><td><code>{{NO_SK_BARU}}</code></td><td>Nomor SK Perpanjangan Baru</td></tr>
+                                        <tr><td><code>{{TGL_SK_BARU}}</code></td><td>Tanggal penetapan SK Baru</td></tr>
+                                        <tr><td><code>{{NAMA_PEGAWAI}}</code></td><td>Nama Lengkap PPPK (beserta gelar)</td></tr>
+                                        <tr><td><code>{{NIP_BARU}}</code></td><td>NIP Baru PPPK</td></tr>
+                                        <tr><td><code>{{NIK_PEGAWAI}}</code></td><td>NIK (KTP) Pegawai</td></tr>
+                                        <tr><td><code>{{ALAMAT}}</code></td><td>Alamat tempat tinggal pegawai</td></tr>
+                                        <tr><td><code>{{JABATAN}}</code></td><td>Nama Jabatan Kerja PPPK</td></tr>
+                                        <tr><td><code>{{UNOR_NAMA}}</code></td><td>Nama Unit Kerja / UNOR pegawai</td></tr>
+                                        <tr><td><code>{{UNIT_KERJA}}</code></td><td>Nama Unit Kerja / UNOR pegawai (alternatif)</td></tr>
+                                        <tr><td><code>{{KELOMPOK_PEGAWAI}}</code></td><td>Kelompok Kerja (Tenaga Guru / Tenaga Kesehatan / Tenaga Teknis)</td></tr>
+                                        <tr><td><code>{{FUNGSI_PEGAWAI}}</code></td><td>Fungsi PPPK (contoh: PPPK Fungsional Guru)</td></tr>
+                                        <tr><td><code>{{SASARAN_PELAYANAN}}</code></td><td>Sasaran Penerima Pelayanan (contoh: Anak Didik, Pasien, Masyarakat)</td></tr>
+                                        <tr><td><code>{{GOLONGAN}}</code></td><td>Golongan PPPK (Akhir)</td></tr>
+                                        <tr><td><code>{{TEMPAT_TGL_LAHIR}}</code></td><td>Tempat, Tanggal Lahir (Format: Tempat, Tanggal)</td></tr>
+                                        <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan, Tahun : Tahun Lulus</td></tr>
+                                        <tr><td><code>{{TMT_AWAL_BARU}}</code></td><td>TMT Kontrak Baru (Mulai)</td></tr>
+                                        <tr><td><code>{{TMT_AKHIR_BARU}}</code></td><td>Tanggal Selesai Kontrak Baru</td></tr>
+                                        <tr><td><code>{{GAJI_BARU}}</code></td><td>Nominal Gaji Pokok Baru (Format Rupiah)</td></tr>
+                                        <tr><td><code>{{GAJI_BARU_ANGKA}}</code></td><td>Nominal Gaji Pokok Baru (Angka Saja)</td></tr>
+                                        <tr><td><code>{{GAJI_TERBILANG}}</code></td><td>Nominal Gaji Pokok Baru (Terbilang Rupiah)</td></tr>
+                                        <tr><td><code>{{KONTRAK_HARI}}</code></td><td>Hari Mulai Kontrak Baru (contoh: Senin)</td></tr>
+                                        <tr><td><code>{{KONTRAK_TANGGAL_TERBILANG}}</code></td><td>Tanggal Mulai Kontrak Baru (Terbilang, contoh: Dua Puluh Lima)</td></tr>
+                                        <tr><td><code>{{KONTRAK_BULAN}}</code></td><td>Bulan Mulai Kontrak Baru (contoh: Juni)</td></tr>
+                                        <tr><td><code>{{KONTRAK_TAHUN_TERBILANG}}</code></td><td>Tahun Mulai Kontrak Baru (Terbilang, contoh: Dua Ribu Dua Puluh Enam)</td></tr>
+                                        <tr><td><code>{{#perjanjian}} ... {{/perjanjian}}</code></td><td>Bungkus halaman isi perjanjian agar dapat diprint secara terpisah</td></tr>
+                                        <tr><td><code>{{#tandatangan}} ... {{/tandatangan}}</code></td><td>Bungkus halaman tanda tangan agar dapat diprint secara terpisah</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Confirm Clear All Data -->
+    <div class="modal-backdrop" id="clear-all-modal">
+        <div class="modal-container" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--danger-color);"></i> Hapus Seluruh Data</h3>
+                <button class="close-btn" id="btn-close-clear-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; line-height: 1.5; color: var(--text-primary);">Apakah Anda yakin ingin menghapus seluruh data pegawai PPPK secara permanen? <strong>Tindakan ini tidak dapat dibatalkan.</strong></p>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Masukkan password konfirmasi untuk melanjutkan:</label>
+                    <input type="password" id="clear-confirm-password" class="form-control" placeholder="Password konfirmasi...">
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 20px 28px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn btn-secondary" id="btn-cancel-clear-modal">Batal</button>
+                <button class="btn btn-primary" id="btn-execute-clear-all" style="background-color: var(--danger-color); border-color: var(--danger-color); box-shadow: 0px 4px 12px rgba(239, 68, 68, 0.25);">Hapus Permanen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-backdrop" id="login-modal">
+        <div class="modal-container" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-lock" style="color: var(--primary-color);"></i> Login Sistem</h3>
+                <button class="close-btn" id="btn-close-login-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.5; font-size: 14px;">Silakan login menggunakan email dan password Anda untuk mensinkronisasi data kepegawaian.</p>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Email Akses</label>
+                    <input type="email" id="login-email" class="form-control" placeholder="admin@example.com">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="Masukkan password...">
+                </div>
+                <div id="login-error-msg" style="color: var(--danger-color); font-size: 13px; margin-bottom: 15px; display: none;"></div>
+                <button class="btn btn-primary" id="btn-execute-login" style="width: 100%;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk / Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic App Alert Modal (Overrides window.alert) -->
+    <div class="modal-backdrop" id="app-alert-modal" style="z-index: 9999;">
+        <div class="modal-container" style="max-width: 400px; text-align: center; padding: 10px;">
+            <div class="modal-body" style="padding: 25px 20px 15px 20px;">
+                <div style="margin-bottom: 20px;">
+                    <i class="fa-solid fa-circle-info" style="font-size: 48px; color: var(--primary-color);"></i>
+                </div>
+                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Informasi Sistem</h3>
+                <p id="app-alert-message" style="color: var(--text-secondary); line-height: 1.5; font-size: 14px; margin-bottom: 25px;">Pesan alert...</p>
+                <button class="btn btn-primary" id="btn-close-app-alert" style="width: 100%;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic App Confirm Modal -->
+    <div class="modal-backdrop" id="app-confirm-modal" style="z-index: 9999;">
+        <div class="modal-container" style="max-width: 400px; padding: 10px;">
+            <div class="modal-body" style="padding: 20px;">
+                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 15px;">Konfirmasi</h3>
+                <p id="app-confirm-message" style="color: var(--text-secondary); line-height: 1.5; font-size: 14px; margin-bottom: 25px;">Apakah Anda yakin?</p>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-secondary" id="btn-cancel-app-confirm">Batal</button>
+                    <button class="btn btn-primary" id="btn-execute-app-confirm">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detail & Edit Pegawai -->
+    <div class="modal-backdrop" id="detail-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-title">Detail Data PPPK</h3>
+                <button class="close-btn" id="btn-close-detail-modal">&times;</button>
+            </div>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" data-modal-tab="tab-personal">Personal</button>
+                <button class="tab-btn" data-modal-tab="tab-kepegawaian">Kepegawaian</button>
+                <button class="tab-btn" data-modal-tab="tab-posisi">Jabatan & Kerja</button>
+                <button class="tab-btn highlight" data-modal-tab="tab-kontrak-gaji">Kontrak & Gaji PPPK</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Personal Tab -->
+                <div class="modal-tab-content active" id="modal-tab-personal">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nama Lengkap (Tanpa Gelar)</label>
+                            <input type="text" id="m-nama" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Gelar Depan</label>
+                            <input type="text" id="m-gelar-depan" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Gelar Belakang</label>
+                            <input type="text" id="m-gelar-belakang" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>NIK (No. KTP)</label>
+                            <input type="text" id="m-nik" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tempat Lahir</label>
+                            <input type="text" id="m-tempat-lahir" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal Lahir</label>
+                            <input type="date" id="m-tanggal-lahir" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Kelamin</label>
+                            <select id="m-jenis-kelamin" class="form-control">
+                                <option value="L">Laki-Laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Agama</label>
+                            <input type="text" id="m-agama" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Status Pernikahan</label>
+                            <input type="text" id="m-status-kawin" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>No. HP</label>
+                            <input type="text" id="m-no-hp" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Pribadi</label>
+                            <input type="email" id="m-email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Pemerintah (Gov)</label>
+                            <input type="email" id="m-email-gov" class="form-control">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Alamat Lengkap</label>
+                            <textarea id="m-alamat" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kepegawaian Tab -->
+                <div class="modal-tab-content" id="modal-tab-kepegawaian">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>NIP Baru</label>
+                            <input type="text" id="m-nip-baru" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>NIP Lama</label>
+                            <input type="text" id="m-nip-lama" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>PNS ID</label>
+                            <input type="text" id="m-pns-id" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Pegawai</label>
+                            <input type="text" id="m-jenis-pegawai" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>TMT CPNS (Awal PPPK)</label>
+                            <input type="date" id="m-tmt-cpns" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Nomor SK CPNS (Awal)</label>
+                            <input type="text" id="m-sk-cpns" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tanggal SK CPNS</label>
+                            <input type="date" id="m-tgl-sk-cpns" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Kedudukan Hukum</label>
+                            <input type="text" id="m-kedudukan-hukum" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Status Keaktifan PPPK</label>
+                            <select id="m-status-pppk" class="form-control">
+                                <option value="Aktif">Aktif</option>
+                                <option value="Tidak Diperpanjang">Tidak Diperpanjang</option>
+                                <option value="Meninggal">Meninggal</option>
+                                <option value="Pensiun">Pensiun</option>
+                                <option value="Habis Kontrak">Habis Kontrak</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>NPWP Nomor</label>
+                            <input type="text" id="m-npwp" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>BPJS Nomor</label>
+                            <input type="text" id="m-bpjs" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Masa Kerja (Tahun)</label>
+                            <input type="number" id="m-mk-tahun" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Masa Kerja (Bulan)</label>
+                            <input type="number" id="m-mk-bulan" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posisi & Kerja Tab -->
+                <div class="modal-tab-content" id="modal-tab-posisi">
+                    <div class="form-grid">
+                        <div class="form-group col-span-2">
+                            <label>Nama Jabatan</label>
+                            <input type="text" id="m-jabatan" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Jenis Jabatan</label>
+                            <input type="text" id="m-jenis-jabatan" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>TMT Jabatan</label>
+                            <input type="date" id="m-tmt-jabatan" class="form-control">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Unit Organisasi (UNOR)</label>
+                            <input type="text" id="m-unor" class="form-control">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Instansi Induk</label>
+                            <input type="text" id="m-instansi-induk" class="form-control">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Instansi Kerja</label>
+                            <input type="text" id="m-instansi-kerja" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tingkat Pendidikan</label>
+                            <input type="text" id="m-tingkat-pendidikan" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Pendidikan Terakhir</label>
+                            <input type="text" id="m-pendidikan" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Tahun Lulus</label>
+                            <input type="number" id="m-tahun-lulus" class="form-control">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Lokasi Kerja</label>
+                            <input type="text" id="m-lokasi-kerja" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kontrak & Gaji PPPK Tab -->
+                <div class="modal-tab-content" id="modal-tab-kontrak-gaji">
+                    <div class="alert alert-info">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Awal dan Akhir kontrak PPPK saat ini dihitung otomatis berdurasi <strong>5 tahun (Reguler) atau 1 tahun (Paruh Waktu) per siklus kontrak</strong> terhitung sejak tanggal <strong>TMT CPNS/PPPK</strong>.
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group col-span-2">
+                            <label>Nomor Kontrak Aktif <span class="badge badge-primary">Baru</span></label>
+                            <input type="text" id="m-no-kontrak" class="form-control" placeholder="Contoh: 800/203/PPPK/2026">
+                        </div>
+                        <div class="form-group">
+                            <label>Awal Kontrak Aktif</label>
+                            <input type="text" id="m-awal-kontrak" class="form-control" readonly style="background-color: var(--border-color); cursor: not-allowed;">
+                        </div>
+                        <div class="form-group">
+                            <label>Akhir Kontrak Aktif</label>
+                            <input type="text" id="m-akhir-kontrak" class="form-control" readonly style="background-color: var(--border-color); cursor: not-allowed;">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Gaji Pokok Saat Ini (Rp) <span class="badge badge-primary">Baru</span></label>
+                            <input type="number" id="m-gaji" class="form-control" placeholder="Contoh: 3500000">
+                        </div>
+                    </div>
+
+                    <div class="extension-form-section">
+                        <h4><i class="fa-solid fa-file-signature"></i> Proses Perpanjangan Kontrak</h4>
+                        
+                        <div class="form-grid">
+                            <div class="form-grid col-span-2 form-inline-row">
+                                <div class="form-group w-50">
+                                    <label>Nomor Kontrak Baru (Perpanjangan)</label>
+                                    <input type="text" id="ext-no-kontrak" class="form-control" placeholder="Contoh: 800/1029-Perpanjangan/2026">
+                                </div>
+                                <div class="form-group w-50">
+                                    <label>Nomor SK Perpanjangan</label>
+                                    <input type="text" id="ext-no-sk" class="form-control" placeholder="Contoh: SK/PPPK/1023/2026">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal SK Perpanjangan</label>
+                                <input type="date" id="ext-tgl-sk" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>TMT Kontrak Baru (Mulai)</label>
+                                <input type="date" id="ext-awal-kontrak" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Tanggal Akhir Kontrak Baru</label>
+                                <input type="date" id="ext-akhir-kontrak" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Gaji Pokok Baru (Rp)</label>
+                                <input type="number" id="ext-gaji" class="form-control" placeholder="Contoh: 3800000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-detail">Batal</button>
+                <button class="btn btn-primary" id="btn-save-detail">Simpan Perubahan</button>
+                <button class="btn btn-success" id="btn-execute-extension" style="display: none;">Proses Perpanjang Kontrak</button>
+                <button class="btn btn-info" id="btn-print-sk" style="display: none;"><i class="fa-solid fa-print"></i> Cetak Draf SK</button>
+                <button class="btn btn-primary" id="btn-print-options-trigger" style="display: none; background-color: #2b579a;"><i class="fa-solid fa-print"></i> Cetak / Unduh Kontrak</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal File Import -->
+    <div class="modal-backdrop" id="import-modal">
+        <div class="modal-container modal-sm">
+            <div class="modal-header">
+                <h3>Impor Data PPPK</h3>
+                <button class="close-btn" id="btn-close-import-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Pilih file JSON, CSV, atau Excel (.xlsx/.xls) yang berisi data profil PPPK Anda.</p>
+                <div class="import-dropzone" id="import-dropzone">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Tarik file kemari atau klik untuk memilih</span>
+                    <input type="file" id="file-input" accept=".json,.csv,.xlsx,.xls" style="display: none;">
+                </div>
+                <div id="import-file-details" class="import-file-details" style="display: none;">
+                    <i class="fa-solid fa-file-code"></i>
+                    <div class="file-info">
+                        <strong id="import-filename">data_pegawai.json</strong>
+                        <span id="import-filesize">0 KB</span>
+                    </div>
+                    <button class="btn-remove-file" id="btn-remove-file">&times;</button>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px; margin-bottom: 10px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">Metode Impor:</label>
+                    <div style="display: flex; gap: 20px; font-size: 13px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="import-mode" value="append" checked>
+                            <span>Tambah & Gabungkan Data</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="import-mode" value="overwrite">
+                            <span>Tulis Ulang & Timpa Data</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 15px; margin-bottom: 10px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">Jenis PPPK yang Diimpor:</label>
+                    <div style="display: flex; gap: 20px; font-size: 13px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="import-jenis" value="PPPK" checked>
+                            <span>PPPK (Penuh Waktu)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="import-jenis" value="PPPK Paruh Waktu">
+                            <span>PPPK Paruh Waktu</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-cancel-import">Batal</button>
+                <button class="btn btn-primary" id="btn-process-import" disabled>Proses Impor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Print Preview SK -->
+    <div class="modal-backdrop" id="sk-modal">
+        <div class="modal-container modal-lg print-modal-container">
+            <div class="modal-header no-print">
+                <h3>Draf SK Perpanjangan Kontrak PPPK</h3>
+                <div>
+                    <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Cetak</button>
+                    <button class="close-btn" id="btn-close-sk-modal">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body printable-area">
+                <div class="sk-document">
+                    <!-- KOP SURAT -->
+                    <div class="sk-kop">
+                        <div class="kop-logo">
+                            <i class="fa-solid fa-landmark"></i>
+                        </div>
+                        <div class="kop-text">
+                            <h2>PEMERINTAH KABUPATEN / KOTA ADMINISTRASI</h2>
+                            <h3>BADAN KEPEGAWAIAN DAN PENGEMBANGAN SUMBER DAYA MANUSIA</h3>
+                            <p>Jl. Jenderal Sudirman No. 123 Gedung Kepegawaian, Telp: (021) 555-0192</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="sk-divider">
+                    
+                    <div class="sk-title">
+                        <h4>KEPUTUSAN KEPALA BADAN KEPEGAWAIAN</h4>
+                        <h4>NOMOR: <span id="sk-print-no-sk">...</span></h4>
+                        <h5>TENTANG</h5>
+                        <h4>PERPANJANGAN PERJANJIAN KERJA PEGAWAI PEMERINTAH DENGAN PERJANJIAN KERJA (PPPK)</h4>
+                    </div>
+
+                    <div class="sk-content">
+                        <p><strong>Menimbang:</strong> Bahwa berdasarkan evaluasi kinerja yang bersangkutan dinilai sangat baik dan memenuhi syarat untuk dilakukan perpanjangan masa kerja PPPK...</p>
+                        <p><strong>Mengingat:</strong> Undang-Undang Nomor 20 Tahun 2023 tentang Aparatur Sipil Negara...</p>
+                        
+                        <div class="sk-decision-header">MEMUTUSKAN:</div>
+                        
+                        <p><strong>Menetapkan:</strong></p>
+                        <table class="sk-target-table">
+                            <tr>
+                                <td width="200">Nama</td>
+                                <td width="10">:</td>
+                                <td><strong><span id="sk-print-nama">...</span></strong></td>
+                            </tr>
+                            <tr>
+                                <td>NIP PPPK</td>
+                                <td>:</td>
+                                <td><span id="sk-print-nip">...</span></td>
+                            </tr>
+                            <tr>
+                                <td>Pendidikan</td>
+                                <td>:</td>
+                                <td><span id="sk-print-pendidikan">...</span></td>
+                            </tr>
+                            <tr>
+                                <td>Jabatan</td>
+                                <td>:</td>
+                                <td><span id="sk-print-jabatan">...</span></td>
+                            </tr>
+                            <tr>
+                                <td>Unit Kerja / UNOR</td>
+                                <td>:</td>
+                                <td><span id="sk-print-unor">...</span></td>
+                            </tr>
+                            <tr>
+                                <td>Nomor Kontrak Perpanjangan</td>
+                                <td>:</td>
+                                <td><span id="sk-print-no-kontrak">...</span></td>
+                            </tr>
+                            <tr>
+                                <td>Masa Perpanjangan Kontrak</td>
+                                <td>:</td>
+                                <td>5 (Lima) Tahun terhitung mulai <strong><span id="sk-print-tmt-awal">...</span></strong> s.d. <strong><span id="sk-print-tmt-akhir">...</span></strong></td>
+                            </tr>
+                            <tr>
+                                <td>Gaji Pokok Baru</td>
+                                <td>:</td>
+                                <td><strong><span id="sk-print-gaji">...</span></strong></td>
+                            </tr>
+                        </table>
+
+                        <p class="sk-closing">Keputusan ini mulai berlaku sejak tanggal ditetapkan, dengan ketentuan apabila di kemudian hari terdapat kekeliruan akan diperbaiki sebagaimana mestinya.</p>
+                    </div>
+
+                    <div class="sk-signature-container">
+                        <div class="sk-signature">
+                            <p>Ditetapkan di: Jakarta</p>
+                            <p>Pada Tanggal: <span id="sk-print-tgl-sk">...</span></p>
+                            <br>
+                            <p><span id="sk-print-jabatan-bupati">Bupati</span>,</p>
+                            <br><br><br>
+                            <p><strong><span id="sk-print-nama-bupati">...</span></strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pilihan Cetak Kontrak -->
+    <div class="modal-backdrop" id="print-options-modal">
+        <div class="modal-container modal-sm">
+            <div class="modal-header">
+                <h3>Opsi Cetak Perjanjian Kerja</h3>
+                <button class="close-btn" id="btn-close-print-options">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">1. Pilih Ukuran Kertas / Template:</label>
+                    <div style="display: flex; gap: 20px; font-size: 13px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="print-template-size" value="f4" checked>
+                            <span>Template F4</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="print-template-size" value="a4">
+                            <span>Template A4</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">2. Bagian Dokumen yang Dicetak:</label>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="print-scope" value="all" checked>
+                            <span>Seluruh Halaman (Isi & Tanda Tangan)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="print-scope" value="perjanjian">
+                            <span>Hanya Isi Perjanjian (Kecuali Lembar Terakhir)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="print-scope" value="tandatangan">
+                            <span>Hanya Lembar Tanda Tangan (Lembar Terakhir)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">3. Tanggal Pembuatan Kontrak (Tanggal Perjanjian):</label>
+                    <input type="date" id="print-tgl-kontrak" class="form-control" style="font-size: 13px; padding: 8px;">
+                </div>
+                
+                <div class="alert alert-warning" style="font-size: 11px; margin-top: 15px; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; background-color: #fff3cd; color: #856404;">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    Pastikan template Word Anda telah dibungkus dengan tag <code>{{#perjanjian}}...{{/perjanjian}}</code> untuk halaman isi, dan <code>{{#tandatangan}}...{{/tandatangan}}</code> untuk halaman tanda tangan terakhir agar pemisahan cetak berfungsi.
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" id="btn-cancel-print-options">Batal</button>
+                <button class="btn btn-primary" id="btn-download-print-docx" style="background-color: #2b579a;">
+                    <i class="fa-solid fa-file-word"></i> Unduh Word (.docx)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Logic Script -->
+    <script src="src/js/app.js"></script>
+</body>
+</html>
