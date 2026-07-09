@@ -421,16 +421,15 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'none');
             document.getElementById('btn-login-modal').style.display = '';
             
-            
             // Force go to dashboard
             document.querySelector('[data-tab="dashboard"]').click();
             
-            // Clear memory
-            pppkData = [];
-            extensionHistory = [];
+            // Load Data from Firestore so guests can see dashboard charts
+            await loadData();
             
-            // Reset charts
+            // Update UI
             updateDashboard();
+            renderTable();
         }
     });
 
@@ -542,7 +541,9 @@ async function loadData() {
             }
         } else {
             pppkData = [...initialMockData];
-            await saveDataToFirebase();
+            if (firebase.auth().currentUser) {
+                await saveDataToFirebase();
+            }
         }
 
         // Load History
@@ -576,7 +577,7 @@ async function loadData() {
         }
     });
     
-    if (needsSave) {
+    if (needsSave && firebase.auth().currentUser) {
         await saveDataToFirebase();
     }
 
@@ -585,6 +586,8 @@ async function loadData() {
 
 // Save Data to Firestore
 async function saveDataToFirebase() {
+    if (!firebase.auth().currentUser) return; // Prevent saving if not logged in
+
     try {
         const jsonString = JSON.stringify(pppkData);
         let payloadObj = {};
