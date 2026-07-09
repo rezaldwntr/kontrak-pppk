@@ -95,7 +95,7 @@
                 <div class="header-actions">
                     <div class="search-box auth-required" style="display: none;">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK...">
+                        <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK..." autocomplete="off" spellcheck="false">
                     </div>
                     <button class="btn btn-primary" id="btn-login-modal">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
@@ -417,7 +417,7 @@
                                 </div>
                                 <div class="form-group" style="margin-bottom: 20px;">
                                     <label>Nama Lengkap Bupati / Pj. Bupati</label>
-                                    <input type="text" id="cfg-nama-bupati" class="form-control" placeholder="Contoh: H. SUDIRMAN, S.E., M.Si.">
+                                    <input type="text" id="cfg-nama-bupati" class="form-control" placeholder="Contoh: H. SUDIRMAN, S.E., M.Si." autocomplete="off" spellcheck="false">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 20px;">
                                     <label>Jabatan Pihak Pertama</label>
@@ -564,15 +564,15 @@
                                 </div>
                                 <div class="form-group" style="margin-bottom: 20px;">
                                     <label>Password Saat Ini</label>
-                                    <input type="password" id="cfg-old-password" class="form-control" placeholder="Masukkan password saat ini">
+                                    <input type="password" id="cfg-old-password" class="form-control" placeholder="Masukkan password saat ini" autocomplete="new-password">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 20px;">
                                     <label>Password Baru</label>
-                                    <input type="password" id="cfg-new-password" class="form-control" placeholder="Masukkan password baru">
+                                    <input type="password" id="cfg-new-password" class="form-control" placeholder="Masukkan password baru" autocomplete="new-password">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 25px;">
                                     <label>Konfirmasi Password Baru</label>
-                                    <input type="password" id="cfg-confirm-password" class="form-control" placeholder="Ulangi password baru">
+                                    <input type="password" id="cfg-confirm-password" class="form-control" placeholder="Ulangi password baru" autocomplete="new-password">
                                 </div>
                                 <button class="btn btn-primary" id="btn-save-password" style="width: 100%;">
                                     <i class="fa-solid fa-lock"></i> Perbarui Password
@@ -649,7 +649,7 @@
                 <p style="margin-bottom: 15px; line-height: 1.5; color: var(--text-primary);">Apakah Anda yakin ingin menghapus seluruh data pegawai PPPK secara permanen? <strong>Tindakan ini tidak dapat dibatalkan.</strong></p>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>Masukkan password konfirmasi untuk melanjutkan:</label>
-                    <input type="password" id="clear-confirm-password" class="form-control" placeholder="Password konfirmasi...">
+                    <input type="password" id="clear-confirm-password" class="form-control" placeholder="Password konfirmasi..." autocomplete="new-password">
                 </div>
             </div>
             <div class="modal-footer" style="padding: 20px 28px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
