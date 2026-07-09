@@ -346,6 +346,7 @@ const initialMockData = [
 
 // App State Management
 let pppkData = [];
+let extensionHistory = [];
 let filteredData = [];
 let selectedRows = new Set();
 let selectedDueRows = new Set();
