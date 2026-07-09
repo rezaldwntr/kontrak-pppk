@@ -400,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
             // User is signed in
             document.querySelectorAll('.auth-required').forEach(el => el.style.display = '');
             document.getElementById('btn-login-modal').style.display = 'none';
-            document.getElementById('btn-logout').style.display = 'inline-block';
             
             // Switch to Dashboard if currently on a hidden tab
             const currentTab = document.querySelector('.menu-item.active').getAttribute('data-tab');
@@ -420,8 +419,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             // User is signed out
             document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'none');
-            document.getElementById('btn-login-modal').style.display = 'inline-block';
-            document.getElementById('btn-logout').style.display = 'none';
+            document.getElementById('btn-login-modal').style.display = '';
+            
             
             // Force go to dashboard
             document.querySelector('[data-tab="dashboard"]').click();
