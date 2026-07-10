@@ -1228,7 +1228,7 @@ function renderTable() {
         const isChecked = selectedRows.has(item["PNS ID"]) ? "checked" : "";
 
         let statusPppk = item["STATUS_PPPK"] || "Aktif";
-        if (period.isBUP || period.status === "Kontrak Habis (BUP)") {
+        if (period.status === "Kontrak Habis (BUP)") {
             statusPppk = "Pensiun";
         }
         
@@ -1247,7 +1247,7 @@ function renderTable() {
             <td>${formatIndoDate(period.akhir)}</td>
         `;
 
-        if (period.isBUP || period.status === "Kontrak Habis (BUP)" || period.status === "Kontrak Habis") {
+        if (period.status === "Kontrak Habis (BUP)") {
             let tmtPensiunStr = "-";
             if (period.akhir && period.akhir !== "-") {
                 const parts = period.akhir.split("-");

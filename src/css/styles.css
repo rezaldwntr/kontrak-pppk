@@ -1244,3 +1244,120 @@ textarea.form-control {
     color: #A3A6AD;
     border-color: #50535B;
 }
+
+
+/* Responsive Design for Tablet & Mobile */
+@media (max-width: 1024px) {
+    .app-container {
+        grid-template-columns: 200px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        padding: 15px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    
+    .sidebar-brand {
+        margin-bottom: 0;
+    }
+    
+    .sidebar-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        margin-top: 15px;
+        gap: 4px;
+    }
+    
+    .menu-item {
+        padding: 10px 12px;
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+        font-size: 13px;
+    }
+    
+    .menu-item i {
+        margin-right: 5px;
+    }
+    
+    .sidebar-footer {
+        flex-direction: row;
+        width: 100%;
+        margin-top: 15px;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 15px;
+    }
+    
+    .dashboard-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .dashboard-charts {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    
+    .search-box {
+        width: 100%;
+    }
+    
+    .search-box input {
+        width: 100%;
+    }
+    
+    .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filter-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group select {
+        flex: 1;
+        min-width: 140px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-actions .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .menu-item span {
+        display: none; /* Hide text on very small screens, show icons only */
+    }
+}
