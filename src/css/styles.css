@@ -1277,6 +1277,11 @@ textarea.form-control {
     
     #btn-mobile-menu {
         display: inline-flex !important;
+        padding: 0 !important;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-size: 20px;
     }
     
     .dashboard-cards {
@@ -1287,16 +1292,34 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
     
-    .header {
+    .main-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 15px;
+    }
+    
+    .header-title {
+        flex-wrap: wrap;
+    }
+    
+    .header-title h1 {
+        font-size: 22px;
     }
     
     .header-actions {
         width: 100%;
-        flex-wrap: wrap;
-        justify-content: flex-start;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .main-content {
+        padding: 15px;
     }
     
     .search-box {
