@@ -1351,6 +1351,30 @@ function updateDueBulkActionBar() {
 
 // Setup Event Listeners
 function setupListeners() {
+    // Mobile Menu Toggle
+    const btnMobileMenu = document.getElementById("btn-mobile-menu");
+    if (btnMobileMenu) {
+        btnMobileMenu.addEventListener("click", () => {
+            const sidebar = document.querySelector(".sidebar");
+            if (sidebar) {
+                sidebar.classList.toggle("open");
+            }
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener("click", (e) => {
+        if (window.innerWidth <= 768) {
+            const sidebar = document.querySelector(".sidebar");
+            const btnMobileMenu = document.getElementById("btn-mobile-menu");
+            if (sidebar && sidebar.classList.contains("open")) {
+                if (!sidebar.contains(e.target) && btnMobileMenu && !btnMobileMenu.contains(e.target)) {
+                    sidebar.classList.remove("open");
+                }
+            }
+        }
+    });
+
     // Check All Checkbox
     const checkAll = document.getElementById("check-all-pppk");
     if (checkAll) {

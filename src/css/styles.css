@@ -118,7 +118,7 @@ body {
 /* App Layout Grid */
 .app-container {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 250px 1fr;
     min-height: 100vh;
 }
 
@@ -1245,7 +1245,6 @@ textarea.form-control {
     border-color: #50535B;
 }
 
-
 /* Responsive Design for Tablet & Mobile */
 @media (max-width: 1024px) {
     .app-container {
@@ -1261,46 +1260,23 @@ textarea.form-control {
     }
     
     .sidebar {
-        padding: 15px;
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        width: 260px;
+        height: 100vh;
+        z-index: 9999;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
     }
     
-    .sidebar-brand {
-        margin-bottom: 0;
+    .sidebar.open {
+        left: 0;
     }
     
-    .sidebar-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
-        width: 100%;
-        margin-top: 15px;
-        gap: 4px;
-    }
-    
-    .menu-item {
-        padding: 10px 12px;
-        flex: 1;
-        justify-content: center;
-        text-align: center;
-        font-size: 13px;
-    }
-    
-    .menu-item i {
-        margin-right: 5px;
-    }
-    
-    .sidebar-footer {
-        flex-direction: row;
-        width: 100%;
-        margin-top: 15px;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 15px;
+    #btn-mobile-menu {
+        display: inline-flex !important;
     }
     
     .dashboard-cards {
@@ -1355,9 +1331,5 @@ textarea.form-control {
     .header-actions .btn {
         flex: 1;
         min-width: 120px;
-    }
-    
-    .menu-item span {
-        display: none; /* Hide text on very small screens, show icons only */
     }
 }

@@ -80,6 +80,9 @@
                         <span>Kepegawaian</span>
                     </div>
                 </div>
+                <button class="btn btn-secondary auth-required" id="btn-logout" style="display: none; width: 100%; justify-content: center; margin-top: 15px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
             </div>
         </aside>
 
@@ -87,9 +90,14 @@
         <main class="main-content">
             <!-- Header -->
             <header class="main-header">
-                <div class="header-title">
-                    <h1 id="page-title">Dashboard Analisis</h1>
-                    <p id="page-subtitle" class="text-muted">Ringkasan status perpanjangan kontrak kerja PPPK</p>
+                <div class="header-title" style="display: flex; align-items: center; gap: 15px;">
+                    <button class="btn btn-icon-only mobile-menu-toggle" id="btn-mobile-menu" style="display: none;">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 id="page-title">Dashboard Analisis</h1>
+                        <p id="page-subtitle" class="text-muted">Ringkasan status perpanjangan kontrak kerja PPPK</p>
+                    </div>
                 </div>
                 
                 <div class="header-actions">
@@ -100,9 +108,7 @@
                     <button class="btn btn-primary" id="btn-login-modal">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
                     </button>
-                    <button class="btn btn-secondary auth-required" id="btn-logout" style="display: none;">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout
-                    </button>
+
                     <button class="btn btn-primary auth-required" id="btn-import-trigger" style="display: none;">
                         <i class="fa-solid fa-file-import"></i> Impor Data
                     </button>
