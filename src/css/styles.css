@@ -1302,6 +1302,7 @@ textarea.form-control {
     }
     
     .dashboard-cards,
+    .stats-grid,
     .charts-grid,
     .settings-grid {
         grid-template-columns: 1fr;

@@ -401,11 +401,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll('.auth-required').forEach(el => el.style.display = '');
             document.getElementById('btn-login-modal').style.display = 'none';
             
-            // Switch to Dashboard if currently on a hidden tab
-            const currentTab = document.querySelector('.menu-item.active').getAttribute('data-tab');
-            if (currentTab !== 'dashboard') {
-                document.querySelector('[data-tab="dashboard"]').click();
-            }
+            // Re-trigger click on active tab to correctly set header buttons visibility based on tab rules
+            const currentTabEl = document.querySelector('.menu-item.active');
+            if (currentTabEl) currentTabEl.click();
 
             // Load Data from Firestore instead of Local Storage
             await loadData();
