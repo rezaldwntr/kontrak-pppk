@@ -1245,6 +1245,23 @@ textarea.form-control {
     border-color: #50535B;
 }
 
+/* Custom Grids */
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 35px;
+    margin-top: 24px;
+}
+
 /* Responsive Design for Tablet & Mobile */
 @media (max-width: 1024px) {
     .app-container {
@@ -1284,11 +1301,9 @@ textarea.form-control {
         font-size: 20px;
     }
     
-    .dashboard-cards {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .dashboard-charts {
+    .dashboard-cards,
+    .charts-grid,
+    .settings-grid {
         grid-template-columns: 1fr;
     }
     
