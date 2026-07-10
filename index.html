@@ -123,6 +123,16 @@
 
             <!-- Dashboard View -->
             <section id="tab-dashboard" class="tab-content active">
+                <div class="toolbar" style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
+                    <div class="filter-group">
+                        <label for="filter-dashboard-jenis" style="font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 5px; display: block;">Filter Dashboard:</label>
+                        <select id="filter-dashboard-jenis" class="form-control" style="min-width: 200px;">
+                            <option value="all">Semua Jenis PPPK</option>
+                            <option value="PPPK">PPPK (Penuh Waktu)</option>
+                            <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon bg-indigo">
@@ -214,7 +224,7 @@
                                     <label for="filter-due-jenis-pppk" style="font-size: 13px; font-weight: 600; color: #495057; margin-bottom: 5px; display: block;">Jenis PPPK</label>
                                     <select id="filter-due-jenis-pppk" class="form-control" style="min-width: 200px;">
                                         <option value="all">Semua Jenis</option>
-                                        <option value="PPPK (Penuh Waktu)">PPPK (Penuh Waktu)</option>
+                                        <option value="PPPK">PPPK (Penuh Waktu)</option>
                                         <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
                                     </select>
                                 </div>

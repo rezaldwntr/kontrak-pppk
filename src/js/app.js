@@ -769,7 +769,15 @@ function calculateContractPeriod(item) {
 
 // Render Dashboard Statistics & Warnings
 function updateDashboard() {
-    const total = pppkData.length;
+    const filterDashboardSelect = document.getElementById("filter-dashboard-jenis");
+    const filterDashboard = filterDashboardSelect ? filterDashboardSelect.value : "all";
+
+    const filteredDashboardData = pppkData.filter(item => {
+        const itemJenis = item["JENIS_PPPK"] || "PPPK";
+        return filterDashboard === "all" || itemJenis === filterDashboard;
+    });
+
+    const total = filteredDashboardData.length;
     let warning = 0;
     let approved = 0;
     let drafts = 0;
@@ -780,7 +788,7 @@ function updateDashboard() {
     const dueTableBody = document.getElementById("due-contracts-body");
     dueTableBody.innerHTML = "";
 
-    pppkData.forEach(item => {
+    filteredDashboardData.forEach(item => {
         const period = calculateContractPeriod(item);
         
         // Count for warnings or expired contracts (shown in due/warning list)
@@ -788,7 +796,8 @@ function updateDashboard() {
             if (period.status === "Kontrak Hampir Habis") warning++;
             else if (period.status === "Kontrak Habis" || period.status === "Kontrak Habis (BUP)") drafts++;
             
-            if (filterJenis !== "all" && item["JENIS_PPPK"] !== filterJenis) {
+            const itemJenis = item["JENIS_PPPK"] || "PPPK";
+            if (filterJenis !== "all" && itemJenis !== filterJenis) {
                 return; // Skip rendering row but preserve stats count
             }
 
@@ -888,7 +897,7 @@ function updateDashboard() {
 
     // Render Dashboard Charts
     if (typeof Chart !== 'undefined') {
-        renderDashboardCharts();
+        renderDashboardCharts(filteredDashboardData);
     }
 }
 
@@ -897,14 +906,14 @@ let chartJabatanInstance = null;
 let chartKontrakInstance = null;
 
 // Render Chart.js Dashboard Data
-function renderDashboardCharts() {
+function renderDashboardCharts(data = pppkData) {
     const ctxJabatan = document.getElementById('chart-jabatan');
     const ctxKontrak = document.getElementById('chart-kontrak');
     if (!ctxJabatan || !ctxKontrak) return;
 
     // Process data for Jabatan
     const jabatanCounts = {};
-    pppkData.forEach(item => {
+    data.forEach(item => {
         const title = item["JABATAN NAMA"] || "Tidak Diketahui";
         jabatanCounts[title] = (jabatanCounts[title] || 0) + 1;
     });
@@ -952,9 +961,9 @@ function renderDashboardCharts() {
         }
     });
 
-    // Process data for Jadwal Perpanjangan Kontrak (Tahun)
+    // Process data for Jadwal Perpanjangan (Bar Chart)
     const perpanjanganCounts = {};
-    pppkData.forEach(item => {
+    data.forEach(item => {
         const period = calculateContractPeriod(item);
         if (period.status !== "Kontrak Habis (BUP)" && !period.isBUP && period.awal !== "-") {
             let year;
@@ -1006,9 +1015,9 @@ function renderDashboardCharts() {
         }
     });
 
-    // Process data for Proyeksi BUP (Batas Usia Pensiun)
+    // Process data for Proyeksi Pensiun BUP (Line Chart)
     const bupCounts = {};
-    pppkData.forEach(item => {
+    data.forEach(item => {
         if (!item["TANGGAL LAHIR"] || item["STATUS_PPPK"] === "Meninggal") return;
         const bDayStr = item["TANGGAL LAHIR"];
         const bParts = bDayStr.split("-");
@@ -1455,6 +1464,13 @@ function setupListeners() {
     
     const filterJenisPppk = document.getElementById("filter-jenis-pppk");
     if (filterJenisPppk) filterJenisPppk.addEventListener("change", applyFilters);
+    
+    // Dashboard and Due Contracts Filters
+    const filterDashboardJenis = document.getElementById("filter-dashboard-jenis");
+    if (filterDashboardJenis) filterDashboardJenis.addEventListener("change", updateDashboard);
+
+    const dueFilterJenis = document.getElementById("filter-due-jenis-pppk");
+    if (dueFilterJenis) dueFilterJenis.addEventListener("change", updateDashboard);
     
     // Toggle Advanced Filters
     const btnToggleFilters = document.getElementById("btn-toggle-filters");
