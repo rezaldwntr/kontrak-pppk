@@ -652,6 +652,9 @@ async function saveDataToFirebase() {
 
 // Contract Period Calculator (Dynamic Duration Blocks)
 function calculateContractPeriod(item) {
+    if (item && typeof item === "object" && item._periodCache) {
+        return item._periodCache;
+    }
     // Determine duration: 1 year for Paruh Waktu, 5 years for regular PPPK
     const contractYears = (item && typeof item === "object" && item["JENIS_PPPK"] === "PPPK Paruh Waktu") ? 1 : 5;
 
@@ -786,7 +789,7 @@ function calculateContractPeriod(item) {
         return `${y}-${m}-${day}`;
     };
 
-    return {
+    const result = {
         awal: formatDate(start),
         akhir: formatDate(end),
         daysLeft: daysLeft,
@@ -794,6 +797,11 @@ function calculateContractPeriod(item) {
         status: status,
         isBUP: isBUP
     };
+    
+    if (item && typeof item === "object") {
+        item._periodCache = result;
+    }
+    return result;
 }
 
 // Render Dashboard Statistics & Warnings
@@ -1121,7 +1129,15 @@ function renderDashboardCharts(data = pppkData) {
 }
 
 // Parse Unor Nama into Atasan and Induk
-function getUnorParts(unorNama) {
+function getUnorParts(item) {
+    let unorNama = "";
+    if (typeof item === "object") {
+        if (item._unorCache) return item._unorCache;
+        unorNama = item["UNOR NAMA"] || "";
+    } else {
+        unorNama = item || "";
+    }
+    
     if (!unorNama || unorNama === "-") {
         return { atasan: "-", induk: "-" };
     }
@@ -1141,7 +1157,11 @@ function getUnorParts(unorNama) {
         induk = atasan;
     }
     
-    return { atasan, induk };
+    const result = { atasan, induk };
+    if (typeof item === "object") {
+        item._unorCache = result;
+    }
+    return result;
 }
 
 // Populate Unor filters dynamically
@@ -1158,7 +1178,7 @@ function updateUnorFilters(data = pppkData) {
     if (selectedInduk !== "all") uniqueInduks.add(selectedInduk);
     
     data.forEach(item => {
-        const parts = getUnorParts(item["UNOR NAMA"]);
+        const parts = getUnorParts(item);
         if (parts.induk && parts.induk !== "-") {
             uniqueInduks.add(parts.induk);
         }
@@ -1175,7 +1195,7 @@ function updateUnorFilters(data = pppkData) {
     if (selectedAtasan !== "all") uniqueAtasans.add(selectedAtasan);
     
     data.forEach(item => {
-        const parts = getUnorParts(item["UNOR NAMA"]);
+        const parts = getUnorParts(item);
         if (selectedInduk === "all" || parts.induk === selectedInduk) {
             if (parts.atasan && parts.atasan !== "-") {
                 uniqueAtasans.add(parts.atasan);
@@ -2030,7 +2050,7 @@ function applyFilters() {
         const matchesStatus = (statusVal === "all" || period.status === statusVal);
         
         // Unor Induk and Atasan Matching
-        const unorParts = getUnorParts(item["UNOR NAMA"]);
+        const unorParts = getUnorParts(item);
         const matchesInduk = (indukVal === "all" || unorParts.induk === indukVal);
         const matchesAtasan = (atasanVal === "all" || unorParts.atasan === atasanVal);
         
@@ -2368,6 +2388,10 @@ function saveEmployeeDetail() {
         currentEditingItem["STATUS_PERPANJANGAN"] = "Draf Perpanjangan";
     }
 
+    // Clear caches
+    delete currentEditingItem._periodCache;
+    delete currentEditingItem._unorCache;
+
     saveDataToFirebase();
     closeDetailModal();
     
@@ -2393,6 +2417,10 @@ function executeExtension() {
     // Set status to approved
     currentEditingItem["STATUS_PERPANJANGAN"] = "Disetujui";
     
+    // Clear caches
+    delete currentEditingItem._periodCache;
+    delete currentEditingItem._unorCache;
+
     // Save new values
     currentEditingItem["NEW_NOMOR_KONTRAK"] = newNoKontrak;
     currentEditingItem["NEW_NOMOR_SK"] = newNoSK;
@@ -2583,6 +2611,11 @@ async function processBulkApproval() {
             };
 
             item["STATUS_PERPANJANGAN"] = "Disetujui";
+            
+            // Clear caches
+            delete item._periodCache;
+            delete item._unorCache;
+
             item["NEW_NOMOR_KONTRAK"] = `${item["NOMOR_KONTRAK"] || 'SPK/PPPK'}-Perpanjangan-Massal`;
             item["NEW_NOMOR_SK"] = `SK/PPPK/MASSAL/${new Date().getFullYear()}/${item["PNS ID"].substring(1, 6)}`;
             item["NEW_TANGGAL_SK"] = formatDate(systemDate);
@@ -2669,6 +2702,11 @@ async function processDueBulkApproval() {
             };
 
             item["STATUS_PERPANJANGAN"] = "Disetujui";
+            
+            // Clear caches
+            delete item._periodCache;
+            delete item._unorCache;
+
             item["NEW_NOMOR_KONTRAK"] = `${item["NOMOR_KONTRAK"] || 'SPK/PPPK'}-Perpanjangan-Massal`;
             item["NEW_NOMOR_SK"] = `SK/PPPK/MASSAL/${new Date().getFullYear()}/${item["PNS ID"].substring(1, 6)}`;
             item["NEW_TANGGAL_SK"] = formatDate(systemDate);
