@@ -4,7 +4,7 @@
         <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end;">
             <div class="filter-group">
                 <label>Status Kontrak</label>
-                <select v-model="statusFilter" @change="handleSearch">
+                <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 200px;">
                     <option value="all">Semua Status</option>
                     <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
                     <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
@@ -13,7 +13,7 @@
             </div>
             <div class="filter-group">
                 <label>Tampilkan Baris</label>
-                <select v-model="itemsPerPage" @change="handleSearch">
+                <select v-model="itemsPerPage" @change="handleSearch" class="form-control" style="min-width: 150px;">
                     <option value="10">10 Baris</option>
                     <option value="50">50 Baris</option>
                     <option value="100">100 Baris</option>

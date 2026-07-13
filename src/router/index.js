@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
+import DummyPageView from '../views/DummyPageView.vue'
 
 const routes = [
   {
@@ -10,7 +11,7 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Dashboard',
+    name: 'dashboard',
     component: () => import('../views/DashboardView.vue'),
     meta: { requiresAuth: false, title: 'Dashboard Analisis', subtitle: 'Ringkasan status perpanjangan kontrak kerja PPPK' }
   },
@@ -21,10 +22,22 @@ const routes = [
     meta: { requiresAuth: true, title: 'Data Pegawai PPPK', subtitle: 'Manajemen profil lengkap kepegawaian, filter data, dan status keaktifan' }
   },
   {
+    path: '/perpanjangan',
+    name: 'perpanjangan',
+    component: DummyPageView,
+    meta: { requiresAuth: true, title: 'Proses Perpanjangan Kontrak PPPK', subtitle: 'Manajemen masa kontrak dan BUP' }
+  },
+  {
+    path: '/riwayat',
+    name: 'riwayat',
+    component: DummyPageView,
+    meta: { requiresAuth: true, title: 'Riwayat Perpanjangan', subtitle: 'Catatan arsip kontrak sebelumnya' }
+  },
+  {
     path: '/settings',
-    name: 'Settings',
-    component: () => import('../views/SettingsView.vue'),
-    meta: { requiresAuth: true }
+    name: 'settings',
+    component: DummyPageView,
+    meta: { requiresAuth: true, title: 'Pengaturan Sistem', subtitle: 'Konfigurasi akun dan preferensi aplikasi' }
   }
 ]
 

@@ -12,31 +12,31 @@
   <!-- Dashboard Overview Cards -->
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-icon"><i class="fa-solid fa-users-rectangle"></i></div>
-      <div class="stat-info">
+      <div class="stat-icon bg-indigo"><i class="fa-solid fa-users-viewfinder"></i></div>
+      <div class="stat-details">
         <h3>{{ totalPegawai }}</h3>
-        <p>Total PPPK</p>
+        <span>Total PPPK</span>
       </div>
     </div>
-    <div class="stat-card warning">
-      <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
-      <div class="stat-info">
+    <div class="stat-card">
+      <div class="stat-icon bg-warning"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div class="stat-details">
         <h3>{{ warningCount }}</h3>
-        <p>Kontrak Hampir Habis</p>
+        <span>Kontrak Hampir Habis</span>
       </div>
     </div>
-    <div class="stat-card success">
-      <div class="stat-icon"><i class="fa-solid fa-file-circle-check"></i></div>
-      <div class="stat-info">
+    <div class="stat-card">
+      <div class="stat-icon bg-success"><i class="fa-solid fa-file-circle-check"></i></div>
+      <div class="stat-details">
         <h3>{{ activeCount }}</h3>
-        <p>Kontrak Masih Berlaku</p>
+        <span>Kontrak Masih Berlaku</span>
       </div>
     </div>
-    <div class="stat-card danger">
-      <div class="stat-icon"><i class="fa-solid fa-file-circle-xmark"></i></div>
-      <div class="stat-info">
+    <div class="stat-card">
+      <div class="stat-icon bg-info"><i class="fa-solid fa-file-circle-exclamation"></i></div>
+      <div class="stat-details">
         <h3>{{ expiredCount }}</h3>
-        <p>Kontrak Habis</p>
+        <span>Kontrak Habis</span>
       </div>
     </div>
   </div>

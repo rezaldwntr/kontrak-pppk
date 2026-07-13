@@ -19,14 +19,14 @@
         <i class="fa-solid fa-users"></i>
         <span>Data PPPK</span>
       </router-link>
-      <a href="#" class="menu-item" v-if="authStore.user">
+      <router-link to="/perpanjangan" class="menu-item" active-class="active" v-if="authStore.user">
         <i class="fa-solid fa-file-signature"></i>
         <span>Perpanjangan Kontrak</span>
-      </a>
-      <a href="#" class="menu-item" v-if="authStore.user">
+      </router-link>
+      <router-link to="/riwayat" class="menu-item" active-class="active" v-if="authStore.user">
         <i class="fa-solid fa-clock-rotate-left"></i>
         <span>Riwayat Perpanjangan</span>
-      </a>
+      </router-link>
       <router-link to="/settings" class="menu-item" active-class="active" v-if="authStore.user">
         <i class="fa-solid fa-gear"></i>
         <span>Pengaturan</span>
@@ -49,7 +49,7 @@
           <p>Kepegawaian</p>
         </div>
       </div>
-      <button class="logout-btn" v-if="authStore.user" @click="handleLogout">
+      <button class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 15px;" v-if="authStore.user" @click="handleLogout">
         <i class="fa-solid fa-right-from-bracket"></i> Logout
       </button>
     </div>
