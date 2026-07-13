@@ -2191,7 +2191,7 @@ function openDetailModal(id, defaultTab = "tab-personal") {
     document.getElementById("m-jabatan").value = currentEditingItem["JABATAN NAMA"] || "";
     document.getElementById("m-jenis-jabatan").value = currentEditingItem["JENIS JABATAN NAMA"] || "";
     document.getElementById("m-tmt-jabatan").value = formatDateForInput(currentEditingItem["TMT JABATAN"]);
-    document.getElementById("m-golongan").value = currentEditingItem["GOLONGAN AKHIR NAMA"] || "";
+    document.getElementById("m-golongan").value = currentEditingItem["GOL AKHIR NAMA"] || "";
     document.getElementById("m-unor").value = currentEditingItem["UNOR NAMA"] || "";
     document.getElementById("m-instansi-induk").value = currentEditingItem["INSTANSI INDUK NAMA"] || "";
     document.getElementById("m-instansi-kerja").value = currentEditingItem["INSTANSI KERJA NAMA"] || "";
@@ -2343,7 +2343,7 @@ function saveEmployeeDetail() {
     currentEditingItem["JABATAN NAMA"] = document.getElementById("m-jabatan").value.trim().toUpperCase();
     currentEditingItem["JENIS JABATAN NAMA"] = document.getElementById("m-jenis-jabatan").value.trim().toUpperCase();
     currentEditingItem["TMT JABATAN"] = document.getElementById("m-tmt-jabatan").value;
-    currentEditingItem["GOLONGAN AKHIR NAMA"] = document.getElementById("m-golongan").value.trim();
+    currentEditingItem["GOL AKHIR NAMA"] = document.getElementById("m-golongan").value.trim();
     currentEditingItem["UNOR NAMA"] = document.getElementById("m-unor").value.trim().toUpperCase();
     currentEditingItem["INSTANSI INDUK NAMA"] = document.getElementById("m-instansi-induk").value.trim().toUpperCase();
     currentEditingItem["INSTANSI KERJA NAMA"] = document.getElementById("m-instansi-kerja").value.trim().toUpperCase();
@@ -2929,6 +2929,13 @@ function processDataImport() {
             let nipLama = emp["NIP LAMA"] || "-";
             if (typeof nipBaru === "string") nipBaru = nipBaru.trim().replace(/^'/, "");
             if (typeof nipLama === "string") nipLama = nipLama.trim().replace(/^'/, "");
+            
+            let jk = emp["JENIS KELAMIN"] || "L";
+            if (typeof jk === "string") {
+                const jkU = jk.toUpperCase();
+                if (jkU === "F" || jkU.includes("PEREMPUAN") || jkU.includes("WANITA")) jk = "P";
+                else if (jkU === "M" || jkU.includes("LAKI") || jkU.includes("PRIA")) jk = "L";
+            }
 
             return {
                 ...emp,
@@ -2944,7 +2951,8 @@ function processDataImport() {
                 "NOMOR_KONTRAK": emp["NOMOR_KONTRAK"] || `SPK/${index}/2021`,
                 "STATUS_PERPANJANGAN": emp["STATUS_PERPANJANGAN"] || "Belum Diproses",
                 "STATUS_PPPK": emp["STATUS_PPPK"] || "Aktif",
-                "JENIS_PPPK": emp["JENIS_PPPK"] || importJenis
+                "JENIS_PPPK": emp["JENIS_PPPK"] || importJenis,
+                "JENIS KELAMIN": jk
             };
         });
 
