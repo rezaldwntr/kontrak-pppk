@@ -1,14 +1,4 @@
 <template>
-  <header class="header">
-    <div class="page-title">
-      <h2>Dashboard Analisis</h2>
-      <p>Ringkasan status perpanjangan kontrak kerja PPPK</p>
-    </div>
-    <div class="header-actions" v-if="!authStore.user">
-      <router-link to="/login" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login</router-link>
-    </div>
-  </header>
-
   <div class="dashboard-filters">
     <label for="filter-dashboard-jenis">Filter Dashboard:</label>
     <select id="filter-dashboard-jenis" v-model="filterDashboard" @change="pegawaiStore.setFilterDashboard(filterDashboard)">
@@ -28,18 +18,33 @@
         <p>Total PPPK</p>
       </div>
     </div>
-    <div class="stat-card warning" v-if="warningCount > 0">
-      <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <div class="stat-card warning">
+      <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
       <div class="stat-info">
         <h3>{{ warningCount }}</h3>
-        <p>Perlu Perhatian</p>
+        <p>Kontrak Hampir Habis</p>
+      </div>
+    </div>
+    <div class="stat-card success">
+      <div class="stat-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+      <div class="stat-info">
+        <h3>{{ activeCount }}</h3>
+        <p>Kontrak Masih Berlaku</p>
+      </div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-icon"><i class="fa-solid fa-file-circle-xmark"></i></div>
+      <div class="stat-info">
+        <h3>{{ expiredCount }}</h3>
+        <p>Kontrak Habis</p>
       </div>
     </div>
   </div>
 
   <div class="charts-grid">
     <ChartCard title="Komposisi Jabatan PPPK" icon="fa-solid fa-chart-pie" chartType="pie" :chartData="jabatanChartData" />
-    <ChartCard title="Status Perpanjangan Kontrak" icon="fa-solid fa-file-signature" chartType="doughnut" :chartData="statusChartData" />
+    <ChartCard title="Jadwal Perpanjangan" icon="fa-solid fa-calendar-check" chartType="bar" :chartData="kontrakChartData" />
+    <ChartCard title="Proyeksi Pensiun (BUP)" icon="fa-solid fa-user-clock" chartType="line" :chartData="bupChartData" />
   </div>
 </template>
 
@@ -64,8 +69,19 @@ const totalPegawai = computed(() => filteredData.value.length)
 
 const warningCount = computed(() => {
   return filteredData.value.filter(item => {
-    // Basic logic for warning, adjust based on your calculateContractPeriod
-    return item["STATUS_PERPANJANGAN"] === "Belum Diproses"
+    return item["STATUS_PERPANJANGAN"] === "Kontrak Hampir Habis"
+  }).length
+})
+
+const activeCount = computed(() => {
+  return filteredData.value.filter(item => {
+    return item["STATUS_PERPANJANGAN"] === "Kontrak Masih Berlaku" || !item["STATUS_PERPANJANGAN"] || item["STATUS_PERPANJANGAN"] === "Belum Diproses"
+  }).length
+})
+
+const expiredCount = computed(() => {
+  return filteredData.value.filter(item => {
+    return item["STATUS_PERPANJANGAN"] === "Kontrak Habis"
   }).length
 })
 
@@ -87,19 +103,49 @@ const jabatanChartData = computed(() => {
   }
 })
 
-const statusChartData = computed(() => {
+const kontrakChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
-    const status = item["STATUS_PERPANJANGAN"] || "Belum Diproses"
-    counts[status] = (counts[status] || 0) + 1
+    // simplified mock extraction, year 2026-2031
+    const tmt = item["TMT CPNS"] || ""
+    if (tmt) {
+       const year = parseInt(tmt.split('-')[0]) + 5 // assume 5 year contract
+       counts[year] = (counts[year] || 0) + 1
+    }
   })
   
   return {
-    labels: Object.keys(counts),
+    labels: Object.keys(counts).sort(),
     datasets: [{
-      label: 'Status Perpanjangan',
-      data: Object.values(counts),
-      backgroundColor: ['#3498db', '#e67e22', '#2ecc71']
+      label: 'Jadwal Perpanjangan',
+      data: Object.keys(counts).sort().map(k => counts[k]),
+      backgroundColor: '#3498db'
+    }]
+  }
+})
+
+const bupChartData = computed(() => {
+  const counts = {}
+  filteredData.value.forEach(item => {
+    const tl = item["TANGGAL LAHIR"] || ""
+    if (tl) {
+       const year = parseInt(tl.split('-')[0]) + 58 // assume BUP 58
+       if (year >= 2025 && year <= 2061) {
+           counts[year] = (counts[year] || 0) + 1
+       }
+    }
+  })
+  
+  return {
+    labels: Object.keys(counts).sort(),
+    datasets: [{
+      label: 'Proyeksi Pensiun (BUP)',
+      data: Object.keys(counts).sort().map(k => counts[k]),
+      borderColor: '#2ecc71',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointBackgroundColor: '#2ecc71',
+      tension: 0.3
     }]
   }
 })

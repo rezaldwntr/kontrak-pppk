@@ -6,19 +6,19 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/LoginView.vue'),
-    meta: { requiresGuest: true }
+    meta: { requiresGuest: true, title: 'Login Administrator' }
   },
   {
     path: '/',
     name: 'Dashboard',
     component: () => import('../views/DashboardView.vue'),
-    meta: { requiresAuth: false } // Guest can view Dashboard
+    meta: { requiresAuth: false, title: 'Dashboard Analisis', subtitle: 'Ringkasan status perpanjangan kontrak kerja PPPK' }
   },
   {
     path: '/data-pegawai',
-    name: 'Pegawai',
+    name: 'pegawai',
     component: () => import('../views/PegawaiView.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, title: 'Data Pegawai PPPK', subtitle: 'Manajemen profil lengkap kepegawaian, filter data, dan status keaktifan' }
   },
   {
     path: '/settings',

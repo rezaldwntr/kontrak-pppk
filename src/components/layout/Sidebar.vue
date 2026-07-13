@@ -19,6 +19,18 @@
         <i class="fa-solid fa-users"></i>
         <span>Data PPPK</span>
       </router-link>
+      <a href="#" class="menu-item" v-if="authStore.user">
+        <i class="fa-solid fa-file-signature"></i>
+        <span>Perpanjangan Kontrak</span>
+      </a>
+      <a href="#" class="menu-item" v-if="authStore.user">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Riwayat Perpanjangan</span>
+      </a>
+      <router-link to="/settings" class="menu-item" active-class="active" v-if="authStore.user">
+        <i class="fa-solid fa-gear"></i>
+        <span>Pengaturan</span>
+      </router-link>
     </nav>
     
     <div class="sidebar-footer">

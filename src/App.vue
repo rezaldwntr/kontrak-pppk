@@ -3,6 +3,7 @@
     <Sidebar v-if="!isLoginRoute" />
     
     <div class="main-content" :class="{ 'auth-mode': isLoginRoute }">
+      <Header />
       <router-view />
     </div>
 

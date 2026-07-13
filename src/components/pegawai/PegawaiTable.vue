@@ -1,83 +1,97 @@
 <template>
-  <div class="table-container">
-    <div class="table-actions">
-      <div class="search-bar">
-        <i class="fa-solid fa-search"></i>
-        <input type="text" v-model="searchQuery" placeholder="Cari NAMA, NIP, atau Instansi..." @input="handleSearch" />
-      </div>
-      <div class="table-filters" v-if="authStore.user">
-        <select v-model="statusFilter" @change="handleSearch">
-          <option value="all">Semua Status</option>
-          <option value="Belum Diproses">Belum Diproses</option>
-          <option value="Memenuhi Syarat">Memenuhi Syarat</option>
-          <option value="Tidak Memenuhi Syarat">Tidak Memenuhi Syarat</option>
-          <option value="Selesai Diperpanjang">Selesai Diperpanjang</option>
-        </select>
-      </div>
-      <div class="action-buttons" v-if="authStore.user">
-        <button class="btn btn-outline" @click="emit('export')"><i class="fa-solid fa-file-excel"></i> Ekspor</button>
-        <button class="btn btn-primary" @click="emit('add')"><i class="fa-solid fa-plus"></i> Tambah Data</button>
-      </div>
+  <div>
+    <div class="filter-panel" style="margin-bottom: 20px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end;">
+            <div class="filter-group">
+                <label>Status Kontrak</label>
+                <select v-model="statusFilter" @change="handleSearch">
+                    <option value="all">Semua Status</option>
+                    <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
+                    <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
+                    <option value="Kontrak Habis">Kontrak Habis</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Tampilkan Baris</label>
+                <select v-model="itemsPerPage" @change="handleSearch">
+                    <option value="10">10 Baris</option>
+                    <option value="50">50 Baris</option>
+                    <option value="100">100 Baris</option>
+                </select>
+            </div>
+        </div>
     </div>
 
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th v-if="authStore.user">
-            <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
-          </th>
-          <th>No</th>
-          <th>NIP PPPK</th>
-          <th>Nama Lengkap</th>
-          <th>Jabatan</th>
-          <th>Masa Kerja</th>
-          <th>Status</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="pegawaiStore.isLoading">
-          <td colspan="8" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
-        </tr>
-        <tr v-else-if="paginatedData.length === 0">
-          <td colspan="8" class="text-center">Data tidak ditemukan.</td>
-        </tr>
-        <tr v-for="(item, index) in paginatedData" :key="item['PNS ID']" :class="getRowClass(item)">
-          <td v-if="authStore.user">
-            <input type="checkbox" :value="item['PNS ID']" v-model="selectedIds" />
-          </td>
-          <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
-          <td>{{ item["NIP BARU"] }}</td>
-          <td>
-            <strong>{{ item["NAMA"] }}</strong><br>
-            <small>{{ item["NIK"] }}</small>
-          </td>
-          <td>{{ item["JABATAN NAMA"] }}</td>
-          <td>{{ item["MK TAHUN"] }} Tahun {{ item["MK BULAN"] }} Bulan</td>
-          <td>
-            <span :class="['status-badge', getBadgeClass(item['STATUS_PERPANJANGAN'])]">
-              {{ item["STATUS_PERPANJANGAN"] || "Belum Diproses" }}
-            </span>
-          </td>
-          <td class="action-cell">
-            <button class="btn-icon btn-view" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
-            <button class="btn-icon btn-edit" v-if="authStore.user" @click="emit('edit', item)" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-            <button class="btn-icon btn-print" v-if="authStore.user" @click="emit('print', item)" title="Cetak SPK"><i class="fa-solid fa-print"></i></button>
-            <button class="btn-icon btn-delete" v-if="authStore.user" @click="emit('delete', item)" title="Hapus"><i class="fa-solid fa-trash"></i></button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="pagination">
-      <div class="pagination-info">
-        Menampilkan {{ Math.min(filteredData.length, (currentPage - 1) * itemsPerPage + 1) }} - {{ Math.min(filteredData.length, currentPage * itemsPerPage) }} dari {{ filteredData.length }} data
-      </div>
-      <div class="pagination-controls">
-        <button class="btn btn-outline" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
-        <span class="page-number">Halaman {{ currentPage }} dari {{ totalPages }}</span>
-        <button class="btn btn-outline" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
-      </div>
+    <div class="widget-card table-widget">
+        <div class="widget-header-actions">
+            <div class="bulk-actions" v-if="selectedIds.length > 0">
+                <span>{{ selectedIds.length }} terpilih</span>
+                <button class="btn btn-sm btn-success">
+                    <i class="fa-solid fa-check-double"></i> Perpanjang Massal
+                </button>
+            </div>
+            <div class="total-rows text-muted" v-else>
+                Total: <span>{{ filteredData.length }}</span> PPPK
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th width="40" v-if="authStore.user"><input type="checkbox" v-model="selectAll"></th>
+                        <th>NIP BARU / ID</th>
+                        <th>NAMA LENGKAP</th>
+                        <th>TMT CPNS / MULAI</th>
+                        <th>MASA KERJA</th>
+                        <th>JABATAN</th>
+                        <th>STATUS KONTRAK</th>
+                        <th>STATUS PPPK</th>
+                        <th width="120">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-if="pegawaiStore.isLoading">
+                        <td colspan="9" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
+                    </tr>
+                    <tr v-else-if="paginatedData.length === 0">
+                        <td colspan="9" class="text-center">Data tidak ditemukan.</td>
+                    </tr>
+                    <tr v-for="item in paginatedData" :key="item['PNS ID']">
+                        <td v-if="authStore.user">
+                            <input type="checkbox" :value="item['PNS ID']" v-model="selectedIds" />
+                        </td>
+                        <td>{{ item["NIP BARU"] }}</td>
+                        <td>
+                            <strong>{{ item["NAMA"] }}</strong><br>
+                            <small class="text-muted">{{ item["NIK"] }}</small>
+                        </td>
+                        <td>{{ item["TMT CPNS"] }}</td>
+                        <td>{{ item["MK TAHUN"] }} Tahun {{ item["MK BULAN"] }} Bln</td>
+                        <td>{{ item["JABATAN NAMA"] }}</td>
+                        <td>
+                            <span :class="['badge', getBadgeClass(item['STATUS_PERPANJANGAN'])]">
+                                {{ item["STATUS_PERPANJANGAN"] || "Belum Diproses" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-success">Aktif</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons-cell">
+                                <button class="btn btn-icon-only btn-sm" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination">
+            <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
+            <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+            <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
     </div>
   </div>
 </template>
@@ -139,12 +153,11 @@ const toggleSelectAll = () => {
 }
 
 const getBadgeClass = (status) => {
-  switch(status) {
-    case 'Memenuhi Syarat': return 'aktif'
-    case 'Tidak Memenuhi Syarat': return 'tms'
-    case 'Selesai Diperpanjang': return 'selesai'
-    default: return 'belum'
-  }
+  if (!status || status === 'Belum Diproses') return 'badge-secondary'
+  if (status === 'Memenuhi Syarat' || status === 'Selesai Diperpanjang' || status === 'Kontrak Masih Berlaku') return 'badge-success'
+  if (status === 'Kontrak Hampir Habis') return 'badge-warning'
+  if (status === 'Tidak Memenuhi Syarat' || status === 'Kontrak Habis' || status === 'Kontrak Habis (BUP)') return 'badge-danger'
+  return 'badge-secondary'
 }
 
 const getRowClass = (item) => {
