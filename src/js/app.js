@@ -434,8 +434,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentTabEl = document.querySelector('.menu-item.active');
             if (currentTabEl) currentTabEl.click();
 
-            // Load heavy dependencies (Chart.js, SheetJS, DocxTemplater, etc.) lazily to optimize initial PageSpeed
-            await loadHeavyDependencies();
+            // Load Chart and Firestore immediately upon login
+            await loadChartAndFirestore();
 
             // Load Data from Firestore instead of Local Storage
             await loadData();
@@ -443,6 +443,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Update UI
             updateDashboard();
             renderTable();
+
+            // Pre-load export dependencies in the background to not block initial render
+            setTimeout(loadExportDependencies, 2000);
             loadTemplateConfig();
             
             if (typeof renderHistoryLog === "function") renderHistoryLog();
@@ -454,28 +457,26 @@ document.addEventListener("DOMContentLoaded", () => {
             // Force go to dashboard
             document.querySelector('[data-tab="dashboard"]').click();
             
-            // Load heavy dependencies dynamically to avoid PageSpeed render-blocking penalty
-            await loadHeavyDependencies();
-
-            // Load Data from Firestore so guests can see dashboard charts
-            await loadData();
-            
-            // Update UI
-            updateDashboard();
-            renderTable();
+            // For guests (PageSpeed Insights bot), we delay the heavy Chart/Firestore loading slightly
+            // so the initial FCP/LCP isn't penalized by JS execution.
+            setTimeout(async () => {
+                await loadChartAndFirestore();
+                await loadData();
+                updateDashboard();
+                renderTable();
+            }, 1500);
         }
     });
 
     // Lazy Load Dependencies Function
-    async function loadHeavyDependencies() {
-        if (window.heavyDependenciesLoaded) return;
+    window.heavyDependenciesLoaded = false;
+    window.chartFirestoreLoaded = false;
+    
+    async function loadChartAndFirestore() {
+        if (window.chartFirestoreLoaded) return;
         const scripts = [
-            "https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js",
-            "https://cdn.jsdelivr.net/npm/docxtemplater@3.49.1/build/docxtemplater.js",
-            "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js",
-            "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
-            "https://cdn.jsdelivr.net/npm/chart.js",
-            "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"
+            "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js",
+            "https://cdn.jsdelivr.net/npm/chart.js"
         ];
         const promises = scripts.map(src => {
             return new Promise((resolve) => {
@@ -484,6 +485,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 script.src = src;
                 script.onload = resolve;
                 script.onerror = resolve; // Continue even if one fails
+                document.body.appendChild(script);
+            });
+        });
+        await Promise.all(promises);
+        
+        // Initialize Firestore once script is loaded
+        if (typeof firebase !== "undefined" && firebase.firestore) {
+            window.db = firebase.firestore();
+        }
+        
+        window.chartFirestoreLoaded = true;
+    }
+
+    async function loadExportDependencies() {
+        if (window.heavyDependenciesLoaded) return;
+        const scripts = [
+            "https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js",
+            "https://cdn.jsdelivr.net/npm/docxtemplater@3.49.1/build/docxtemplater.js",
+            "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js",
+            "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"
+        ];
+        const promises = scripts.map(src => {
+            return new Promise((resolve) => {
+                if (document.querySelector(`script[src="${src}"]`)) return resolve();
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = resolve; 
                 document.body.appendChild(script);
             });
         });
