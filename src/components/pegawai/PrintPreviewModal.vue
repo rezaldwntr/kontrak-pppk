@@ -45,7 +45,7 @@
         
         <div class="alert alert-warning" style="font-size: 11px; margin-top: 15px; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; background-color: #fff3cd; color: #856404; display: flex; gap: 8px; align-items: flex-start;">
           <i class="fa-solid fa-circle-exclamation" style="margin-top: 2px;"></i>
-          <span>Pastikan template Word Anda telah dibungkus dengan tag <code>{{#perjanjian}}...{{/perjanjian}}</code> untuk halaman isi, dan <code>{{#tandatangan}}...{{/tandatangan}}</code> untuk halaman tanda tangan terakhir.</span>
+          <span v-pre>Pastikan template Word Anda telah dibungkus dengan tag <code>{{#perjanjian}}...{{/perjanjian}}</code> untuk halaman isi, dan <code>{{#tandatangan}}...{{/tandatangan}}</code> untuk halaman tanda tangan terakhir.</span>
         </div>
         
         <div v-if="errorMsg" class="alert alert-danger" style="font-size: 12px; margin-top: 15px; padding: 10px; border-radius: 4px; background-color: #f8d7da; color: #721c24;">
