@@ -2151,14 +2151,13 @@ function openDetailModal(id, defaultTab = "tab-personal") {
     document.getElementById("m-tgl-sk-cpns").value = formatDateForInput(currentEditingItem["TANGGAL SK CPNS"]);
     document.getElementById("m-kedudukan-hukum").value = currentEditingItem["KEDUDUKAN HUKUM NAMA"] || "";
     document.getElementById("m-status-pppk").value = currentEditingItem["STATUS_PPPK"] || "Aktif";
-    document.getElementById("m-npwp").value = currentEditingItem["NPWP NOMOR"] || "";
-    document.getElementById("m-bpjs").value = currentEditingItem["BPJS"] || "";
     document.getElementById("m-mk-tahun").value = currentEditingItem["MK TAHUN"] || 0;
     document.getElementById("m-mk-bulan").value = currentEditingItem["MK BULAN"] || 0;
 
     document.getElementById("m-jabatan").value = currentEditingItem["JABATAN NAMA"] || "";
     document.getElementById("m-jenis-jabatan").value = currentEditingItem["JENIS JABATAN NAMA"] || "";
     document.getElementById("m-tmt-jabatan").value = formatDateForInput(currentEditingItem["TMT JABATAN"]);
+    document.getElementById("m-golongan").value = currentEditingItem["GOLONGAN AKHIR NAMA"] || "";
     document.getElementById("m-unor").value = currentEditingItem["UNOR NAMA"] || "";
     document.getElementById("m-instansi-induk").value = currentEditingItem["INSTANSI INDUK NAMA"] || "";
     document.getElementById("m-instansi-kerja").value = currentEditingItem["INSTANSI KERJA NAMA"] || "";
@@ -2304,15 +2303,13 @@ function saveEmployeeDetail() {
     currentEditingItem["TANGGAL SK CPNS"] = document.getElementById("m-tgl-sk-cpns").value;
     currentEditingItem["KEDUDUKAN HUKUM NAMA"] = document.getElementById("m-kedudukan-hukum").value.trim().toUpperCase();
     currentEditingItem["STATUS_PPPK"] = document.getElementById("m-status-pppk").value;
-    currentEditingItem["NPWP NOMOR"] = document.getElementById("m-npwp").value.trim();
-    currentEditingItem["BPJS"] = document.getElementById("m-bpjs").value.trim();
     currentEditingItem["MK TAHUN"] = parseInt(document.getElementById("m-mk-tahun").value) || 0;
     currentEditingItem["MK BULAN"] = parseInt(document.getElementById("m-mk-bulan").value) || 0;
 
-    // Posisi
     currentEditingItem["JABATAN NAMA"] = document.getElementById("m-jabatan").value.trim().toUpperCase();
     currentEditingItem["JENIS JABATAN NAMA"] = document.getElementById("m-jenis-jabatan").value.trim().toUpperCase();
     currentEditingItem["TMT JABATAN"] = document.getElementById("m-tmt-jabatan").value;
+    currentEditingItem["GOLONGAN AKHIR NAMA"] = document.getElementById("m-golongan").value.trim();
     currentEditingItem["UNOR NAMA"] = document.getElementById("m-unor").value.trim().toUpperCase();
     currentEditingItem["INSTANSI INDUK NAMA"] = document.getElementById("m-instansi-induk").value.trim().toUpperCase();
     currentEditingItem["INSTANSI KERJA NAMA"] = document.getElementById("m-instansi-kerja").value.trim().toUpperCase();
