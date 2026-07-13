@@ -434,6 +434,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentTabEl = document.querySelector('.menu-item.active');
             if (currentTabEl) currentTabEl.click();
 
+            // Load heavy dependencies (Chart.js, SheetJS, DocxTemplater, etc.) lazily to optimize initial PageSpeed
+            await loadHeavyDependencies();
+
             // Load Data from Firestore instead of Local Storage
             await loadData();
             
@@ -451,6 +454,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Force go to dashboard
             document.querySelector('[data-tab="dashboard"]').click();
             
+            // Load heavy dependencies dynamically to avoid PageSpeed render-blocking penalty
+            await loadHeavyDependencies();
+
             // Load Data from Firestore so guests can see dashboard charts
             await loadData();
             
@@ -459,6 +465,31 @@ document.addEventListener("DOMContentLoaded", () => {
             renderTable();
         }
     });
+
+    // Lazy Load Dependencies Function
+    async function loadHeavyDependencies() {
+        if (window.heavyDependenciesLoaded) return;
+        const scripts = [
+            "https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js",
+            "https://cdn.jsdelivr.net/npm/docxtemplater@3.49.1/build/docxtemplater.js",
+            "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js",
+            "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+            "https://cdn.jsdelivr.net/npm/chart.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"
+        ];
+        const promises = scripts.map(src => {
+            return new Promise((resolve) => {
+                if (document.querySelector(`script[src="${src}"]`)) return resolve();
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = resolve; // Continue even if one fails
+                document.body.appendChild(script);
+            });
+        });
+        await Promise.all(promises);
+        window.heavyDependenciesLoaded = true;
+    }
 
     // Login Form Logic
     const btnExecuteLogin = document.getElementById("btn-execute-login");
