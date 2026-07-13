@@ -1,9 +1,11 @@
 <template>
-  <div class="chart-container">
-    <div class="chart-header">
-      <h3><i :class="icon"></i> {{ title }}</h3>
+  <div class="widget" style="background: var(--bg-card); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column;">
+    <div class="widget-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+      <h3 style="font-size: 1rem; color: var(--text-dark); margin: 0; font-weight: 600;"><i :class="icon" style="color: var(--primary-color); margin-right: 0.5rem;"></i> {{ title }}</h3>
     </div>
-    <canvas ref="canvasRef"></canvas>
+    <div class="widget-body" style="position: relative; height: 320px; width: 100%; padding: 20px;">
+      <canvas ref="canvasRef"></canvas>
+    </div>
   </div>
 </template>
 

@@ -20,7 +20,7 @@
   </div>
 
   <!-- Dashboard Overview Cards -->
-  <div class="dashboard-overview">
+  <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-icon"><i class="fa-solid fa-users-rectangle"></i></div>
       <div class="stat-info">
@@ -37,7 +37,7 @@
     </div>
   </div>
 
-  <div class="dashboard-charts">
+  <div class="charts-grid">
     <ChartCard title="Komposisi Jabatan PPPK" icon="fa-solid fa-chart-pie" chartType="pie" :chartData="jabatanChartData" />
     <ChartCard title="Status Perpanjangan Kontrak" icon="fa-solid fa-file-signature" chartType="doughnut" :chartData="statusChartData" />
   </div>
