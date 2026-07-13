@@ -1,23 +1,41 @@
 <template>
   <div>
-    <div class="filter-panel" style="margin-bottom: 20px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end;">
-            <div class="filter-group">
-                <label>Status Kontrak</label>
-                <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 200px;">
-                    <option value="all">Semua Status</option>
-                    <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
-                    <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
-                    <option value="Kontrak Habis">Kontrak Habis</option>
-                </select>
+    <div class="filter-panel" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end; justify-content: space-between;">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
+                <div class="filter-group">
+                    <label>Pencarian</label>
+                    <div class="search-input-wrapper" style="position: relative;">
+                        <i class="fa-solid fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="text" v-model="searchQuery" @input="handleSearch" class="form-control" placeholder="Cari NAMA atau NIP..." style="padding-left: 35px; min-width: 250px;">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Status Kontrak</label>
+                    <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 200px;">
+                        <option value="all">Semua Status</option>
+                        <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
+                        <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
+                        <option value="Kontrak Habis">Kontrak Habis</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Tampilkan Baris</label>
+                    <select v-model="itemsPerPage" @change="handleSearch" class="form-control" style="min-width: 120px;">
+                        <option value="10">10 Baris</option>
+                        <option value="50">50 Baris</option>
+                        <option value="100">100 Baris</option>
+                    </select>
+                </div>
             </div>
-            <div class="filter-group">
-                <label>Tampilkan Baris</label>
-                <select v-model="itemsPerPage" @change="handleSearch" class="form-control" style="min-width: 150px;">
-                    <option value="10">10 Baris</option>
-                    <option value="50">50 Baris</option>
-                    <option value="100">100 Baris</option>
-                </select>
+            
+            <div style="display: flex; gap: 10px;" v-if="authStore.user">
+                <button class="btn btn-outline" @click="$emit('import')" style="background: var(--bg-secondary);">
+                    <i class="fa-solid fa-file-import"></i> Impor
+                </button>
+                <button class="btn btn-outline" @click="$emit('export')" style="background: var(--bg-secondary);">
+                    <i class="fa-solid fa-file-export"></i> Ekspor
+                </button>
             </div>
         </div>
     </div>
@@ -26,7 +44,7 @@
         <div class="widget-header-actions">
             <div class="bulk-actions" v-if="selectedIds.length > 0">
                 <span>{{ selectedIds.length }} terpilih</span>
-                <button class="btn btn-sm btn-success">
+                <button class="btn btn-sm btn-success" @click="$emit('batchExtend', selectedIds)">
                     <i class="fa-solid fa-check-double"></i> Perpanjang Massal
                 </button>
             </div>
@@ -103,7 +121,7 @@ import { usePegawaiStore } from '../../stores/pegawaiStore'
 
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
-const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export'])
+const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'import', 'batchExtend'])
 
 const searchQuery = ref('')
 const statusFilter = ref('all')

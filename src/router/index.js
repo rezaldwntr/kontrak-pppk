@@ -24,19 +24,19 @@ const routes = [
   {
     path: '/perpanjangan',
     name: 'perpanjangan',
-    component: DummyPageView,
+    component: () => import('../views/PerpanjanganView.vue'),
     meta: { requiresAuth: true, title: 'Proses Perpanjangan Kontrak PPPK', subtitle: 'Manajemen masa kontrak dan BUP' }
   },
   {
     path: '/riwayat',
     name: 'riwayat',
-    component: DummyPageView,
+    component: () => import('../views/RiwayatView.vue'),
     meta: { requiresAuth: true, title: 'Riwayat Perpanjangan', subtitle: 'Catatan arsip kontrak sebelumnya' }
   },
   {
     path: '/settings',
     name: 'settings',
-    component: DummyPageView,
+    component: () => import('../views/SettingsView.vue'),
     meta: { requiresAuth: true, title: 'Pengaturan Sistem', subtitle: 'Konfigurasi akun dan preferensi aplikasi' }
   }
 ]

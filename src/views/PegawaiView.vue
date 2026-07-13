@@ -7,6 +7,7 @@
       @delete="handleDelete"
       @add="handleAdd"
       @export="handleExport"
+      @import="showImportOptions = true"
     />
   </div>
 
@@ -17,6 +18,20 @@
     @close="showDetail = false" 
     @print="handlePrint"
   />
+
+  <PrintPreviewModal
+    v-if="showPrintOptions"
+    :show="showPrintOptions"
+    :pegawai="selectedItem"
+    @close="showPrintOptions = false"
+  />
+
+  <ImportModal
+    v-if="showImportOptions"
+    :show="showImportOptions"
+    @close="showImportOptions = false"
+    @imported="handleImportSuccess"
+  />
 </template>
 
 <script setup>
@@ -24,11 +39,14 @@ import { ref, onMounted } from 'vue'
 import { usePegawaiStore } from '../stores/pegawaiStore'
 import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
-import { exportToExcel } from '../utils/excel'
-import { printDocx } from '../utils/docx'
+import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
+import ImportModal from '../components/pegawai/ImportModal.vue'
+import { exportToExcel } from '../utils/exportImport'
 
 const pegawaiStore = usePegawaiStore()
 const showDetail = ref(false)
+const showPrintOptions = ref(false)
+const showImportOptions = ref(false)
 const selectedItem = ref(null)
 
 onMounted(() => {
@@ -46,8 +64,8 @@ const handleEdit = (item) => {
   console.log("Edit item:", item)
 }
 const handlePrint = (item) => {
-  console.log("Print item:", item)
-  printDocx(item)
+  selectedItem.value = item
+  showPrintOptions.value = true
 }
 const handleDelete = (item) => {
   console.log("Delete item:", item)
@@ -56,6 +74,13 @@ const handleAdd = () => {
   console.log("Add new data")
 }
 const handleExport = () => {
-  exportToExcel(pegawaiStore.pppkData)
+  try {
+    exportToExcel(pegawaiStore.pppkData)
+  } catch(e) {
+    alert(e.message)
+  }
+}
+const handleImportSuccess = () => {
+  // Data is already updated in the store, we can show a toast or alert if needed
 }
 </script>
