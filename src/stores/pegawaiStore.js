@@ -65,6 +65,18 @@ export const usePegawaiStore = defineStore('pegawai', {
         throw error
       }
     },
+    async batchDelete(nips) {
+      this.isLoading = true
+      try {
+        this.pppkData = this.pppkData.filter(item => !nips.includes(item['NIP BARU']))
+        await this.saveAllPegawai()
+      } catch (error) {
+        console.error("Batch Delete error:", error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
     async saveAllPegawai() {
       const dateNow = new Date().toISOString()
       const pegawaiRef = doc(db, 'database', 'pegawai')

@@ -42,10 +42,13 @@
 
     <div class="widget-card table-widget">
         <div class="widget-header-actions">
-            <div class="bulk-actions" v-if="selectedIds.length > 0">
+            <div class="bulk-actions" v-if="selectedIds.length > 0" style="display: flex; gap: 8px; align-items: center;">
                 <span>{{ selectedIds.length }} terpilih</span>
                 <button class="btn btn-sm btn-success" @click="$emit('batchExtend', selectedIds)">
                     <i class="fa-solid fa-check-double"></i> Perpanjang Massal
+                </button>
+                <button class="btn btn-sm" style="background-color: #ef4444; color: white; border: none;" @click="$emit('batchDelete', selectedIds)">
+                    <i class="fa-solid fa-trash"></i> Hapus Terpilih
                 </button>
             </div>
             <div class="total-rows text-muted" v-else>
@@ -99,7 +102,6 @@
                                 <button class="btn btn-icon-only btn-sm" @click="$emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="$emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="color: #f59e0b;" v-if="authStore.user" @click="$emit('edit', item)" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="color: #ef4444;" v-if="authStore.user" @click="$emit('delete', item)" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -123,7 +125,7 @@ import { usePegawaiStore } from '../../stores/pegawaiStore'
 
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
-const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend'])
+const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete'])
 
 const searchQuery = ref('')
 const statusFilter = ref('all')

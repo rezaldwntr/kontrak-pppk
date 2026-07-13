@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-backdrop" v-if="show" @click.self="close">
+  <div class="modal-backdrop open" v-if="show" @click.self="close">
     <div class="modal-container" style="max-width: 500px;">
       <div class="modal-header">
         <h2><i class="fa-solid fa-file-import"></i> Impor Data Pegawai</h2>

@@ -8,6 +8,7 @@
       @add="handleAdd"
       @export="handleExport"
       @show-import="showImportOptions = true"
+      @batchDelete="handleBatchDelete"
     />
   </div>
 
@@ -72,6 +73,16 @@ const handleDelete = async (item) => {
     try {
       await pegawaiStore.deletePegawai(item['NIP BARU'])
       alert("Data berhasil dihapus.")
+    } catch (e) {
+      alert("Gagal menghapus data: " + e.message)
+    }
+  }
+}
+const handleBatchDelete = async (selectedIds) => {
+  if (confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} data pegawai terpilih? Data yang dihapus tidak dapat dikembalikan.`)) {
+    try {
+      await pegawaiStore.batchDelete(selectedIds)
+      alert(`${selectedIds.length} data pegawai berhasil dihapus.`)
     } catch (e) {
       alert("Gagal menghapus data: " + e.message)
     }
