@@ -108,7 +108,7 @@ const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export'])
 const searchQuery = ref('')
 const statusFilter = ref('all')
 const currentPage = ref(1)
-const itemsPerPage = 10
+const itemsPerPage = ref(10)
 const selectedIds = ref([])
 
 const handleSearch = () => {
@@ -129,11 +129,11 @@ const filteredData = computed(() => {
   })
 })
 
-const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage))
+const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value))
 
 const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + Number(itemsPerPage.value)
   return filteredData.value.slice(start, end)
 })
 
