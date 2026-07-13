@@ -1,9 +1,8 @@
 <template>
-  <div id="app-container" :class="themeClass">
-    <Sidebar v-if="isAuthenticated" />
+  <div class="app-container">
+    <Sidebar v-if="!isLoginRoute" />
     
-    <div class="main-content" :class="{ 'auth-mode': !isAuthenticated }">
-      <Header v-if="isAuthenticated" />
+    <div class="main-content" :class="{ 'auth-mode': isLoginRoute }">
       <router-view />
     </div>
 
@@ -13,17 +12,21 @@
 
 <script setup>
 import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
 import Sidebar from './components/layout/Sidebar.vue'
 import Header from './components/layout/Header.vue'
 
 const authStore = useAuthStore()
+const route = useRoute()
 
 const isAuthenticated = computed(() => !!authStore.user)
+const isLoginRoute = computed(() => route.name === 'login')
 
-// Example logic for dark mode can be tied to a config store later
-const themeClass = computed(() => {
-  return 'light-theme' // default for now
+// Initialize theme from local storage or default to dark
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme') || 'dark'
+  document.body.setAttribute('data-theme', savedTheme)
 })
 </script>
 

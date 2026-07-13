@@ -1,47 +1,73 @@
 <template>
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo-placeholder">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
         <i class="fa-solid fa-file-signature"></i>
       </div>
-      <div class="app-title">
-        <h2>E-Kontrak</h2>
-        <p>PPPK MANAGER</p>
+      <div class="brand-name">
+        <h3>E-Kontrak</h3>
+        <span>PPPK Manager</span>
       </div>
     </div>
     
     <nav class="sidebar-menu">
-      <router-link to="/" class="menu-item">
+      <router-link to="/" class="menu-item" active-class="active">
         <i class="fa-solid fa-chart-pie"></i>
         <span>Dashboard</span>
       </router-link>
-      <router-link to="/data-pegawai" class="menu-item">
+      <router-link to="/data-pegawai" class="menu-item" active-class="active" v-if="authStore.user">
         <i class="fa-solid fa-users"></i>
         <span>Data PPPK</span>
       </router-link>
     </nav>
     
     <div class="sidebar-footer">
-      <div class="theme-toggle">
+      <div class="theme-switch-wrapper">
         <i class="fa-solid fa-sun"></i>
-        <label class="switch">
-          <input type="checkbox" id="theme-switch" />
-          <span class="slider round"></span>
+        <label class="theme-switch" for="checkbox">
+          <input type="checkbox" id="checkbox" @change="toggleTheme" :checked="isDarkTheme" />
+          <div class="slider round"></div>
         </label>
         <i class="fa-solid fa-moon"></i>
       </div>
-      <router-link to="/settings" class="user-profile menu-item">
+      <div class="user-profile-summary" v-if="authStore.user">
         <div class="avatar">ADM</div>
         <div class="user-info">
           <h4>Administrator</h4>
           <p>Kepegawaian</p>
         </div>
-      </router-link>
+      </div>
+      <button class="logout-btn" v-if="authStore.user" @click="handleLogout">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
     </div>
   </aside>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../../stores/authStore'
+import { useRouter } from 'vue-router'
+
+const authStore = useAuthStore()
+const router = useRouter()
+const isDarkTheme = ref(true)
+
+onMounted(() => {
+  isDarkTheme.value = document.body.getAttribute('data-theme') !== 'light'
+})
+
+const toggleTheme = (e) => {
+  const theme = e.target.checked ? 'dark' : 'light'
+  isDarkTheme.value = e.target.checked
+  document.body.setAttribute('data-theme', theme)
+  localStorage.setItem('theme', theme)
+}
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/')
+}
 </script>
 
 <style scoped>

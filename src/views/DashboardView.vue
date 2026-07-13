@@ -1,13 +1,13 @@
 <template>
-  <div class="content-header">
-    <div>
+  <header class="header">
+    <div class="page-title">
       <h2>Dashboard Analisis</h2>
       <p>Ringkasan status perpanjangan kontrak kerja PPPK</p>
     </div>
-    <div v-if="!authStore.user" style="margin-left: auto;">
+    <div class="header-actions" v-if="!authStore.user">
       <router-link to="/login" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login</router-link>
     </div>
-  </div>
+  </header>
 
   <div class="dashboard-filters">
     <label for="filter-dashboard-jenis">Filter Dashboard:</label>

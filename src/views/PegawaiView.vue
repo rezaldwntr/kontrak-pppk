@@ -1,10 +1,10 @@
 <template>
-  <div class="content-header">
-    <div>
+  <header class="header">
+    <div class="page-title">
       <h2>Data PPPK</h2>
       <p>Manajemen data profil dan masa kontrak PPPK</p>
     </div>
-  </div>
+  </header>
   
   <div class="card" style="padding: 1.5rem;">
     <PegawaiTable 
