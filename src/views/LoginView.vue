@@ -200,19 +200,21 @@ const handleLogin = async () => {
 .login-btn {
   width: 100%;
   padding: 12px;
-  border-radius: 10px;
+  border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
   margin-top: 1rem;
-  background: linear-gradient(135deg, var(--primary-color), #4f46e5);
+  background-color: var(--primary-color);
+  color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(45, 122, 241, 0.3);
+  transition: all 0.2s ease;
 }
 
 .login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 6px 16px rgba(45, 122, 241, 0.4);
+  background-color: #2b6fe1; /* slightly darker primary */
 }
 
 .login-footer {
