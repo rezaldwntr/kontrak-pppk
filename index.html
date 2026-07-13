@@ -124,7 +124,7 @@
                 <div class="header-actions">
                     <div class="search-box auth-required" style="display: none;">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK..." autocomplete="off" spellcheck="false">
+                        <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK..." aria-label="Pencarian Global" autocomplete="off" spellcheck="false">
                     </div>
                     <button class="btn btn-primary" id="btn-login-modal">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
@@ -320,11 +320,11 @@
                             </select>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-icon-only" id="btn-toggle-filters" title="Tampilkan/Sembunyikan Filter Lanjutan" style="background-color: var(--primary-color); color: white; border: none;">
+                            <button class="btn btn-icon-only" id="btn-toggle-filters" title="Tampilkan/Sembunyikan Filter Lanjutan" aria-label="Tampilkan atau Sembunyikan Filter Lanjutan" style="background-color: var(--primary-color); color: white; border: none;">
                                 <i class="fa-solid fa-sliders"></i>
                             </button>
-                            <button class="btn btn-icon-only" id="btn-reset-filters" title="Reset Filter">
-                                <i class="fa-solid fa-filter-circle-xmark"></i>
+                            <button class="btn btn-icon-only" id="btn-reset-filters" title="Reset Filter" aria-label="Reset Semua Filter">
+                                <i class="fa-solid fa-rotate-right"></i>
                             </button>
                         </div>
                     </div>
@@ -397,10 +397,10 @@
                         <div class="pagination-info">
                             Menampilkan <span id="pag-start">0</span> - <span id="pag-end">0</span> dari <span id="pag-total">0</span> data
                         </div>
-                        <div class="pagination-buttons">
-                            <button class="btn btn-secondary btn-sm" id="btn-prev-page" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                        <div class="pagination-controls">
+                            <button class="btn btn-secondary btn-sm" id="btn-prev-page" aria-label="Halaman Sebelumnya" disabled><i class="fa-solid fa-chevron-left"></i></button>
                             <span id="page-indicator">Halaman 1 dari 1</span>
-                            <button class="btn btn-secondary btn-sm" id="btn-next-page" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                            <button class="btn btn-secondary btn-sm" id="btn-next-page" aria-label="Halaman Selanjutnya" disabled><i class="fa-solid fa-chevron-right"></i></button>
                         </div>
                     </div>
                 </div>
@@ -677,10 +677,9 @@
 
     <!-- Modal Confirm Clear All Data -->
     <div class="modal-backdrop" id="clear-all-modal">
-        <div class="modal-container" style="max-width: 450px;">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--danger-color);"></i> Hapus Seluruh Data</h3>
-                <button class="close-btn" id="btn-close-clear-modal">&times;</button>
+        <div class="modal-container" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+                <button class="close-btn" id="btn-close-clear-modal" aria-label="Tutup">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 15px; line-height: 1.5; color: var(--text-primary);">Apakah Anda yakin ingin menghapus seluruh data pegawai PPPK secara permanen? <strong>Tindakan ini tidak dapat dibatalkan.</strong></p>
@@ -698,10 +697,10 @@
 
     <!-- Login Modal -->
     <div class="modal-backdrop" id="login-modal">
-        <div class="modal-container" style="max-width: 400px;">
+        <div class="modal-container" style="max-width: 450px;">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-lock" style="color: var(--primary-color);"></i> Login Sistem</h3>
-                <button class="close-btn" id="btn-close-login-modal">&times;</button>
+                <h2><i class="fa-solid fa-lock"></i> Login Admin</h2>
+                <button class="close-btn" id="btn-close-login-modal" aria-label="Tutup">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 20px; color: var(--text-secondary); line-height: 1.5; font-size: 14px;">Silakan login menggunakan email dan password Anda untuk mensinkronisasi data kepegawaian.</p>
@@ -751,10 +750,10 @@
 
     <!-- Modal Detail & Edit Pegawai -->
     <div class="modal-backdrop" id="detail-modal">
-        <div class="modal-container">
+        <div class="modal-container" style="max-width: 900px; height: 90vh; display: flex; flex-direction: column;">
             <div class="modal-header">
-                <h3 id="modal-title">Detail Data PPPK</h3>
-                <button class="close-btn" id="btn-close-detail-modal">&times;</button>
+                <h2><i class="fa-solid fa-user-edit"></i> Detail Data PPPK</h2>
+                <button class="close-btn" id="btn-close-detail-modal" aria-label="Tutup">&times;</button>
             </div>
             
             <div class="modal-tabs">
@@ -1005,10 +1004,10 @@
 
     <!-- Modal File Import -->
     <div class="modal-backdrop" id="import-modal">
-        <div class="modal-container modal-sm">
+        <div class="modal-container" style="max-width: 500px;">
             <div class="modal-header">
-                <h3>Impor Data PPPK</h3>
-                <button class="close-btn" id="btn-close-import-modal">&times;</button>
+                <h2><i class="fa-solid fa-file-import"></i> Impor Data PPPK</h2>
+                <button class="close-btn" id="btn-close-import-modal" aria-label="Tutup">&times;</button>
             </div>
             <div class="modal-body">
                 <p class="text-muted">Pilih file JSON, CSV, atau Excel (.xlsx/.xls) yang berisi data profil PPPK Anda.</p>
@@ -1066,9 +1065,9 @@
         <div class="modal-container modal-lg print-modal-container">
             <div class="modal-header no-print">
                 <h3>Draf SK Perpanjangan Kontrak PPPK</h3>
-                <div>
-                    <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> Cetak</button>
-                    <button class="close-btn" id="btn-close-sk-modal">&times;</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="window.print()" aria-label="Cetak SK"><i class="fa-solid fa-print"></i> Cetak</button>
+                    <button class="close-btn" id="btn-close-sk-modal" aria-label="Tutup">&times;</button>
                 </div>
             </div>
             <div class="modal-body printable-area">
@@ -1164,10 +1163,10 @@
 
     <!-- Modal Pilihan Cetak Kontrak -->
     <div class="modal-backdrop" id="print-options-modal">
-        <div class="modal-container modal-sm">
+        <div class="modal-container" style="max-width: 500px;">
             <div class="modal-header">
-                <h3>Opsi Cetak Perjanjian Kerja</h3>
-                <button class="close-btn" id="btn-close-print-options">&times;</button>
+                <h2><i class="fa-solid fa-print"></i> Opsi Cetak Dokumen</h2>
+                <button class="close-btn" id="btn-close-print-options" aria-label="Tutup">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group" style="margin-bottom: 15px;">

@@ -1406,6 +1406,15 @@ function updateDueBulkActionBar() {
 
 // Setup Event Listeners
 function setupListeners() {
+    // A11y Fix: Auto-assign 'for' attributes to labels
+    document.querySelectorAll('.form-group').forEach(group => {
+        const label = group.querySelector('label');
+        const input = group.querySelector('input, select, textarea');
+        if (label && input && input.id && !label.getAttribute('for')) {
+            label.setAttribute('for', input.id);
+        }
+    });
+
     // Mobile Menu Toggle
     const btnMobileMenu = document.getElementById("btn-mobile-menu");
     if (btnMobileMenu) {

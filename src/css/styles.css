@@ -8,8 +8,8 @@
     --bg-secondary: #FFFFFF; /* Pure White Cards */
     --bg-sidebar: #FFFFFF; /* Pure White Sidebar */
     --text-primary: #1F2937; /* Dark Slate */
-    --text-secondary: #6B7280; /* Gray */
-    --text-light: #9CA3AF;
+    --text-secondary: #4B5563; /* Darker Gray for a11y */
+    --text-light: #6B7280; /* Gray 500 for a11y */
     --border-color: #E5E7EB;
     --border-hover: #D1D5DB;
     
