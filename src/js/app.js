@@ -381,7 +381,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+let db = null; // Assigned later after lazy loading Firestore
 
 // Set Auth Persistence to SESSION (logs out when tab is closed)
 auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(console.error);
@@ -476,7 +476,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.chartFirestoreLoaded) return;
         const scripts = [
             "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js",
-            "https://cdn.jsdelivr.net/npm/chart.js"
+            "https://cdn.jsdelivr.net/npm/chart.js",
+            "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"
         ];
         const promises = scripts.map(src => {
             return new Promise((resolve) => {
@@ -492,7 +493,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Initialize Firestore once script is loaded
         if (typeof firebase !== "undefined" && firebase.firestore) {
-            window.db = firebase.firestore();
+            db = firebase.firestore();
+            window.db = db;
         }
         
         window.chartFirestoreLoaded = true;
@@ -504,8 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.min.js",
             "https://cdn.jsdelivr.net/npm/docxtemplater@3.49.1/build/docxtemplater.js",
             "https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js",
-            "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
-            "https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"
+            "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
         ];
         const promises = scripts.map(src => {
             return new Promise((resolve) => {
