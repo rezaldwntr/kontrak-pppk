@@ -383,11 +383,40 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Set Auth Persistence to SESSION (logs out when tab is closed)
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(console.error);
+
 // Initializing Application
 document.addEventListener("DOMContentLoaded", () => {
     // Theme Loader
     loadTheme();
     
+    // Auto Logout on Idle (30 Minutes)
+    let idleTimeout;
+    const IDLE_LIMIT = 30 * 60 * 1000;
+    
+    function resetIdleTimer() {
+        clearTimeout(idleTimeout);
+        idleTimeout = setTimeout(() => {
+            if (auth.currentUser) {
+                auth.signOut().then(() => {
+                    if (typeof window.appAlert === 'function') {
+                        window.appAlert("Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan login kembali.");
+                    } else {
+                        alert("Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan login kembali.");
+                    }
+                });
+            }
+        }, IDLE_LIMIT);
+    }
+    
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(event => {
+        document.addEventListener(event, resetIdleTimer, true);
+    });
+    
+    // Initialize the timer once on load
+    resetIdleTimer();
+
     // Nav Switcher
     setupTabSwitcher();
     
