@@ -56,9 +56,9 @@ export const usePegawaiStore = defineStore('pegawai', {
     setFilterDashboard(filter) {
       this.filterDashboard = filter
     },
-    async deletePegawai(id) {
+    async deletePegawai(nipBaru) {
       try {
-        this.pppkData = this.pppkData.filter(item => item['PNS ID'] !== id)
+        this.pppkData = this.pppkData.filter(item => item['NIP BARU'] !== nipBaru)
         await this.saveAllPegawai()
       } catch (error) {
         console.error("Delete error:", error)

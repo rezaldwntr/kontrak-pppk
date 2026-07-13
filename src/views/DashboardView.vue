@@ -3,9 +3,8 @@
     <label for="filter-dashboard-jenis">Filter Dashboard:</label>
     <select id="filter-dashboard-jenis" class="form-control" style="min-width: 200px;" v-model="filterDashboard" @change="pegawaiStore.setFilterDashboard(filterDashboard)">
       <option value="all">Semua Jenis PPPK</option>
-      <option value="PPPK">PPPK Teknis/Fungsional</option>
-      <option value="PPPK Guru">PPPK Guru</option>
-      <option value="PPPK Tenaga Kesehatan">PPPK Tenaga Kesehatan</option>
+      <option value="PPPK">PPPK</option>
+      <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
     </select>
   </div>
 

@@ -7,7 +7,7 @@
       @delete="handleDelete"
       @add="handleAdd"
       @export="handleExport"
-      @import="showImportOptions = true"
+      @show-import="showImportOptions = true"
     />
   </div>
 
@@ -70,7 +70,7 @@ const handlePrint = (item) => {
 const handleDelete = async (item) => {
   if (confirm(`Apakah Anda yakin ingin menghapus data pegawai ${item['NAMA']}?`)) {
     try {
-      await pegawaiStore.deletePegawai(item['PNS ID'])
+      await pegawaiStore.deletePegawai(item['NIP BARU'])
       alert("Data berhasil dihapus.")
     } catch (e) {
       alert("Gagal menghapus data: " + e.message)

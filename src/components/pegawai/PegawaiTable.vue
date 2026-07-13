@@ -30,7 +30,7 @@
             </div>
             
             <div style="display: flex; gap: 10px;" v-if="authStore.user">
-                <button class="btn btn-outline" @click="$emit('import')" style="background: var(--bg-secondary);">
+                <button class="btn btn-outline" @click="$emit('show-import')" style="background: var(--bg-secondary);">
                     <i class="fa-solid fa-file-import"></i> Impor
                 </button>
                 <button class="btn btn-outline" @click="$emit('export')" style="background: var(--bg-secondary);">
@@ -96,10 +96,10 @@
                         </td>
                         <td>
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
-                                <button class="btn btn-icon-only btn-sm" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="color: #f59e0b;" v-if="authStore.user" @click="emit('edit', item)" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="color: #ef4444;" v-if="authStore.user" @click="emit('delete', item)" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                <button class="btn btn-icon-only btn-sm" @click="$emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="$emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="color: #f59e0b;" v-if="authStore.user" @click="$emit('edit', item)" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="color: #ef4444;" v-if="authStore.user" @click="$emit('delete', item)" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -123,7 +123,7 @@ import { usePegawaiStore } from '../../stores/pegawaiStore'
 
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
-const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'import', 'batchExtend'])
+const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend'])
 
 const searchQuery = ref('')
 const statusFilter = ref('all')
