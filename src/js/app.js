@@ -817,6 +817,7 @@ function updateDashboard() {
     const dueTableBody = document.getElementById("due-contracts-body");
     dueTableBody.innerHTML = "";
 
+    let dueHtml = "";
     filteredDashboardData.forEach(item => {
         const period = calculateContractPeriod(item);
         
@@ -829,9 +830,6 @@ function updateDashboard() {
             if (filterJenis !== "all" && itemJenis !== filterJenis) {
                 return; // Skip rendering row but preserve stats count
             }
-
-            // Add row to perpanjangan kontrak list
-            const row = document.createElement("tr");
             
             const isRetired = period.isBUP || item["STATUS_PPPK"] === "Pensiun";
             const isDeceased = item["STATUS_PPPK"] === "Meninggal";
@@ -869,7 +867,8 @@ function updateDashboard() {
             const isChecked = selectedDueRows.has(item["PNS ID"]) ? "checked" : "";
             const checkboxDisabledAttr = isProcessable ? "" : "disabled style='opacity: 0.4; cursor: not-allowed;'";
 
-            row.innerHTML = `
+            dueHtml += `
+            <tr>
                 <td><input type="checkbox" class="due-row-checkbox" data-id="${item["PNS ID"]}" ${isChecked} ${checkboxDisabledAttr}></td>
                 <td>
                     <div class="emp-name-wrapper">
@@ -883,16 +882,16 @@ function updateDashboard() {
                 <td><span class="badge badge-secondary">${item["STATUS_PPPK"] || "Aktif"}</span></td>
                 <td>${formatIDR(item["GAJI"])}</td>
                 <td>${actionBtn}</td>
-            `;
-            dueTableBody.appendChild(row);
+            </tr>`;
         } else if (period.status === "Kontrak Masih Berlaku") {
             approved++;
         }
     });
 
-    if (dueTableBody.innerHTML === "") {
-        dueTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Semua kontrak terpantau aman dan aktif.</td></tr>`;
+    if (dueHtml === "") {
+        dueHtml = `<tr><td colspan="8" class="text-center text-muted">Semua kontrak terpantau aman dan aktif.</td></tr>`;
     }
+    dueTableBody.innerHTML = dueHtml;
 
     renderHistoryLog(); // Restore history log UI from current local data state
 
@@ -1477,7 +1476,13 @@ function setupListeners() {
 
     // Search Trigger (Real-time and filter input)
     const searchInput = document.getElementById("global-search");
-    searchInput.addEventListener("input", applyFilters);
+    let searchDebounceTimeout;
+    searchInput.addEventListener("input", () => {
+        clearTimeout(searchDebounceTimeout);
+        searchDebounceTimeout = setTimeout(() => {
+            applyFilters();
+        }, 300);
+    });
 
     // Filters Listeners
     document.getElementById("filter-status").addEventListener("change", applyFilters);
@@ -2412,31 +2417,23 @@ function renderHistoryLog() {
     const historyBody = document.getElementById("history-log-body");
     if (!historyBody) return;
     
-    historyBody.innerHTML = "";
-    let hasHistory = false;
+    let historyHtml = "";
     
     pppkData.forEach(item => {
         if (item["STATUS_PERPANJANGAN"] === "Disetujui") {
-            hasHistory = true;
-            logHistory(item, true); // true = append without checking empty
+            historyHtml = getLogHistoryHtml(item) + historyHtml; 
         }
     });
     
-    if (!hasHistory) {
+    if (historyHtml === "") {
         historyBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Belum ada riwayat perpanjangan yang diproses.</td></tr>';
+    } else {
+        historyBody.innerHTML = historyHtml;
     }
 }
 
-// Add logs to history tab
-function logHistory(item, isRenderLoop = false) {
-    const historyBody = document.getElementById("history-log-body");
-    const logItem = document.createElement("tr");
-
-    // Remove empty state row if it exists
-    if (!isRenderLoop && historyBody.innerHTML.includes("Belum ada riwayat")) {
-        historyBody.innerHTML = "";
-    }
-
+// Get HTML string for a history log item
+function getLogHistoryHtml(item) {
     const todayStr = formatIndoDate(systemDate.toISOString().split("T")[0]);
 
     // Calculate dates directly from item instead of DOM
@@ -2492,7 +2489,7 @@ function logHistory(item, isRenderLoop = false) {
     }
 
     const contractYears = (item["JENIS_PPPK"] === "PPPK Paruh Waktu") ? 1 : 5;
-    logItem.innerHTML = `
+    return `<tr>
         <td>${todayStr}</td>
         <td>
             <div class="emp-name-wrapper">
@@ -2505,8 +2502,16 @@ function logHistory(item, isRenderLoop = false) {
         <td>${formatIDR(item["NEW_GAJI"])}</td>
         <td>${contractYears} Tahun (${formatIndoDate(nextStartStr)} s.d. ${formatIndoDate(nextEndStr)})</td>
         <td>Administrator</td>
-    `;
-    historyBody.insertBefore(logItem, historyBody.firstChild);
+    </tr>`;
+}
+
+// Add logs to history tab dynamically for single items
+function logHistory(item) {
+    const historyBody = document.getElementById("history-log-body");
+    if (historyBody.innerHTML.includes("Belum ada riwayat")) {
+        historyBody.innerHTML = "";
+    }
+    historyBody.insertAdjacentHTML('afterbegin', getLogHistoryHtml(item));
 }
 
 // Process Multi/Bulk Approval
