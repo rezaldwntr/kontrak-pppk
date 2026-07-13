@@ -1,9 +1,9 @@
 <template>
-  <div class="modal open" v-if="isOpen">
-    <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+  <div class="modal-backdrop open" v-if="isOpen" @click.self="emit('close')">
+    <div class="modal-container" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header">
         <h3><i class="fa-solid fa-address-card"></i> Detail Pegawai (PPPK)</h3>
-        <button class="btn-icon" @click="emit('close')"><i class="fa-solid fa-xmark"></i></button>
+        <button class="close-btn" @click="emit('close')" aria-label="Tutup">&times;</button>
       </div>
       
       <div class="modal-body">

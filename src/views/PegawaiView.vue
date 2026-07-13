@@ -67,8 +67,15 @@ const handlePrint = (item) => {
   selectedItem.value = item
   showPrintOptions.value = true
 }
-const handleDelete = (item) => {
-  console.log("Delete item:", item)
+const handleDelete = async (item) => {
+  if (confirm(`Apakah Anda yakin ingin menghapus data pegawai ${item['NAMA']}?`)) {
+    try {
+      await pegawaiStore.deletePegawai(item['PNS ID'])
+      alert("Data berhasil dihapus.")
+    } catch (e) {
+      alert("Gagal menghapus data: " + e.message)
+    }
+  }
 }
 const handleAdd = () => {
   console.log("Add new data")

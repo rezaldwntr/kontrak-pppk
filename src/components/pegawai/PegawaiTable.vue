@@ -95,9 +95,11 @@
                             <span class="badge badge-success">Aktif</span>
                         </td>
                         <td>
-                            <div class="action-buttons-cell">
+                            <div class="action-buttons-cell" style="display: flex; gap: 4px;">
                                 <button class="btn btn-icon-only btn-sm" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="color: #f59e0b;" v-if="authStore.user" @click="emit('edit', item)" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="color: #ef4444;" v-if="authStore.user" @click="emit('delete', item)" title="Hapus"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>

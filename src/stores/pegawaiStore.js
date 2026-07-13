@@ -56,6 +56,25 @@ export const usePegawaiStore = defineStore('pegawai', {
     setFilterDashboard(filter) {
       this.filterDashboard = filter
     },
+    async deletePegawai(id) {
+      try {
+        this.pppkData = this.pppkData.filter(item => item['PNS ID'] !== id)
+        await this.saveAllPegawai()
+      } catch (error) {
+        console.error("Delete error:", error)
+        throw error
+      }
+    },
+    async saveAllPegawai() {
+      const dateNow = new Date().toISOString()
+      const pegawaiRef = doc(db, 'database', 'pegawai')
+      const pegawaiJson = JSON.stringify(this.pppkData)
+      await setDoc(pegawaiRef, {
+        payload: LZString.compressToUTF16(pegawaiJson),
+        compressed: true,
+        lastUpdated: dateNow
+      })
+    },
     async batchExtend(selectedIds) {
       this.isLoading = true
       try {
