@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-filters">
     <label for="filter-dashboard-jenis">Filter Dashboard:</label>
-    <select id="filter-dashboard-jenis" v-model="filterDashboard" @change="pegawaiStore.setFilterDashboard(filterDashboard)">
+    <select id="filter-dashboard-jenis" class="form-control" style="min-width: 200px;" v-model="filterDashboard" @change="pegawaiStore.setFilterDashboard(filterDashboard)">
       <option value="all">Semua Jenis PPPK</option>
       <option value="PPPK">PPPK Teknis/Fungsional</option>
       <option value="PPPK Guru">PPPK Guru</option>
@@ -42,7 +42,7 @@
   </div>
 
   <div class="charts-grid">
-    <ChartCard title="Komposisi Jabatan PPPK" icon="fa-solid fa-chart-pie" chartType="pie" :chartData="jabatanChartData" />
+    <ChartCard title="Komposisi Jabatan PPPK" icon="fa-solid fa-chart-pie" chartType="doughnut" :chartData="jabatanChartData" />
     <ChartCard title="Jadwal Perpanjangan" icon="fa-solid fa-calendar-check" chartType="bar" :chartData="kontrakChartData" />
     <ChartCard title="Proyeksi Pensiun (BUP)" icon="fa-solid fa-user-clock" chartType="line" :chartData="bupChartData" />
   </div>
@@ -98,7 +98,11 @@ const jabatanChartData = computed(() => {
     datasets: [{
       label: 'Jumlah Pegawai',
       data: Object.values(counts),
-      backgroundColor: ['#2e4a8c', '#e74c3c', '#f1c40f', '#27ae60', '#8e44ad', '#34495e']
+      backgroundColor: [
+        '#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', 
+        '#8b5cf6', '#ec4899', '#f97316', '#14b8a6', '#6366f1',
+        '#06b6d4', '#34d399', '#fbbf24', '#f87171', '#c084fc'
+      ]
     }]
   }
 })

@@ -29,14 +29,38 @@ const renderChart = () => {
     chartInstance.value.destroy()
   }
   
+  const isDoughnut = props.chartType === 'doughnut'
   chartInstance.value = new Chart(canvasRef.value, {
     type: props.chartType,
     data: props.chartData,
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      cutout: isDoughnut ? '75%' : undefined,
+      elements: {
+        arc: {
+          borderWidth: isDoughnut ? 0 : 2,
+          borderRadius: isDoughnut ? 4 : 0
+        }
+      },
       plugins: {
-        legend: { position: 'bottom' }
+        legend: { 
+          display: !isDoughnut, // Hide legend for doughnut to avoid clutter
+          position: 'bottom',
+          labels: { color: '#a0aec0', font: { family: "'Inter', sans-serif" } }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleFont: { family: "'Inter', sans-serif", size: 13 },
+          bodyFont: { family: "'Inter', sans-serif", size: 13 },
+          padding: 12,
+          cornerRadius: 8,
+          boxPadding: 6
+        }
+      },
+      scales: isDoughnut ? {} : {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0aec0' } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0aec0' } }
       }
     }
   })
