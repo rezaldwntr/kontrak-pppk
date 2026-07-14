@@ -45,7 +45,16 @@ export const processImportFile = async (file, options = {}) => {
         const dateColumns = ['TMT CPNS', 'TANGGAL LAHIR', 'TMT GOLONGAN', 'TMT JABATAN', 'TMT PNS']
         
         const processedData = jsonData.map(row => {
-          const newRow = { ...row, 'JENIS PPPK': jenisPppk }
+          const newRow = { 'JENIS PPPK': jenisPppk }
+          
+          // Strip leading single quotes from all values
+          Object.keys(row).forEach(key => {
+            if (typeof row[key] === 'string') {
+              newRow[key] = row[key].replace(/^'/, '')
+            } else {
+              newRow[key] = row[key]
+            }
+          })
           
           // Convert Excel serial dates to YYYY-MM-DD
           dateColumns.forEach(col => {

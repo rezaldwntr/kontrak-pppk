@@ -58,7 +58,6 @@
                         <th>NIP BARU / ID</th>
                         <th>NAMA LENGKAP</th>
                         <th>TMT CPNS / MULAI</th>
-                        <th>MASA KERJA</th>
                         <th>JABATAN</th>
                         <th>STATUS KONTRAK</th>
                         <th>STATUS PPPK</th>
@@ -67,19 +66,17 @@
                 </thead>
                 <tbody>
                     <tr v-if="pegawaiStore.isLoading">
-                        <td colspan="9" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
+                        <td colspan="8" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
                     </tr>
                     <tr v-else-if="paginatedData.length === 0">
-                        <td colspan="9" class="text-center">Data tidak ditemukan.</td>
+                        <td colspan="8" class="text-center">Data tidak ditemukan.</td>
                     </tr>
                     <tr v-for="item in paginatedData" :key="item['PNS ID']">
-                        <td>{{ item["NIP BARU"] }}</td>
+                        <td>{{ item["NIP BARU"] ? String(item["NIP BARU"]).replace(/^'/, '') : '-' }}</td>
                         <td>
-                            <strong>{{ item["NAMA"] }}</strong><br>
-                            <small class="text-muted">{{ item["NIK"] }}</small>
+                            <strong>{{ item["NAMA"] }}</strong>
                         </td>
                         <td>{{ item["TMT CPNS"] }}</td>
-                        <td>{{ item["MK TAHUN"] }} Tahun {{ item["MK BULAN"] }} Bln</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>
                             <span :class="['badge', getBadgeClass(item['STATUS_PERPANJANGAN'])]">
@@ -99,7 +96,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="pagination" style="display: flex; gap: 15px; align-items: center; justify-content: center; padding-top: 15px;">
+        <div class="pagination" style="display: flex; gap: 15px; align-items: center; justify-content: flex-end; padding-top: 15px; padding-right: 15px;">
             <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
             <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
             <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
