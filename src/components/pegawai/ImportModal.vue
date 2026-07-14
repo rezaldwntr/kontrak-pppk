@@ -41,6 +41,18 @@
         </div>
         
         <div class="form-group" style="margin-top: 20px; margin-bottom: 10px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">Jenis PPPK yang Diimpor:</label>
+          <div style="display: flex; gap: 20px; font-size: 13px; margin-bottom: 15px;">
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="radio" v-model="jenisPppk" value="PPPK">
+              <span>PPPK</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+              <input type="radio" v-model="jenisPppk" value="PPPK Paruh Waktu">
+              <span>PPPK Paruh Waktu</span>
+            </label>
+          </div>
+
           <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">Metode Impor:</label>
           <div style="display: flex; gap: 20px; font-size: 13px;">
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
@@ -90,6 +102,7 @@ const fileInput = ref(null)
 const selectedFile = ref(null)
 const isDragging = ref(false)
 const importMode = ref('append')
+const jenisPppk = ref('PPPK')
 const isProcessing = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
@@ -148,7 +161,7 @@ const handleImport = async () => {
   successMsg.value = ''
   
   try {
-    const parsedData = await processImportFile(selectedFile.value, { mode: importMode.value })
+    const parsedData = await processImportFile(selectedFile.value, { mode: importMode.value, jenisPppk: jenisPppk.value })
     
     // Save to firebase
     const finalData = await saveImportedData(parsedData, importMode.value, pegawaiStore.pppkData)

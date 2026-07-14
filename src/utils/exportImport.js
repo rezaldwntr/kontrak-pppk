@@ -21,7 +21,7 @@ export const exportToExcel = (data, filename = 'Data_Pegawai.xlsx') => {
 
 export const processImportFile = async (file, options = {}) => {
   return new Promise((resolve, reject) => {
-    const { mode = 'append', expectedType = 'PPPK' } = options
+    const { mode = 'append', jenisPppk = 'PPPK' } = options
     
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -41,9 +41,13 @@ export const processImportFile = async (file, options = {}) => {
           throw new Error('Format file tidak dikenali. Kolom NIP BARU atau NAMA tidak ditemukan.')
         }
         
-        // Filter out by expectedType if needed (optional)
+        // Assign jenisPppk to all rows to enforce the selected type
+        const processedData = jsonData.map(row => ({
+          ...row,
+          'JENIS PPPK': jenisPppk
+        }))
         
-        resolve(jsonData)
+        resolve(processedData)
       } catch (error) {
         reject(error)
       }
