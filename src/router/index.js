@@ -4,12 +4,6 @@ import DummyPageView from '../views/DummyPageView.vue'
 
 const routes = [
   {
-    path: '/login',
-    name: 'Login',
-    component: () => import('../views/LoginView.vue'),
-    meta: { requiresGuest: true, title: 'Login Administrator' }
-  },
-  {
     path: '/',
     name: 'dashboard',
     component: () => import('../views/DashboardView.vue'),
@@ -58,9 +52,8 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = !!authStore.user
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'Login' })
-  } else if (to.meta.requiresGuest && isAuthenticated) {
-    next({ name: 'Dashboard' })
+    authStore.showLoginModal = true
+    next({ path: '/', query: { redirect: to.fullPath } })
   } else {
     next()
   }

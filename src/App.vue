@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
-    <Sidebar v-if="!isLoginRoute" />
+    <Sidebar />
     
-    <div class="main-content" :class="{ 'auth-mode': isLoginRoute }">
+    <div class="main-content">
       <Header />
       <router-view />
     </div>
 
-    <!-- Modals that are global can go here later -->
+    <LoginModal />
   </div>
 </template>
 
@@ -17,12 +17,12 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
 import Sidebar from './components/layout/Sidebar.vue'
 import Header from './components/layout/Header.vue'
+import LoginModal from './components/auth/LoginModal.vue'
 
 const authStore = useAuthStore()
 const route = useRoute()
 
 const isAuthenticated = computed(() => !!authStore.user)
-const isLoginRoute = computed(() => route.name === 'login')
 
 // Initialize theme from local storage or default to dark
 onMounted(() => {

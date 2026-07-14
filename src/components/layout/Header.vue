@@ -15,9 +15,9 @@
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK..." v-model="pegawaiStore.globalSearchQuery" autocomplete="off" spellcheck="false">
       </div>
-      <router-link to="/login" class="btn btn-primary" id="btn-login-modal" v-if="!authStore.user && route.name !== 'login'">
+      <button class="btn btn-primary" id="btn-login-modal" v-if="!authStore.user" @click="authStore.showLoginModal = true">
         <i class="fa-solid fa-right-to-bracket"></i> Login
-      </router-link>
+      </button>
 
       <button class="btn btn-primary" id="btn-import-trigger" v-if="authStore.user && route.name === 'pegawai'" @click="pegawaiStore.showImportModal = true">
         <i class="fa-solid fa-file-import"></i> Impor Data
