@@ -110,7 +110,7 @@ const kontrakChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
     // simplified mock extraction, year 2026-2031
-    const tmt = item["TMT CPNS"] || ""
+    const tmt = String(item["TMT CPNS"] || "")
     if (tmt) {
        const year = parseInt(tmt.split('-')[0]) + 5 // assume 5 year contract
        counts[year] = (counts[year] || 0) + 1
@@ -130,7 +130,7 @@ const kontrakChartData = computed(() => {
 const bupChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
-    const tl = item["TANGGAL LAHIR"] || ""
+    const tl = String(item["TANGGAL LAHIR"] || "")
     if (tl) {
        const year = parseInt(tl.split('-')[0]) + 58 // assume BUP 58
        if (year >= 2025 && year <= 2061) {

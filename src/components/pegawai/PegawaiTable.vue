@@ -4,11 +4,25 @@
         <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end; justify-content: space-between;">
             <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
                 <div class="filter-group">
-                    <label>Pencarian</label>
-                    <div class="search-input-wrapper" style="position: relative;">
-                        <i class="fa-solid fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                        <input type="text" v-model="searchQuery" @input="handleSearch" class="form-control" placeholder="Cari NAMA atau NIP..." style="padding-left: 35px; min-width: 250px;">
-                    </div>
+                    <label>Jenis PPPK</label>
+                    <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control" style="min-width: 150px;">
+                        <option value="all">Semua Jenis</option>
+                        <option v-for="opt in jenisPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Unor Atas</label>
+                    <select v-model="unorAtasFilter" @change="handleSearch" class="form-control" style="min-width: 180px; max-width: 250px;">
+                        <option value="all">Semua Unor Atas</option>
+                        <option v-for="opt in unorAtasOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Unor Induk</label>
+                    <select v-model="unorIndukFilter" @change="handleSearch" class="form-control" style="min-width: 180px; max-width: 250px;">
+                        <option value="all">Semua Unor Induk</option>
+                        <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
                 </div>
                 <div class="filter-group">
                     <label>Status Kontrak</label>
@@ -34,13 +48,7 @@
     <div class="widget-card table-widget">
         <div class="widget-header-actions">
             <div class="bulk-actions" v-if="selectedIds.length > 0" style="display: flex; gap: 8px; align-items: center;">
-                <span>{{ selectedIds.length }} terpilih</span>
-                <button class="btn btn-sm btn-success" @click="emit('batchExtend', selectedIds)">
-                    <i class="fa-solid fa-check-double"></i> Perpanjang Massal
-                </button>
-                <button class="btn btn-sm" style="background-color: #ef4444; color: white; border: none;" @click="emit('batchDelete', selectedIds)">
-                    <i class="fa-solid fa-trash"></i> Hapus Terpilih
-                </button>
+                <span>{{ selectedIds.length }} baris dipilih</span>
             </div>
             <div class="total-rows text-muted" v-else>
                 Total: <span>{{ filteredData.length }}</span> PPPK
@@ -92,7 +100,6 @@
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
                                 <button class="btn btn-icon-only btn-sm" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="color: #f59e0b;" v-if="authStore.user" @click="emit('edit', item)" title="Edit"><i class="fa-solid fa-pen"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -118,7 +125,9 @@ const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
 const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete'])
 
-const searchQuery = ref('')
+const jenisPppkFilter = ref('all')
+const unorAtasFilter = ref('all')
+const unorIndukFilter = ref('all')
 const statusFilter = ref('all')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
@@ -130,16 +139,41 @@ const handleSearch = () => {
 
 const filteredData = computed(() => {
   return pegawaiStore.pppkData.filter(item => {
-    const q = searchQuery.value.toLowerCase()
-    const matchSearch = q === '' || 
-      (item["NAMA"]?.toLowerCase().includes(q) || 
-       item["NIP BARU"]?.toLowerCase().includes(q) ||
-       item["INSTANSI KERJA NAMA"]?.toLowerCase().includes(q))
     
     const matchStatus = statusFilter.value === 'all' || item["STATUS_PERPANJANGAN"] === statusFilter.value
+    const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value
+    const matchUnorAtas = unorAtasFilter.value === 'all' || getUnorAtas(item['UNOR NAMA']) === unorAtasFilter.value
+    const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value
     
-    return matchSearch && matchStatus
+    return matchStatus && matchJenis && matchUnorAtas && matchUnorInduk
   })
+})
+
+const getUnorAtas = (unorNama) => {
+  if (!unorNama) return '-'
+  const parts = unorNama.split(' - ')
+  return parts[0] || '-'
+}
+
+const getUnorInduk = (unorNama) => {
+  if (!unorNama) return '-'
+  const parts = unorNama.split(' - ')
+  return parts.slice(1).join(' - ') || '-'
+}
+
+const jenisPppkOptions = computed(() => {
+  const types = new Set(pegawaiStore.pppkData.map(item => item['JENIS PPPK'] || 'PPPK'))
+  return Array.from(types).sort()
+})
+
+const unorAtasOptions = computed(() => {
+  const types = new Set(pegawaiStore.pppkData.map(item => getUnorAtas(item['UNOR NAMA'])))
+  return Array.from(types).filter(t => t !== '-').sort()
+})
+
+const unorIndukOptions = computed(() => {
+  const types = new Set(pegawaiStore.pppkData.map(item => getUnorInduk(item['UNOR NAMA'])))
+  return Array.from(types).filter(t => t !== '-').sort()
 })
 
 const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value))

@@ -11,10 +11,7 @@
     </div>
     
     <div class="header-actions">
-      <div class="search-box" v-if="authStore.user && route.name === 'pegawai'">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="global-search" placeholder="Cari Nama atau NIP PPPK..." v-model="pegawaiStore.globalSearchQuery" autocomplete="off" spellcheck="false">
-      </div>
+
       <button class="btn btn-primary" id="btn-login-modal" v-if="!authStore.user" @click="authStore.showLoginModal = true">
         <i class="fa-solid fa-right-to-bracket"></i> Login
       </button>
