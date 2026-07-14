@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { db } from '../services/firebase'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import LZString from 'lz-string'
 import { initialMockData } from '../utils/mockData'
 
@@ -25,44 +25,54 @@ export const usePegawaiStore = defineStore('pegawai', {
         this.isLoading = false
       }
     },
-    async loadData() {
+    loadData() {
+      if (this.isLoading) return
       this.isLoading = true
+      
       try {
         const docRef = doc(db, 'database', 'pegawai')
-        const docSnap = await getDoc(docRef)
-        
-        if (docSnap.exists()) {
-          const data = docSnap.data()
-          if (data.compressed) {
-            const decompressed = LZString.decompressFromUTF16(data.payload)
-            this.pppkData = JSON.parse(decompressed)
-          } else if (data.jsonString) {
-            this.pppkData = JSON.parse(data.jsonString)
+        // Use real-time listener instead of getDoc
+        onSnapshot(docRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data()
+            if (data.compressed) {
+              const decompressed = LZString.decompressFromUTF16(data.payload)
+              this.pppkData = JSON.parse(decompressed)
+            } else if (data.jsonString) {
+              this.pppkData = JSON.parse(data.jsonString)
+            } else {
+              this.pppkData = [...initialMockData]
+            }
           } else {
             this.pppkData = [...initialMockData]
           }
-        } else {
-          this.pppkData = [...initialMockData]
-        }
+          this.isLoading = false
+        }, (error) => {
+          console.error("Error listening to pegawai:", error)
+          this.isLoading = false
+        })
         
-        // Load History
+        // Load History real-time
         const historyRef = doc(db, 'database', 'riwayat')
-        const historySnap = await getDoc(historyRef)
-        if (historySnap.exists()) {
-          const data = historySnap.data()
-          if (data.jsonString) {
-            this.extensionHistory = JSON.parse(data.jsonString)
+        onSnapshot(historyRef, (historySnap) => {
+          if (historySnap.exists()) {
+            const data = historySnap.data()
+            if (data.jsonString) {
+              this.extensionHistory = JSON.parse(data.jsonString)
+            } else {
+               this.extensionHistory = []
+            }
           } else {
-             this.extensionHistory = []
+            this.extensionHistory = []
           }
-        } else {
-          this.extensionHistory = []
-        }
+        }, (error) => {
+          console.error("Error listening to riwayat:", error)
+        })
+        
       } catch(e) {
-        console.error("Error loading data:", e)
+        console.error("Error setting up listeners:", e)
         this.pppkData = [...initialMockData]
         this.extensionHistory = []
-      } finally {
         this.isLoading = false
       }
     },
