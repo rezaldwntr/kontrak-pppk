@@ -13,7 +13,7 @@
           <div class="tab-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">Jabatan & Kerja</div>
         </div>
 
-        <div class="tab-content" v-show="activeTab === 'personal'">
+        <div class="tab-content active" v-if="activeTab === 'personal'">
           <div class="form-grid">
             <div class="form-group">
               <label>PNS ID</label>
@@ -46,7 +46,7 @@
           </div>
         </div>
 
-        <div class="tab-content" v-show="activeTab === 'kepegawaian'">
+        <div class="tab-content active" v-if="activeTab === 'kepegawaian'">
           <div class="form-grid">
             <div class="form-group">
               <label>NIP PPPK (NIP Baru)</label>
@@ -79,7 +79,7 @@
           </div>
         </div>
 
-        <div class="tab-content" v-show="activeTab === 'jabatan'">
+        <div class="tab-content active" v-if="activeTab === 'jabatan'">
           <div class="form-grid">
             <div class="form-group" style="grid-column: span 2;">
               <label>Jabatan</label>
