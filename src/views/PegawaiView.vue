@@ -8,7 +8,7 @@
       @add="handleAdd"
       @export="handleExport"
       @show-import="showImportOptions = true"
-      @batchDelete="handleBatchDelete"
+      @batch-delete="handleBatchDelete"
     />
   </div>
 
