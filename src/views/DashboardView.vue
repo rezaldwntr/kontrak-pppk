@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-filters">
+  <div class="dashboard-filters" style="margin-bottom: 20px;">
     <label for="filter-dashboard-jenis">Filter Dashboard:</label>
     <select id="filter-dashboard-jenis" class="form-control" style="min-width: 200px;" v-model="filterDashboard" @change="pegawaiStore.setFilterDashboard(filterDashboard)">
       <option value="all">Semua Jenis PPPK</option>
