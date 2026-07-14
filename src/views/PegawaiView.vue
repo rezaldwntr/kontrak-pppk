@@ -43,6 +43,7 @@ import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ImportModal from '../components/pegawai/ImportModal.vue'
 import { exportToExcel } from '../utils/exportImport'
+import { customSwal } from '../utils/swal'
 
 const pegawaiStore = usePegawaiStore()
 const showDetail = ref(false)
@@ -69,22 +70,42 @@ const handlePrint = (item) => {
   showPrintOptions.value = true
 }
 const handleDelete = async (item) => {
-  if (confirm(`Apakah Anda yakin ingin menghapus data pegawai ${item['NAMA']}?`)) {
+  const result = await customSwal.fire({
+    title: 'Hapus Data Pegawai?',
+    text: `Apakah Anda yakin ingin menghapus data pegawai ${item['NAMA']}?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Hapus',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#ef4444'
+  })
+  
+  if (result.isConfirmed) {
     try {
       await pegawaiStore.deletePegawai(item['NIP BARU'])
-      alert("Data berhasil dihapus.")
+      customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil dihapus.' })
     } catch (e) {
-      alert("Gagal menghapus data: " + e.message)
+      customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghapus data: ' + e.message })
     }
   }
 }
 const handleBatchDelete = async (selectedIds) => {
-  if (confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} data pegawai terpilih? Data yang dihapus tidak dapat dikembalikan.`)) {
+  const result = await customSwal.fire({
+    title: 'Hapus Data Terpilih?',
+    text: `Apakah Anda yakin ingin menghapus ${selectedIds.length} data pegawai terpilih? Data yang dihapus tidak dapat dikembalikan.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa-solid fa-trash"></i> Ya, Hapus',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#ef4444'
+  })
+  
+  if (result.isConfirmed) {
     try {
       await pegawaiStore.batchDelete(selectedIds)
-      alert(`${selectedIds.length} data pegawai berhasil dihapus.`)
+      customSwal.fire({ icon: 'success', title: 'Berhasil', text: `${selectedIds.length} data pegawai berhasil dihapus.` })
     } catch (e) {
-      alert("Gagal menghapus data: " + e.message)
+      customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghapus data: ' + e.message })
     }
   }
 }
@@ -95,7 +116,7 @@ const handleExport = () => {
   try {
     exportToExcel(pegawaiStore.pppkData)
   } catch(e) {
-    alert(e.message)
+    customSwal.fire({ icon: 'error', title: 'Gagal Ekspor', text: e.message })
   }
 }
 const handleImportSuccess = () => {

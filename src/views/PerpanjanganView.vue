@@ -66,13 +66,25 @@ const handlePrint = (item) => {
   showPrintOptions.value = true
 }
 
+import { customSwal } from '../utils/swal'
+
 const handleBatchExtend = async (selectedIds) => {
-  if (confirm(`Apakah Anda yakin ingin memperpanjang kontrak ${selectedIds.length} pegawai yang dipilih secara otomatis selama 5 tahun?`)) {
+  const result = await customSwal.fire({
+    title: 'Perpanjang Kontrak?',
+    text: `Apakah Anda yakin ingin memperpanjang kontrak ${selectedIds.length} pegawai yang dipilih secara otomatis selama 5 tahun?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Perpanjang',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#10b981'
+  })
+  
+  if (result.isConfirmed) {
     try {
       const res = await pegawaiStore.batchExtend(selectedIds)
-      alert(`Berhasil memperpanjang ${res.count} kontrak pegawai! Silakan cek Riwayat.`)
+      customSwal.fire({ icon: 'success', title: 'Berhasil', text: `Berhasil memperpanjang ${res.count} kontrak pegawai! Silakan cek Riwayat.` })
     } catch (e) {
-      alert("Gagal memperpanjang kontrak: " + e.message)
+      customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal memperpanjang kontrak: ' + e.message })
     }
   }
 }

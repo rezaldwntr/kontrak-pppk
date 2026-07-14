@@ -1372,3 +1372,17 @@ textarea.form-control {
         min-width: 120px;
     }
 }
+
+/* SweetAlert2 Custom Styling */
+.swal-custom-popup { 
+    border: 1px solid var(--border-color) !important; 
+    border-radius: var(--radius-lg) !important; 
+    box-shadow: var(--shadow-lg) !important; 
+}
+.swal-custom-actions { gap: 10px; }
+.swal2-container.swal2-center > .swal2-popup { 
+    grid-column: 2; 
+    grid-row: 2; 
+    align-self: center; 
+    justify-self: center; 
+}

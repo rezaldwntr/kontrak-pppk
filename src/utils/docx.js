@@ -37,6 +37,6 @@ export const printDocx = async (data, templatePath = '/assets/template_spk.docx'
     saveAs(out, `SPK_${data['NAMA']}_${data['NIP BARU']}.docx`)
   } catch (error) {
     console.error("Error generating DOCX:", error)
-    alert("Gagal mencetak dokumen. Pastikan template tersedia.")
+    throw new Error("Gagal mencetak dokumen. Pastikan file template tidak corrupt.")
   }
 }

@@ -38,6 +38,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
 import { exportToExcel } from '../../utils/exportImport'
+import { customSwal } from '../../utils/swal'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -47,17 +48,39 @@ const handleExport = () => {
   try {
     exportToExcel(pegawaiStore.pppkData)
   } catch(e) {
-    alert(e.message)
+    customSwal.fire({
+      icon: 'error',
+      title: 'Gagal',
+      text: e.message
+    })
   }
 }
 
 const handleClearAll = async () => {
-  if (confirm('Apakah Anda yakin ingin menghapus SEMUA data pegawai? Tindakan ini tidak dapat dibatalkan.')) {
+  const result = await customSwal.fire({
+    title: 'Hapus Semua Data?',
+    text: 'Apakah Anda yakin ingin menghapus SEMUA data pegawai? Tindakan ini tidak dapat dibatalkan.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa-solid fa-trash"></i> Ya, Hapus Semua',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#ef4444'
+  })
+  
+  if (result.isConfirmed) {
     try {
       await pegawaiStore.deleteAllPegawai()
-      alert('Semua data berhasil dihapus.')
+      customSwal.fire({
+        icon: 'success',
+        title: 'Berhasil',
+        text: 'Semua data berhasil dihapus.'
+      })
     } catch(e) {
-      alert('Gagal menghapus data: ' + e.message)
+      customSwal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: 'Gagal menghapus data: ' + e.message
+      })
     }
   }
 }
