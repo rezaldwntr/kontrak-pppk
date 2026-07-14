@@ -11,10 +11,10 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Unor Atas</label>
-                    <select v-model="unorAtasFilter" @change="handleSearch" class="form-control" style="min-width: 180px; max-width: 250px;">
-                        <option value="all">Semua Unor Atas</option>
-                        <option v-for="opt in unorAtasOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    <label>Unor Atasan</label>
+                    <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 180px; max-width: 250px;">
+                        <option value="all">Semua Unor Atasan</option>
+                        <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -47,10 +47,7 @@
 
     <div class="widget-card table-widget">
         <div class="widget-header-actions">
-            <div class="bulk-actions" v-if="selectedIds.length > 0" style="display: flex; gap: 8px; align-items: center;">
-                <span>{{ selectedIds.length }} baris dipilih</span>
-            </div>
-            <div class="total-rows text-muted" v-else>
+            <div class="total-rows text-muted">
                 Total: <span>{{ filteredData.length }}</span> PPPK
             </div>
         </div>
@@ -58,7 +55,6 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th width="40" v-if="authStore.user"><input type="checkbox" v-model="selectAll"></th>
                         <th>NIP BARU / ID</th>
                         <th>NAMA LENGKAP</th>
                         <th>TMT CPNS / MULAI</th>
@@ -77,9 +73,6 @@
                         <td colspan="9" class="text-center">Data tidak ditemukan.</td>
                     </tr>
                     <tr v-for="item in paginatedData" :key="item['PNS ID']">
-                        <td v-if="authStore.user">
-                            <input type="checkbox" :value="item['PNS ID']" v-model="selectedIds" />
-                        </td>
                         <td>{{ item["NIP BARU"] }}</td>
                         <td>
                             <strong>{{ item["NAMA"] }}</strong><br>
@@ -106,8 +99,7 @@
                 </tbody>
             </table>
         </div>
-        
-        <div class="pagination">
+        <div class="pagination" style="display: flex; gap: 15px; align-items: center; justify-content: center; padding-top: 15px;">
             <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
             <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
             <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
@@ -126,12 +118,11 @@ const pegawaiStore = usePegawaiStore()
 const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete'])
 
 const jenisPppkFilter = ref('all')
-const unorAtasFilter = ref('all')
+const unorAtasanFilter = ref('all')
 const unorIndukFilter = ref('all')
 const statusFilter = ref('all')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
-const selectedIds = ref([])
 
 const handleSearch = () => {
   currentPage.value = 1
@@ -139,26 +130,26 @@ const handleSearch = () => {
 
 const filteredData = computed(() => {
   return pegawaiStore.pppkData.filter(item => {
-    
     const matchStatus = statusFilter.value === 'all' || item["STATUS_PERPANJANGAN"] === statusFilter.value
     const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value
-    const matchUnorAtas = unorAtasFilter.value === 'all' || getUnorAtas(item['UNOR NAMA']) === unorAtasFilter.value
+    const matchUnorAtasan = unorAtasanFilter.value === 'all' || getUnorAtasan(item['UNOR NAMA']) === unorAtasanFilter.value
     const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value
     
-    return matchStatus && matchJenis && matchUnorAtas && matchUnorInduk
+    return matchStatus && matchJenis && matchUnorAtasan && matchUnorInduk
   })
 })
 
-const getUnorAtas = (unorNama) => {
+const getUnorAtasan = (unorNama) => {
   if (!unorNama) return '-'
   const parts = unorNama.split(' - ')
-  return parts[0] || '-'
+  if (parts.length <= 1) return parts[0]
+  return parts.slice(0, parts.length - 1).join(' - ') || '-'
 }
 
 const getUnorInduk = (unorNama) => {
   if (!unorNama) return '-'
   const parts = unorNama.split(' - ')
-  return parts.slice(1).join(' - ') || '-'
+  return parts[parts.length - 1] || '-'
 }
 
 const jenisPppkOptions = computed(() => {
@@ -166,8 +157,8 @@ const jenisPppkOptions = computed(() => {
   return Array.from(types).sort()
 })
 
-const unorAtasOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData.map(item => getUnorAtas(item['UNOR NAMA'])))
+const unorAtasanOptions = computed(() => {
+  const types = new Set(pegawaiStore.pppkData.map(item => getUnorAtasan(item['UNOR NAMA'])))
   return Array.from(types).filter(t => t !== '-').sort()
 })
 

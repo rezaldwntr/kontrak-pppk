@@ -41,11 +41,27 @@ export const processImportFile = async (file, options = {}) => {
           throw new Error('Format file tidak dikenali. Kolom NIP BARU atau NAMA tidak ditemukan.')
         }
         
-        // Assign jenisPppk to all rows to enforce the selected type
-        const processedData = jsonData.map(row => ({
-          ...row,
-          'JENIS PPPK': jenisPppk
-        }))
+        // Assign jenisPppk and format date columns
+        const dateColumns = ['TMT CPNS', 'TANGGAL LAHIR', 'TMT GOLONGAN', 'TMT JABATAN', 'TMT PNS']
+        
+        const processedData = jsonData.map(row => {
+          const newRow = { ...row, 'JENIS PPPK': jenisPppk }
+          
+          // Convert Excel serial dates to YYYY-MM-DD
+          dateColumns.forEach(col => {
+            if (newRow[col] && !isNaN(Number(newRow[col]))) {
+              const serial = Number(newRow[col]);
+              // Basic check for typical Excel date range (e.g. 1927 to 2173)
+              if (serial > 10000 && serial < 99999) {
+                const utc_days = Math.floor(serial - 25569);
+                const date_info = new Date(utc_days * 86400 * 1000);
+                newRow[col] = date_info.toISOString().split('T')[0];
+              }
+            }
+          })
+          
+          return newRow
+        })
         
         resolve(processedData)
       } catch (error) {
