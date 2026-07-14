@@ -159,7 +159,7 @@ export const usePegawaiStore = defineStore('pegawai', {
     totalPegawai: (state) => state.pppkData.length,
     filteredDashboardData: (state) => {
       return state.pppkData.filter(item => {
-        const itemJenis = item["JENIS PEGAWAI NAMA"] || "PPPK"
+        const itemJenis = item["JENIS PPPK"] || "PPPK"
         return state.filterDashboard === "all" || itemJenis === state.filterDashboard
       })
     },
