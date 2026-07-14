@@ -10,8 +10,21 @@ export const usePegawaiStore = defineStore('pegawai', {
     extensionHistory: [],
     isLoading: false,
     filterDashboard: 'all',
+    showImportModal: false,
   }),
   actions: {
+    async deleteAllPegawai() {
+      this.isLoading = true
+      try {
+        this.pppkData = []
+        await this.saveAllPegawai()
+      } catch (error) {
+        console.error("Delete all error:", error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
     async loadData() {
       this.isLoading = true
       try {

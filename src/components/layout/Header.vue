@@ -19,13 +19,13 @@
         <i class="fa-solid fa-right-to-bracket"></i> Login
       </router-link>
 
-      <button class="btn btn-primary" id="btn-import-trigger" v-if="authStore.user && route.name === 'pegawai'">
+      <button class="btn btn-primary" id="btn-import-trigger" v-if="authStore.user && route.name === 'pegawai'" @click="pegawaiStore.showImportModal = true">
         <i class="fa-solid fa-file-import"></i> Impor Data
       </button>
       <button class="btn btn-secondary" id="btn-export" v-if="authStore.user && route.name === 'pegawai'" @click="handleExport">
         <i class="fa-solid fa-file-export"></i> Ekspor CSV
       </button>
-      <button class="btn btn-danger" id="btn-clear-all" v-if="authStore.user && route.name === 'pegawai'" style="background-color: var(--danger-color); color: #ffffff;">
+      <button class="btn btn-danger" id="btn-clear-all" v-if="authStore.user && route.name === 'pegawai'" style="background-color: var(--danger-color); color: #ffffff;" @click="handleClearAll">
         <i class="fa-solid fa-trash-can"></i> Hapus Semua
       </button>
     </div>
@@ -33,16 +33,32 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/authStore'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
-import { useRoute } from 'vue-router'
-import { exportToExcel } from '../../utils/excel'
+import { exportToExcel } from '../../utils/exportImport'
 
+const route = useRoute()
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
-const route = useRoute()
 
 const handleExport = () => {
-  exportToExcel(pegawaiStore.pppkData)
+  try {
+    exportToExcel(pegawaiStore.pppkData)
+  } catch(e) {
+    alert(e.message)
+  }
+}
+
+const handleClearAll = async () => {
+  if (confirm('Apakah Anda yakin ingin menghapus SEMUA data pegawai? Tindakan ini tidak dapat dibatalkan.')) {
+    try {
+      await pegawaiStore.deleteAllPegawai()
+      alert('Semua data berhasil dihapus.')
+    } catch(e) {
+      alert('Gagal menghapus data: ' + e.message)
+    }
+  }
 }
 </script>

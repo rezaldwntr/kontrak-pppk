@@ -28,15 +28,6 @@
                     </select>
                 </div>
             </div>
-            
-            <div style="display: flex; gap: 10px;" v-if="authStore.user">
-                <button class="btn btn-outline" @click="emit('show-import')" style="background: var(--bg-secondary);">
-                    <i class="fa-solid fa-file-import"></i> Impor
-                </button>
-                <button class="btn btn-outline" @click="emit('export')" style="background: var(--bg-secondary);">
-                    <i class="fa-solid fa-file-export"></i> Ekspor
-                </button>
-            </div>
         </div>
     </div>
 

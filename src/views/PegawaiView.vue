@@ -28,9 +28,9 @@
   />
 
   <ImportModal
-    v-if="showImportOptions"
-    :show="showImportOptions"
-    @close="showImportOptions = false"
+    v-if="pegawaiStore.showImportModal"
+    :show="pegawaiStore.showImportModal"
+    @close="pegawaiStore.showImportModal = false"
     @imported="handleImportSuccess"
   />
 </template>
