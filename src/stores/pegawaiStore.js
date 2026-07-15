@@ -36,8 +36,31 @@ export const usePegawaiStore = defineStore('pegawai', {
           if (docSnap.exists()) {
             const data = docSnap.data()
             if (data.compressed) {
-              const decompressed = LZString.decompressFromUTF16(data.payload)
-              this.pppkData = JSON.parse(decompressed)
+              if (data.numChunks) {
+                let fullCompressed = "";
+                (async () => {
+                  try {
+                    for (let i = 0; i < data.numChunks; i++) {
+                      const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
+                      const chunkSnap = await getDoc(chunkRef);
+                      if (chunkSnap.exists()) {
+                        fullCompressed += chunkSnap.data().payload || "";
+                      }
+                    }
+                    const decompressed = LZString.decompressFromUTF16(fullCompressed);
+                    this.pppkData = JSON.parse(decompressed);
+                  } catch (err) {
+                    console.error("Error loading chunks:", err);
+                    this.pppkData = [...initialMockData];
+                  } finally {
+                    this.isLoading = false;
+                  }
+                })();
+                return; // wait for async completion
+              } else if (data.payload) {
+                const decompressed = LZString.decompressFromUTF16(data.payload)
+                this.pppkData = JSON.parse(decompressed)
+              }
             } else if (data.jsonString) {
               this.pppkData = JSON.parse(data.jsonString)
             } else {
@@ -104,11 +127,22 @@ export const usePegawaiStore = defineStore('pegawai', {
       const dateNow = new Date().toISOString()
       const pegawaiRef = doc(db, 'database', 'pegawai')
       const pegawaiJson = JSON.stringify(this.pppkData)
+      const compressed = LZString.compressToUTF16(pegawaiJson)
+      const chunkSize = 800000;
+      const numChunks = Math.ceil(compressed.length / chunkSize);
+      
       await setDoc(pegawaiRef, {
-        payload: LZString.compressToUTF16(pegawaiJson),
         compressed: true,
+        numChunks: numChunks,
         lastUpdated: dateNow
       })
+      
+      for (let i = 0; i < numChunks; i++) {
+        const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
+        await setDoc(chunkRef, {
+          payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
+        })
+      }
     },
     async batchExtend(selectedIds) {
       this.isLoading = true
@@ -144,11 +178,22 @@ export const usePegawaiStore = defineStore('pegawai', {
         // Save to Firestore
         const pegawaiRef = doc(db, 'database', 'pegawai')
         const pegawaiJson = JSON.stringify(this.pppkData)
+        const compressed = LZString.compressToUTF16(pegawaiJson)
+        const chunkSize = 800000;
+        const numChunks = Math.ceil(compressed.length / chunkSize);
+        
         await setDoc(pegawaiRef, {
-          payload: LZString.compressToUTF16(pegawaiJson),
           compressed: true,
+          numChunks: numChunks,
           lastUpdated: dateNow
         })
+        
+        for (let i = 0; i < numChunks; i++) {
+          const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
+          await setDoc(chunkRef, {
+            payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
+          })
+        }
         
         const historyRef = doc(db, 'database', 'riwayat')
         await setDoc(historyRef, {

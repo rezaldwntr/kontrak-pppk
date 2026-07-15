@@ -109,14 +109,22 @@ export const saveImportedData = async (newData, mode = 'append', currentData = [
     // Save to Firestore (compress if large)
     const jsonString = JSON.stringify(mergedData)
     const compressed = LZString.compressToUTF16(jsonString)
+    const chunkSize = 800000;
+    const numChunks = Math.ceil(compressed.length / chunkSize);
     
     const docRef = doc(db, 'database', 'pegawai')
     await setDoc(docRef, {
-      payload: compressed,
       compressed: true,
+      numChunks: numChunks,
       lastUpdated: new Date().toISOString()
     })
     
+    for (let i = 0; i < numChunks; i++) {
+      const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
+      await setDoc(chunkRef, {
+        payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
+      })
+    }
     return mergedData
   } catch (error) {
     console.error("Save import error:", error)
