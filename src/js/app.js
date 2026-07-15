@@ -699,7 +699,7 @@ async function saveDataToFirebase() {
         
         if (typeof LZString !== 'undefined') {
             const compressed = LZString.compressToUTF16(jsonString);
-            const chunkSize = 400000; // 400K chars * 2 bytes = 800KB chunk size to stay safely under 1MB limit
+            const chunkSize = 250000; // 250K chars * 3 bytes (UTF-8) = 750KB chunk size to stay safely under 1MB limit
             const numChunks = Math.ceil(compressed.length / chunkSize);
             
             payloadObj = {
