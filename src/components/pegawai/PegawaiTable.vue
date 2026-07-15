@@ -6,7 +6,7 @@
                 <div class="filter-group">
                     <label>Jenis PPPK</label>
                     <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control" style="min-width: 130px;">
-                        <option value="all">Semua Jenis</option>
+                        <option value="all" v-if="jenisPppkOptions.length !== 1">Semua Jenis</option>
                         <option v-for="opt in jenisPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
@@ -17,35 +17,29 @@
                 <div class="filter-group">
                     <label>Unor Induk</label>
                     <select v-model="unorIndukFilter" @change="handleUnorIndukChange" class="form-control" style="min-width: 150px; max-width: 200px;">
-                        <option value="all">Semua Unor Induk</option>
+                        <option value="all" v-if="unorIndukOptions.length !== 1">Semua Unor Induk</option>
                         <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Unor Atasan</label>
                     <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 150px; max-width: 200px;">
-                        <option value="all">Semua Unor Atasan</option>
+                        <option value="all" v-if="unorAtasanOptions.length !== 1">Semua Unor Atasan</option>
                         <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Status Kontrak</label>
                     <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
-                        <option value="all">Semua Status</option>
-                        <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
-                        <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
-                        <option value="Kontrak Habis">Kontrak Habis</option>
-                        <option value="Kontrak Habis (BUP)">Kontrak Habis (BUP)</option>
+                        <option value="all" v-if="statusOptions.length !== 1">Semua Status</option>
+                        <option v-for="opt in statusOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Status PPPK</label>
                     <select v-model="statusPppkFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
-                        <option value="all">Semua Status PPPK</option>
-                        <option value="Aktif">Aktif</option>
-                        <option value="Tidak Diperpanjang">Tidak Diperpanjang</option>
-                        <option value="Meninggal">Meninggal</option>
-                        <option value="Pensiun">Pensiun</option>
+                        <option value="all" v-if="statusPppkOptions.length !== 1">Semua Status PPPK</option>
+                        <option v-for="opt in statusPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -124,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
 
@@ -147,11 +141,11 @@ const handleSearch = () => {
 }
 
 const resetFilters = () => {
-  jenisPppkFilter.value = 'all'
-  unorAtasanFilter.value = 'all'
-  unorIndukFilter.value = 'all'
-  statusFilter.value = 'all'
-  statusPppkFilter.value = 'all'
+  jenisPppkFilter.value = jenisPppkOptions.value.length === 1 ? jenisPppkOptions.value[0] : 'all'
+  unorIndukFilter.value = unorIndukOptions.value.length === 1 ? unorIndukOptions.value[0] : 'all'
+  unorAtasanFilter.value = unorAtasanOptions.value.length === 1 ? unorAtasanOptions.value[0] : 'all'
+  statusFilter.value = statusOptions.value.length === 1 ? statusOptions.value[0] : 'all'
+  statusPppkFilter.value = statusPppkOptions.value.length === 1 ? statusPppkOptions.value[0] : 'all'
   searchQuery.value = ''
   handleSearch()
 }
@@ -186,7 +180,7 @@ const filteredData = computed(() => {
     }
     
     // Status Kontrak uses calculateContractPeriod status if available
-    const contractStatus = item._periodCache ? item._periodCache.statusText : item["STATUS_PERPANJANGAN"];
+    const contractStatus = calculateContractPeriod(item).statusText;
     const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value
     
     const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value
@@ -300,6 +294,27 @@ const unorIndukOptions = computed(() => {
   const types = new Set(pegawaiStore.pppkData.map(item => getUnorInduk(item['UNOR NAMA'])))
   return Array.from(types).filter(t => t !== '-').sort()
 })
+
+const statusOptions = computed(() => {
+  const types = new Set(pegawaiStore.pppkData.map(item => calculateContractPeriod(item).statusText))
+  return Array.from(types).sort()
+})
+
+const statusPppkOptions = computed(() => {
+  const types = new Set(pegawaiStore.pppkData.map(item => getStatusPppk(item)))
+  return Array.from(types).sort()
+})
+
+// Auto-select if only 1 option available when data loads
+watch(() => pegawaiStore.pppkData, () => {
+  if (pegawaiStore.pppkData.length > 0) {
+    if (jenisPppkOptions.value.length === 1) jenisPppkFilter.value = jenisPppkOptions.value[0]
+    if (unorIndukOptions.value.length === 1) unorIndukFilter.value = unorIndukOptions.value[0]
+    if (unorAtasanOptions.value.length === 1) unorAtasanFilter.value = unorAtasanOptions.value[0]
+    if (statusOptions.value.length === 1) statusFilter.value = statusOptions.value[0]
+    if (statusPppkOptions.value.length === 1) statusPppkFilter.value = statusPppkOptions.value[0]
+  }
+}, { immediate: true })
 
 const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value))
 
