@@ -198,22 +198,24 @@ const filteredData = computed(() => {
   })
 })
 
-const getUnorAtasan = (unorNama) => {
+const cleanUnorName = (unorNama) => {
   if (!unorNama) return '-'
-  const parts = unorNama.split(' - ')
+  return unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
+}
+
+const getUnorAtasan = (unorNama) => {
+  const cleaned = cleanUnorName(unorNama)
+  if (cleaned === '-') return '-'
+  const parts = cleaned.split(' - ')
   if (parts.length <= 1) return parts[0]
   return parts.slice(0, parts.length - 1).join(' - ') || '-'
 }
 
 const getUnorInduk = (unorNama) => {
-  if (!unorNama) return '-'
-  const parts = unorNama.split(' - ')
-  const induk = parts[parts.length - 1] || '-'
-  if (induk === 'Pemerintah Kabupaten Hulu Sungai Utara') {
-    if (parts.length <= 1) return parts[0]
-    return parts.slice(0, parts.length - 1).join(' - ') || '-'
-  }
-  return induk
+  const cleaned = cleanUnorName(unorNama)
+  if (cleaned === '-') return '-'
+  const parts = cleaned.split(' - ')
+  return parts[parts.length - 1] || '-'
 }
 
 const formatIndoDate = (dateStr) => {
