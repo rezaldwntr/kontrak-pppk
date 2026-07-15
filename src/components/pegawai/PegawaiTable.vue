@@ -48,6 +48,11 @@
                         <option value="Pensiun">Pensiun</option>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <button class="btn btn-outline" @click="resetFilters" style="height: 38px; margin-bottom: 2px;" title="Reset Filter">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -141,6 +146,16 @@ const handleSearch = () => {
   currentPage.value = 1
 }
 
+const resetFilters = () => {
+  jenisPppkFilter.value = 'all'
+  unorAtasanFilter.value = 'all'
+  unorIndukFilter.value = 'all'
+  statusFilter.value = 'all'
+  statusPppkFilter.value = 'all'
+  searchQuery.value = ''
+  handleSearch()
+}
+
 const handleUnorIndukChange = () => {
   unorAtasanFilter.value = 'all'
   handleSearch()
@@ -193,7 +208,12 @@ const getUnorAtasan = (unorNama) => {
 const getUnorInduk = (unorNama) => {
   if (!unorNama) return '-'
   const parts = unorNama.split(' - ')
-  return parts[parts.length - 1] || '-'
+  const induk = parts[parts.length - 1] || '-'
+  if (induk === 'Pemerintah Kabupaten Hulu Sungai Utara') {
+    if (parts.length <= 1) return parts[0]
+    return parts.slice(0, parts.length - 1).join(' - ') || '-'
+  }
+  return induk
 }
 
 const formatIndoDate = (dateStr) => {
