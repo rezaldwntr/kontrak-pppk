@@ -48,7 +48,7 @@ export const usePegawaiStore = defineStore('pegawai', {
                       }
                     }
                     const decompressed = LZString.decompressFromUTF16(fullCompressed);
-                    this.pppkData = JSON.parse(decompressed);
+                    this.pppkData = decompressed ? JSON.parse(decompressed) : [];
                   } catch (err) {
                     console.error("Error loading chunks:", err);
                     this.pppkData = [...initialMockData];
@@ -131,18 +131,18 @@ export const usePegawaiStore = defineStore('pegawai', {
       const chunkSize = 800000;
       const numChunks = Math.ceil(compressed.length / chunkSize);
       
-      await setDoc(pegawaiRef, {
-        compressed: true,
-        numChunks: numChunks,
-        lastUpdated: dateNow
-      })
-      
       for (let i = 0; i < numChunks; i++) {
         const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
         await setDoc(chunkRef, {
           payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
         })
       }
+      
+      await setDoc(pegawaiRef, {
+        compressed: true,
+        numChunks: numChunks,
+        lastUpdated: dateNow
+      })
     },
     async batchExtend(selectedIds) {
       this.isLoading = true
@@ -182,18 +182,18 @@ export const usePegawaiStore = defineStore('pegawai', {
         const chunkSize = 800000;
         const numChunks = Math.ceil(compressed.length / chunkSize);
         
-        await setDoc(pegawaiRef, {
-          compressed: true,
-          numChunks: numChunks,
-          lastUpdated: dateNow
-        })
-        
         for (let i = 0; i < numChunks; i++) {
           const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
           await setDoc(chunkRef, {
             payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
           })
         }
+        
+        await setDoc(pegawaiRef, {
+          compressed: true,
+          numChunks: numChunks,
+          lastUpdated: dateNow
+        })
         
         const historyRef = doc(db, 'database', 'riwayat')
         await setDoc(historyRef, {

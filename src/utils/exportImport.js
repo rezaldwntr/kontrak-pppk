@@ -112,19 +112,19 @@ export const saveImportedData = async (newData, mode = 'append', currentData = [
     const chunkSize = 800000;
     const numChunks = Math.ceil(compressed.length / chunkSize);
     
-    const docRef = doc(db, 'database', 'pegawai')
-    await setDoc(docRef, {
-      compressed: true,
-      numChunks: numChunks,
-      lastUpdated: new Date().toISOString()
-    })
-    
     for (let i = 0; i < numChunks; i++) {
       const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
       await setDoc(chunkRef, {
         payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
       })
     }
+
+    const docRef = doc(db, 'database', 'pegawai')
+    await setDoc(docRef, {
+      compressed: true,
+      numChunks: numChunks,
+      lastUpdated: new Date().toISOString()
+    })
     return mergedData
   } catch (error) {
     console.error("Save import error:", error)
