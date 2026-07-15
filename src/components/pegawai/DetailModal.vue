@@ -301,7 +301,7 @@ watch(() => props.isOpen, (newVal) => {
 
     activeTab.value = 'personal'
   }
-})
+}, { immediate: true })
 
 watch(() => editForm.value['GOLONGAN'], (newGol) => {
   const gajiRules = { 'I': '1938500', 'III': '2206500', 'V': '2511500', 'VII': '2858800', 'IX': '3203600', 'X': '3339100' }
