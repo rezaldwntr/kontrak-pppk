@@ -54,7 +54,11 @@
             </div>
             <div class="form-group">
               <label>Status Pernikahan</label>
-              <input type="text" v-model="editForm['STATUS PERNIKAHAN']" class="form-control">
+              <select v-model="editForm['STATUS PERNIKAHAN']" class="form-control">
+                <option value="Belum Kawin">Belum Kawin</option>
+                <option value="Cerai Hidup">Cerai Hidup</option>
+                <option value="Menikah">Menikah</option>
+              </select>
             </div>
             <div class="form-group">
               <label>No. HP</label>
@@ -85,10 +89,6 @@
             <div class="form-group">
               <label>NIP Lama</label>
               <input type="text" v-model="editForm['NIP LAMA']" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>PNS ID</label>
-              <input type="text" v-model="editForm['PNS ID']" class="form-control" disabled>
             </div>
             <div class="form-group">
               <label>Jenis Pegawai</label>
@@ -194,11 +194,11 @@
             </div>
             <div class="form-group">
               <label>Awal Kontrak Aktif</label>
-              <input type="text" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control">
+              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control">
             </div>
             <div class="form-group">
               <label>Akhir Kontrak Aktif</label>
-              <input type="text" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control">
+              <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control">
             </div>
             <div class="form-group" style="grid-column: span 2;">
               <label>Gaji Pokok Saat Ini (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Baru</span></label>
@@ -268,11 +268,11 @@ watch(() => props.isOpen, (newVal) => {
     if (editForm.value['JENIS KELAMIN'] !== 'L' && editForm.value['JENIS KELAMIN'] !== 'P') {
       editForm.value['JENIS KELAMIN'] = 'P'
     }
-    if (!editForm.value['EMAIL PRIBADI']) editForm.value['EMAIL PRIBADI'] = ''
-    if (!editForm.value['EMAIL PEMERINTAH']) editForm.value['EMAIL PEMERINTAH'] = ''
-    if (!editForm.value['NO HP']) editForm.value['NO HP'] = ''
-    if (!editForm.value['STATUS PERNIKAHAN']) editForm.value['STATUS PERNIKAHAN'] = ''
-    if (!editForm.value['ALAMAT LENGKAP']) editForm.value['ALAMAT LENGKAP'] = ''
+    if (!editForm.value['EMAIL PRIBADI']) editForm.value['EMAIL PRIBADI'] = editForm.value['EMAIL'] || ''
+    if (!editForm.value['EMAIL PEMERINTAH']) editForm.value['EMAIL PEMERINTAH'] = editForm.value['EMAIL GOV'] || ''
+    if (!editForm.value['NO HP']) editForm.value['NO HP'] = editForm.value['NOMOR HP'] || ''
+    if (!editForm.value['STATUS PERNIKAHAN']) editForm.value['STATUS PERNIKAHAN'] = editForm.value['JENIS KAWIN NAMA'] || ''
+    if (!editForm.value['ALAMAT LENGKAP']) editForm.value['ALAMAT LENGKAP'] = editForm.value['ALAMAT'] || ''
     if (!editForm.value['NIP LAMA']) editForm.value['NIP LAMA'] = '-'
     if (!editForm.value['JENIS PEGAWAI']) editForm.value['JENIS PEGAWAI'] = 'PNS Daerah Kab./Kota yang bekerja pada Kab./Kota'
     if (!editForm.value['KEDUDUKAN HUKUM']) editForm.value['KEDUDUKAN HUKUM'] = editForm.value['STATUS KEDUDUKAN'] || 'PPPK Aktif'
@@ -281,15 +281,40 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['MASA KERJA BULAN']) editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
     if (!editForm.value['JENIS JABATAN']) editForm.value['JENIS JABATAN'] = 'Jabatan Fungsional'
     if (!editForm.value['TMT JABATAN']) editForm.value['TMT JABATAN'] = ''
-    if (!editForm.value['GOLONGAN']) editForm.value['GOLONGAN'] = editForm.value['GOL RUANG'] || ''
+    if (!editForm.value['GOLONGAN']) editForm.value['GOLONGAN'] = editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || ''
     if (!editForm.value['INSTANSI INDUK']) editForm.value['INSTANSI INDUK'] = 'Pemerintah Kab. Hulu Sungai Utara'
-    if (!editForm.value['TINGKAT PENDIDIKAN']) editForm.value['TINGKAT PENDIDIKAN'] = ''
+    if (!editForm.value['TINGKAT PENDIDIKAN']) editForm.value['TINGKAT PENDIDIKAN'] = editForm.value['TINGKAT PENDIDIKAN NAMA'] || ''
     if (!editForm.value['PENDIDIKAN TERAKHIR']) editForm.value['PENDIDIKAN TERAKHIR'] = editForm.value['PENDIDIKAN NAMA'] || ''
     if (!editForm.value['TAHUN LULUS']) editForm.value['TAHUN LULUS'] = ''
-    if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = ''
+    if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
     if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
-    if (!editForm.value['AWAL KONTRAK AKTIF']) editForm.value['AWAL KONTRAK AKTIF'] = ''
-    if (!editForm.value['AKHIR KONTRAK AKTIF']) editForm.value['AKHIR KONTRAK AKTIF'] = ''
+    if (!editForm.value['AWAL KONTRAK AKTIF']) editForm.value['AWAL KONTRAK AKTIF'] = editForm.value['TMT CPNS'] || ''
+    
+    if (!editForm.value['AKHIR KONTRAK AKTIF']) {
+      if (editForm.value['AWAL KONTRAK AKTIF']) {
+        const contractYears = editForm.value['JENIS_PPPK'] === 'PPPK Paruh Waktu' ? 1 : 5
+        let startDate = null
+        const parts = editForm.value['AWAL KONTRAK AKTIF'].split('-')
+        if (parts.length === 3) {
+            if (parts[0].length === 4) startDate = new Date(editForm.value['AWAL KONTRAK AKTIF'])
+            else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+        }
+        if (startDate && !isNaN(startDate.getTime())) {
+          const endDate = new Date(startDate)
+          endDate.setFullYear(endDate.getFullYear() + contractYears)
+          endDate.setDate(endDate.getDate() - 1)
+          
+          const y = endDate.getFullYear()
+          const mStr = String(endDate.getMonth() + 1).padStart(2, '0')
+          const d = String(endDate.getDate()).padStart(2, '0')
+          editForm.value['AKHIR KONTRAK AKTIF'] = `${y}-${mStr}-${d}`
+        } else {
+          editForm.value['AKHIR KONTRAK AKTIF'] = ''
+        }
+      } else {
+        editForm.value['AKHIR KONTRAK AKTIF'] = ''
+      }
+    }
     if (!editForm.value['GAJI POKOK SAAT INI']) {
       const gajiRules = { 'I': '1938500', 'III': '2206500', 'V': '2511500', 'VII': '2858800', 'IX': '3203600', 'X': '3339100' }
       editForm.value['GAJI POKOK SAAT INI'] = gajiRules[editForm.value['GOLONGAN']] || ''
