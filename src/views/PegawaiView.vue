@@ -18,6 +18,7 @@
     :item="selectedItem" 
     @close="showDetail = false" 
     @print="handlePrint"
+    @save="handleSaveDetail"
   />
 
   <PrintPreviewModal
@@ -62,6 +63,27 @@ const handleView = (item) => {
   selectedItem.value = item
   showDetail.value = true
 }
+
+const handleSaveDetail = async (updatedItem) => {
+  try {
+    await pegawaiStore.updatePegawai(updatedItem)
+    showDetail.value = false
+    customSwal.fire({
+      icon: 'success',
+      title: 'Tersimpan!',
+      text: 'Data Pegawai berhasil diperbarui.',
+      timer: 1500,
+      showConfirmButton: false
+    })
+  } catch (error) {
+    customSwal.fire({
+      icon: 'error',
+      title: 'Gagal',
+      text: 'Terjadi kesalahan saat menyimpan data.',
+    })
+  }
+}
+
 const handleEdit = (item) => {
   console.log("Edit item:", item)
 }

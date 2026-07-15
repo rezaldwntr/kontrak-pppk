@@ -111,6 +111,18 @@ export const usePegawaiStore = defineStore('pegawai', {
         throw error
       }
     },
+    async updatePegawai(updatedItem) {
+      try {
+        const index = this.pppkData.findIndex(item => item['PNS ID'] === updatedItem['PNS ID'])
+        if (index !== -1) {
+          this.pppkData[index] = { ...updatedItem }
+          await this.saveAllPegawai()
+        }
+      } catch (error) {
+        console.error("Update error:", error)
+        throw error
+      }
+    },
     async batchDelete(nips) {
       this.isLoading = true
       try {
