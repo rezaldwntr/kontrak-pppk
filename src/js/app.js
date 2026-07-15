@@ -495,6 +495,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof firebase !== "undefined" && firebase.firestore) {
             db = firebase.firestore();
             window.db = db;
+            await syncTemplatesFromFirebase();
+            if (typeof loadTemplateConfig === 'function') loadTemplateConfig();
         }
         
         window.chartFirestoreLoaded = true;
@@ -621,8 +623,19 @@ async function loadData() {
             
             // Check if compressed
             if (data.compressed && typeof LZString !== 'undefined') {
-                const decompressed = LZString.decompressFromUTF16(data.payload);
-                pppkData = JSON.parse(decompressed);
+                if (data.numChunks) {
+                    let fullCompressed = "";
+                    for (let i = 0; i < data.numChunks; i++) {
+                        const chunkDoc = await db.collection('database').doc('pegawai_chunk_' + i).get();
+                        if (chunkDoc.exists) {
+                            fullCompressed += chunkDoc.data().payload || "";
+                        }
+                    }
+                    pppkData = JSON.parse(LZString.decompressFromUTF16(fullCompressed));
+                } else if (data.payload) {
+                    const decompressed = LZString.decompressFromUTF16(data.payload);
+                    pppkData = JSON.parse(decompressed);
+                }
             } else if (data.jsonString) {
                 pppkData = JSON.parse(data.jsonString);
             } else {
@@ -683,20 +696,30 @@ async function saveDataToFirebase() {
         
         if (typeof LZString !== 'undefined') {
             const compressed = LZString.compressToUTF16(jsonString);
+            const chunkSize = 800000; // 800KB chunk size to stay safely under 1MB limit
+            const numChunks = Math.ceil(compressed.length / chunkSize);
+            
             payloadObj = {
                 compressed: true,
-                payload: compressed,
+                numChunks: numChunks,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
+            
+            await db.collection('database').doc('pegawai').set(payloadObj);
+            
+            for (let i = 0; i < numChunks; i++) {
+                await db.collection('database').doc('pegawai_chunk_' + i).set({
+                    payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
+                });
+            }
         } else {
             payloadObj = {
                 compressed: false,
                 jsonString: jsonString,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
+            await db.collection('database').doc('pegawai').set(payloadObj);
         }
-        
-        await db.collection('database').doc('pegawai').set(payloadObj);
 
         // Save history
         await db.collection('database').doc('riwayat').set({
@@ -3446,7 +3469,6 @@ async function syncTemplatesFromFirebase() {
 
 // Load F4 and A4 DOCX templates status on startup
 async function loadTemplateConfig() {
-    await syncTemplatesFromFirebase();
     // F4 template loading
     const savedTemplateF4 = localStorage.getItem("docx_template_f4");
     const savedNameF4 = localStorage.getItem("docx_template_f4_name");
