@@ -631,7 +631,8 @@ async function loadData() {
                             fullCompressed += chunkDoc.data().payload || "";
                         }
                     }
-                    pppkData = JSON.parse(LZString.decompressFromUTF16(fullCompressed));
+                    const decompressed = LZString.decompressFromUTF16(fullCompressed);
+                    pppkData = decompressed ? JSON.parse(decompressed) : [];
                 } else if (data.payload) {
                     const decompressed = LZString.decompressFromUTF16(data.payload);
                     pppkData = JSON.parse(decompressed);
@@ -665,6 +666,8 @@ async function loadData() {
         pppkData = [...initialMockData];
         extensionHistory = [];
     }
+    
+    if (!Array.isArray(pppkData)) pppkData = [];
     
     // Clean up NIPs from leading quote immediately on load
     let needsSave = false;
@@ -705,13 +708,13 @@ async function saveDataToFirebase() {
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            await db.collection('database').doc('pegawai').set(payloadObj);
-            
             for (let i = 0; i < numChunks; i++) {
                 await db.collection('database').doc('pegawai_chunk_' + i).set({
                     payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
                 });
             }
+            
+            await db.collection('database').doc('pegawai').set(payloadObj);
         } else {
             payloadObj = {
                 compressed: false,
@@ -2899,6 +2902,7 @@ function openSKPreviewModal(id) {
 let importFileContent = null;
 
 function openImportModal() {
+    if (typeof loadExportDependencies === 'function') loadExportDependencies();
     document.getElementById("import-modal").classList.add("open");
 }
 
