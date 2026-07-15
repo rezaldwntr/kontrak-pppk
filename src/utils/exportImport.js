@@ -109,7 +109,7 @@ export const saveImportedData = async (newData, mode = 'append', currentData = [
     // Save to Firestore (compress if large)
     const jsonString = JSON.stringify(mergedData)
     const compressed = LZString.compressToUTF16(jsonString)
-    const chunkSize = 400000;
+    const chunkSize = 250000;
     const numChunks = Math.ceil(compressed.length / chunkSize);
     
     for (let i = 0; i < numChunks; i++) {

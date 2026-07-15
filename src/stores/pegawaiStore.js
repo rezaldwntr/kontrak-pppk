@@ -128,7 +128,7 @@ export const usePegawaiStore = defineStore('pegawai', {
       const pegawaiRef = doc(db, 'database', 'pegawai')
       const pegawaiJson = JSON.stringify(this.pppkData)
       const compressed = LZString.compressToUTF16(pegawaiJson)
-      const chunkSize = 400000;
+      const chunkSize = 250000;
       const numChunks = Math.ceil(compressed.length / chunkSize);
       
       for (let i = 0; i < numChunks; i++) {
@@ -179,7 +179,7 @@ export const usePegawaiStore = defineStore('pegawai', {
         const pegawaiRef = doc(db, 'database', 'pegawai')
         const pegawaiJson = JSON.stringify(this.pppkData)
         const compressed = LZString.compressToUTF16(pegawaiJson)
-        const chunkSize = 400000;
+        const chunkSize = 250000;
         const numChunks = Math.ceil(compressed.length / chunkSize);
         
         for (let i = 0; i < numChunks; i++) {
