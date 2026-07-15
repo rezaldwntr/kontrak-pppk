@@ -55,9 +55,11 @@
             <table class="table">
                 <thead>
                     <tr>
+                        <th width="40"><input type="checkbox" v-model="selectAll"></th>
                         <th>NIP BARU / ID</th>
                         <th>NAMA LENGKAP</th>
                         <th>TMT CPNS / MULAI</th>
+                        <th>AKHIR KONTRAK</th>
                         <th>JABATAN</th>
                         <th>STATUS KONTRAK</th>
                         <th>STATUS PPPK</th>
@@ -72,11 +74,15 @@
                         <td colspan="8" class="text-center">Data tidak ditemukan.</td>
                     </tr>
                     <tr v-for="item in paginatedData" :key="item['PNS ID']">
+                        <td>
+                            <input type="checkbox" v-model="selectedIds" :value="item['PNS ID']">
+                        </td>
                         <td>{{ item["NIP BARU"] ? String(item["NIP BARU"]).replace(/^'/, '') : '-' }}</td>
                         <td>
                             <strong>{{ item["NAMA"] }}</strong>
                         </td>
                         <td>{{ item["TMT CPNS"] }}</td>
+                        <td>{{ calculateContractPeriod(item).endDateStr }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>
                             <span :class="['badge', getBadgeClass(item['STATUS_PERPANJANGAN'])]">
@@ -120,6 +126,7 @@ const unorIndukFilter = ref('all')
 const statusFilter = ref('all')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
+const selectedIds = ref([])
 
 const handleSearch = () => {
   currentPage.value = 1
@@ -147,6 +154,55 @@ const getUnorInduk = (unorNama) => {
   if (!unorNama) return '-'
   const parts = unorNama.split(' - ')
   return parts[parts.length - 1] || '-'
+}
+
+const calculateContractPeriod = (item) => {
+    if (item && typeof item === "object" && item._periodCache) {
+        return item._periodCache;
+    }
+    const contractYears = (item && typeof item === "object" && item["JENIS_PPPK"] === "PPPK Paruh Waktu") ? 1 : 5;
+    if (item && typeof item === "object") {
+        if (item["STATUS KEDUDUKAN"] === "Meninggal") {
+            return { endDateStr: "-", sisaBulan: 0, statusText: "Meninggal" };
+        }
+        if (item["STATUS KEDUDUKAN"] === "Pensiun BUP") {
+            return { endDateStr: "-", sisaBulan: 0, statusText: "Pensiun (BUP)" };
+        }
+    }
+    
+    const tmtStr = (item && item["TMT CPNS"]) ? item["TMT CPNS"] : "";
+    let startDate = null;
+    const parts = tmtStr.split('-');
+    if (parts.length === 3) {
+        if (parts[0].length === 4) startDate = new Date(tmtStr);
+        else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    }
+    
+    if (!startDate || isNaN(startDate.getTime())) {
+        return { endDateStr: "Format Tanggal Invalid", sisaBulan: 999, statusText: "Format Tanggal Invalid" };
+    }
+    
+    let endDate = new Date(startDate);
+    endDate.setFullYear(endDate.getFullYear() + contractYears);
+    endDate.setDate(endDate.getDate() - 1);
+    
+    const y = endDate.getFullYear();
+    const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][endDate.getMonth()];
+    const d = endDate.getDate();
+    const endDateStr = `${d} ${mStr} ${y}`;
+    
+    const today = new Date();
+    const diffMonths = (endDate.getFullYear() - today.getFullYear()) * 12 + (endDate.getMonth() - today.getMonth());
+    
+    let statusText = "Masih Berlaku";
+    if (diffMonths <= 0) statusText = "Habis";
+    else if (diffMonths <= 6) statusText = "Hampir Habis";
+    
+    const res = { endDateStr, sisaBulan: diffMonths, statusText };
+    if (item && typeof item === "object") {
+        item._periodCache = res;
+    }
+    return res;
 }
 
 const jenisPppkOptions = computed(() => {
