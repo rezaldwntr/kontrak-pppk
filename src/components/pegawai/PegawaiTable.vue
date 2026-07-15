@@ -81,7 +81,7 @@
                         <td>
                             <strong>{{ item["NAMA"] }}</strong>
                         </td>
-                        <td>{{ item["TMT CPNS"] }}</td>
+                        <td>{{ formatIndoDate(item["TMT CPNS"]) }}</td>
                         <td>{{ calculateContractPeriod(item).endDateStr }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>
@@ -154,6 +154,22 @@ const getUnorInduk = (unorNama) => {
   if (!unorNama) return '-'
   const parts = unorNama.split(' - ')
   return parts[parts.length - 1] || '-'
+}
+
+const formatIndoDate = (dateStr) => {
+    if (!dateStr) return "-";
+    let startDate = null;
+    const parts = String(dateStr).split('-');
+    if (parts.length === 3) {
+        if (parts[0].length === 4) startDate = new Date(dateStr);
+        else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+    }
+    if (!startDate || isNaN(startDate.getTime())) return String(dateStr);
+    
+    const y = startDate.getFullYear();
+    const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][startDate.getMonth()];
+    const d = startDate.getDate();
+    return `${d} ${mStr} ${y}`;
 }
 
 const calculateContractPeriod = (item) => {
