@@ -5,40 +5,47 @@
             <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
                 <div class="filter-group">
                     <label>Jenis PPPK</label>
-                    <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control" style="min-width: 150px;">
+                    <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control" style="min-width: 130px;">
                         <option value="all">Semua Jenis</option>
                         <option v-for="opt in jenisPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Unor Atasan</label>
-                    <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 180px; max-width: 250px;">
-                        <option value="all">Semua Unor Atasan</option>
-                        <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
+                    <label>Cari</label>
+                    <input type="text" v-model="searchQuery" @input="handleSearch" placeholder="Cari data apapun..." class="form-control" style="min-width: 150px;">
                 </div>
                 <div class="filter-group">
                     <label>Unor Induk</label>
-                    <select v-model="unorIndukFilter" @change="handleSearch" class="form-control" style="min-width: 180px; max-width: 250px;">
+                    <select v-model="unorIndukFilter" @change="handleUnorIndukChange" class="form-control" style="min-width: 150px; max-width: 200px;">
                         <option value="all">Semua Unor Induk</option>
                         <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Unor Atasan</label>
+                    <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 150px; max-width: 200px;">
+                        <option value="all">Semua Unor Atasan</option>
+                        <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Status Kontrak</label>
-                    <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 200px;">
+                    <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
                         <option value="all">Semua Status</option>
                         <option value="Kontrak Masih Berlaku">Kontrak Masih Berlaku</option>
                         <option value="Kontrak Hampir Habis">Kontrak Hampir Habis</option>
                         <option value="Kontrak Habis">Kontrak Habis</option>
+                        <option value="Kontrak Habis (BUP)">Kontrak Habis (BUP)</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Tampilkan Baris</label>
-                    <select v-model="itemsPerPage" @change="handleSearch" class="form-control" style="min-width: 120px;">
-                        <option value="10">10 Baris</option>
-                        <option value="50">50 Baris</option>
-                        <option value="100">100 Baris</option>
+                    <label>Status PPPK</label>
+                    <select v-model="statusPppkFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
+                        <option value="all">Semua Status PPPK</option>
+                        <option value="Aktif">Aktif</option>
+                        <option value="Tidak Diperpanjang">Tidak Diperpanjang</option>
+                        <option value="Meninggal">Meninggal</option>
+                        <option value="Pensiun">Pensiun</option>
                     </select>
                 </div>
             </div>
@@ -90,7 +97,7 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge badge-success">Aktif</span>
+                            <span :class="['badge', getStatusPppkClass(getStatusPppk(item))]">{{ getStatusPppk(item) }}</span>
                         </td>
                         <td>
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
@@ -124,6 +131,8 @@ const jenisPppkFilter = ref('all')
 const unorAtasanFilter = ref('all')
 const unorIndukFilter = ref('all')
 const statusFilter = ref('all')
+const statusPppkFilter = ref('all')
+const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const selectedIds = ref([])
@@ -132,14 +141,45 @@ const handleSearch = () => {
   currentPage.value = 1
 }
 
+const handleUnorIndukChange = () => {
+  unorAtasanFilter.value = 'all'
+  handleSearch()
+}
+
+const getStatusPppk = (item) => {
+  const s = item["STATUS KEDUDUKAN"];
+  if (s === "Meninggal") return "Meninggal";
+  if (s && s.includes("Pensiun")) return "Pensiun";
+  if (s === "Tidak Diperpanjang") return "Tidak Diperpanjang";
+  return "Aktif";
+}
+
+const getStatusPppkClass = (status) => {
+  if (status === 'Aktif') return 'badge-success';
+  if (status === 'Tidak Diperpanjang') return 'badge-warning';
+  return 'badge-danger'; // Meninggal, Pensiun
+}
+
 const filteredData = computed(() => {
+  const query = searchQuery.value.toLowerCase()
   return pegawaiStore.pppkData.filter(item => {
-    const matchStatus = statusFilter.value === 'all' || item["STATUS_PERPANJANGAN"] === statusFilter.value
+    let matchQuery = true
+    if (query !== '') {
+      matchQuery = Object.values(item).some(val => 
+        String(val).toLowerCase().includes(query)
+      )
+    }
+    
+    // Status Kontrak uses calculateContractPeriod status if available
+    const contractStatus = item._periodCache ? item._periodCache.statusText : item["STATUS_PERPANJANGAN"];
+    const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value
+    
+    const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value
     const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value
     const matchUnorAtasan = unorAtasanFilter.value === 'all' || getUnorAtasan(item['UNOR NAMA']) === unorAtasanFilter.value
     const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value
     
-    return matchStatus && matchJenis && matchUnorAtasan && matchUnorInduk
+    return matchQuery && matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk
   })
 })
 
@@ -227,7 +267,10 @@ const jenisPppkOptions = computed(() => {
 })
 
 const unorAtasanOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData.map(item => getUnorAtasan(item['UNOR NAMA'])))
+  const types = new Set(pegawaiStore.pppkData
+    .filter(item => unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value)
+    .map(item => getUnorAtasan(item['UNOR NAMA']))
+  )
   return Array.from(types).filter(t => t !== '-').sort()
 })
 
