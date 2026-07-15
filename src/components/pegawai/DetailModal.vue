@@ -290,13 +290,23 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
     if (!editForm.value['AWAL KONTRAK AKTIF']) editForm.value['AWAL KONTRAK AKTIF'] = ''
     if (!editForm.value['AKHIR KONTRAK AKTIF']) editForm.value['AKHIR KONTRAK AKTIF'] = ''
-    if (!editForm.value['GAJI POKOK SAAT INI']) editForm.value['GAJI POKOK SAAT INI'] = ''
+    if (!editForm.value['GAJI POKOK SAAT INI']) {
+      const gajiRules = { 'I': '1938500', 'III': '2206500', 'V': '2511500', 'VII': '2858800', 'IX': '3203600', 'X': '3339100' }
+      editForm.value['GAJI POKOK SAAT INI'] = gajiRules[editForm.value['GOLONGAN']] || ''
+    }
     if (!editForm.value['NOMOR KONTRAK BARU']) editForm.value['NOMOR KONTRAK BARU'] = ''
     if (!editForm.value['NOMOR SK PERPANJANGAN']) editForm.value['NOMOR SK PERPANJANGAN'] = ''
     if (!editForm.value['TANGGAL SK PERPANJANGAN']) editForm.value['TANGGAL SK PERPANJANGAN'] = ''
     if (!editForm.value['TMT KONTRAK BARU']) editForm.value['TMT KONTRAK BARU'] = ''
 
     activeTab.value = 'personal'
+  }
+})
+
+watch(() => editForm.value['GOLONGAN'], (newGol) => {
+  const gajiRules = { 'I': '1938500', 'III': '2206500', 'V': '2511500', 'VII': '2858800', 'IX': '3203600', 'X': '3339100' }
+  if (newGol && gajiRules[newGol]) {
+    editForm.value['GAJI POKOK SAAT INI'] = gajiRules[newGol]
   }
 })
 
