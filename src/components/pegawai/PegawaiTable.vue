@@ -85,7 +85,7 @@
                         </td>
                         <td>{{ item["NIP BARU"] ? String(item["NIP BARU"]).replace(/^'/, '') : '-' }}</td>
                         <td>
-                            <strong>{{ item["NAMA"] }}</strong>
+                            <strong>{{ getNamaLengkap(item) }}</strong>
                         </td>
                         <td>{{ formatIndoDate(item["TMT CPNS"]) }}</td>
                         <td>{{ calculateContractPeriod(item).endDateStr }}</td>
@@ -210,6 +210,13 @@ const getUnorInduk = (unorNama) => {
   if (cleaned === '-') return '-'
   const parts = cleaned.split(' - ')
   return parts[parts.length - 1] || '-'
+}
+
+const getNamaLengkap = (item) => {
+  if (!item) return ''
+  const dpn = item['GELAR DEPAN'] && item['GELAR DEPAN'] !== '-' ? item['GELAR DEPAN'] + ' ' : ''
+  const blk = item['GELAR BELAKANG'] && item['GELAR BELAKANG'] !== '-' ? ', ' + item['GELAR BELAKANG'] : ''
+  return dpn + item['NAMA'] + blk
 }
 
 const formatIndoDate = (dateStr) => {
