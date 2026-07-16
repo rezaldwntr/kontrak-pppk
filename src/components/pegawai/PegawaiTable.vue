@@ -227,10 +227,10 @@ const getNamaLengkap = (item) => {
 const formatIndoDate = (dateStr) => {
     if (!dateStr) return "-";
     let startDate = null;
-    const parts = String(dateStr).split('-');
+    const parts = String(dateStr).split(/[-/]/);
     if (parts.length === 3) {
-        if (parts[0].length === 4) startDate = new Date(dateStr);
-        else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2]);
+        else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0]);
     }
     if (!startDate || isNaN(startDate.getTime())) return String(dateStr);
     
@@ -260,10 +260,10 @@ const calculateContractPeriod = (item) => {
     // 1. Standard End Date Calculation
     const tmtStr = (item && item["TMT CPNS"]) ? item["TMT CPNS"] : "";
     let startDate = null;
-    const parts = tmtStr.split('-');
+    const parts = tmtStr.split(/[-/]/);
     if (parts.length === 3) {
-        if (parts[0].length === 4) startDate = new Date(tmtStr);
-        else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2]);
+        else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0]);
     }
     
     if (!startDate || isNaN(startDate.getTime())) {
@@ -279,10 +279,10 @@ const calculateContractPeriod = (item) => {
     const tglLahirStr = (item && item["TANGGAL LAHIR"]) ? item["TANGGAL LAHIR"] : "";
     if (tglLahirStr) {
         let birthDate = null;
-        const bParts = tglLahirStr.split('-');
+        const bParts = tglLahirStr.split(/[-/]/);
         if (bParts.length === 3) {
-            if (bParts[0].length === 4) birthDate = new Date(tglLahirStr);
-            else if (bParts[2].length === 4) birthDate = new Date(`${bParts[2]}-${bParts[1]}-${bParts[0]}`);
+            if (bParts[0].length === 4) birthDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+            else if (bParts[2].length === 4) birthDate = new Date(bParts[2], bParts[1]-1, bParts[0]);
         }
         if (birthDate && !isNaN(birthDate.getTime())) {
             const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
@@ -318,11 +318,11 @@ const calculateContractPeriod = (item) => {
     const diffMonths = (finalEndDateTime.getFullYear() - todayTime.getFullYear()) * 12 + (finalEndDateTime.getMonth() - todayTime.getMonth());
     const isExpired = finalEndDateTime.getTime() < todayTime.getTime();
     
-    let statusText = "Masih Berlaku";
+    let statusText = "Kontrak Masih Berlaku";
     if (isExpired) {
-        statusText = isBup ? "Habis (BUP)" : "Habis";
+        statusText = isBup ? "Kontrak Habis (BUP)" : "Kontrak Habis";
     } else if (diffMonths <= thresholdHampirHabis) {
-        statusText = "Hampir Habis";
+        statusText = "Kontrak Hampir Habis";
     }
     
     const res = { endDateStr, sisaBulan: diffMonths, statusText, isBup, rawDate: finalEndDate };

@@ -294,10 +294,10 @@ watch(() => props.isOpen, (newVal) => {
       if (editForm.value['AWAL KONTRAK AKTIF']) {
         const contractYears = editForm.value['JENIS_PPPK'] === 'PPPK Paruh Waktu' ? 1 : 5
         let startDate = null
-        const parts = editForm.value['AWAL KONTRAK AKTIF'].split('-')
+        const parts = String(editForm.value['AWAL KONTRAK AKTIF']).split(/[-/]/)
         if (parts.length === 3) {
-            if (parts[0].length === 4) startDate = new Date(editForm.value['AWAL KONTRAK AKTIF'])
-            else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
+            if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2])
+            else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0])
         }
         if (startDate && !isNaN(startDate.getTime())) {
           let standardEndDate = new Date(startDate)
@@ -308,10 +308,10 @@ watch(() => props.isOpen, (newVal) => {
           
           if (editForm.value['TANGGAL LAHIR']) {
               let birthDate = null;
-              const bParts = editForm.value['TANGGAL LAHIR'].split('-');
+              const bParts = String(editForm.value['TANGGAL LAHIR']).split(/[-/]/);
               if (bParts.length === 3) {
-                  if (bParts[0].length === 4) birthDate = new Date(editForm.value['TANGGAL LAHIR']);
-                  else if (bParts[2].length === 4) birthDate = new Date(`${bParts[2]}-${bParts[1]}-${bParts[0]}`);
+                  if (bParts[0].length === 4) birthDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+                  else if (bParts[2].length === 4) birthDate = new Date(bParts[2], bParts[1]-1, bParts[0]);
               }
               if (birthDate && !isNaN(birthDate.getTime())) {
                   const jabatan = (editForm.value['JABATAN NAMA'] || "").toLowerCase();
