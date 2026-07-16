@@ -24,5 +24,6 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Nama Lengkap**: Pembaruan tabel utama untuk menampilkan gelar depan dan belakang pada kolom Nama Lengkap.
 
 ### Diperbaiki
+- **UI Spacing**: Memperbaiki jarak (*margin*) yang terlalu sempit antara deretan Tab dan kolom isian di bawahnya pada `DetailModal.vue`.
 - **Bug Modal Kosong**: Memperbaiki isu form kosong pada DetailModal setelah impor data dengan menambahkan `immediate: true` pada `watch`.
 - **Payload Size Error**: Penanganan isu batasan *payload size* saat deploy ke Vercel/Firebase.

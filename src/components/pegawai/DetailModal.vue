@@ -7,7 +7,7 @@
       </div>
       
       <div class="modal-body">
-        <div class="modal-tabs">
+        <div class="modal-tabs" style="margin-bottom: 24px;">
           <div class="tab-btn" :class="{ active: activeTab === 'personal' }" @click="activeTab = 'personal'">Personal</div>
           <div class="tab-btn" :class="{ active: activeTab === 'kepegawaian' }" @click="activeTab = 'kepegawaian'">Kepegawaian</div>
           <div class="tab-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">Jabatan & Kerja</div>
