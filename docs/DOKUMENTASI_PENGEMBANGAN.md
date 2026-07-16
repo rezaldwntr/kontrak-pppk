@@ -11,6 +11,13 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Auto Salary Calculator**: Penambahan fitur perhitungan "Gaji Pokok Saat Ini (Rp)" otomatis di Detail Modal yang menyesuaikan dengan nilai Golongan.
 - **Auto Contract End Date**: Penambahan logika perhitungan "Akhir Kontrak Aktif" otomatis berdasarkan TMT CPNS (1 tahun untuk Paruh Waktu, 5 tahun untuk Reguler).
 
+### Ditambahkan
+- **Smart Contract Status & BUP**: Logika cerdas untuk menghitung status kontrak secara spesifik:
+  - Penambahan status *Hampir Habis* dengan ambang batas dinamis (3 bulan untuk Paruh Waktu, 6 bulan untuk Reguler).
+  - Penambahan status *Habis (BUP)* jika kontrak berakhir lebih awal karena mencapai Batas Usia Pensiun.
+  - Perhitungan BUP secara otomatis mengambil umur pensiun 60 tahun untuk Guru dan 58 tahun untuk non-Guru. Jatuh tempo BUP ditetapkan pada hari terakhir di bulan ulang tahun.
+  - Tanggal *Akhir Kontrak Aktif* dihitung otomatis dengan memilih skenario terpendek antara standar masa kontrak dan usia pensiun.
+
 ### Diubah
 - **UI Revamp DetailModal**: Pembaruan desain UI Detail Data PPPK menjadi 4 tab yang lebih terorganisir (Personal, Kepegawaian, Jabatan & Kerja, Kontrak & Gaji PPPK).
 - **Edit Mode DetailModal**: Seluruh kolom di DetailModal kini bisa diedit (interaktif) dan dilengkapi dengan tombol "Simpan Perubahan" yang terintegrasi dengan `pegawaiStore`.

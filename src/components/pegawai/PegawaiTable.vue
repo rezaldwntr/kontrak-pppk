@@ -239,7 +239,10 @@ const calculateContractPeriod = (item) => {
     if (item && typeof item === "object" && item._periodCache) {
         return item._periodCache;
     }
-    const contractYears = (item && typeof item === "object" && item["JENIS_PPPK"] === "PPPK Paruh Waktu") ? 1 : 5;
+    const isParuhWaktu = (item && typeof item === "object" && item["JENIS_PPPK"] === "PPPK Paruh Waktu");
+    const contractYears = isParuhWaktu ? 1 : 5;
+    const thresholdHampirHabis = isParuhWaktu ? 3 : 6;
+    
     if (item && typeof item === "object") {
         if (item["STATUS KEDUDUKAN"] === "Meninggal") {
             return { endDateStr: "-", sisaBulan: 0, statusText: "Meninggal" };
@@ -249,6 +252,7 @@ const calculateContractPeriod = (item) => {
         }
     }
     
+    // 1. Standard End Date Calculation
     const tmtStr = (item && item["TMT CPNS"]) ? item["TMT CPNS"] : "";
     let startDate = null;
     const parts = tmtStr.split('-');
@@ -261,23 +265,62 @@ const calculateContractPeriod = (item) => {
         return { endDateStr: "Format Tanggal Invalid", sisaBulan: 999, statusText: "Format Tanggal Invalid" };
     }
     
-    let endDate = new Date(startDate);
-    endDate.setFullYear(endDate.getFullYear() + contractYears);
-    endDate.setDate(endDate.getDate() - 1);
+    let standardEndDate = new Date(startDate);
+    standardEndDate.setFullYear(standardEndDate.getFullYear() + contractYears);
+    standardEndDate.setDate(standardEndDate.getDate() - 1);
     
-    const y = endDate.getFullYear();
-    const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][endDate.getMonth()];
-    const d = endDate.getDate();
+    // 2. BUP End Date Calculation
+    let bupEndDate = null;
+    const tglLahirStr = (item && item["TANGGAL LAHIR"]) ? item["TANGGAL LAHIR"] : "";
+    if (tglLahirStr) {
+        let birthDate = null;
+        const bParts = tglLahirStr.split('-');
+        if (bParts.length === 3) {
+            if (bParts[0].length === 4) birthDate = new Date(tglLahirStr);
+            else if (bParts[2].length === 4) birthDate = new Date(`${bParts[2]}-${bParts[1]}-${bParts[0]}`);
+        }
+        if (birthDate && !isNaN(birthDate.getTime())) {
+            const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
+            const bupAge = jabatan.includes("guru") ? 60 : 58;
+            
+            bupEndDate = new Date(birthDate);
+            bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge);
+            // Get the last day of the birth month
+            bupEndDate.setMonth(bupEndDate.getMonth() + 1);
+            bupEndDate.setDate(0); 
+        }
+    }
+    
+    // 3. Final End Date and Status
+    let finalEndDate = standardEndDate;
+    let isBup = false;
+    
+    if (bupEndDate && bupEndDate.getTime() < standardEndDate.getTime()) {
+        finalEndDate = bupEndDate;
+        isBup = true;
+    }
+    
+    const y = finalEndDate.getFullYear();
+    const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][finalEndDate.getMonth()];
+    const d = finalEndDate.getDate();
     const endDateStr = `${d} ${mStr} ${y}`;
     
     const today = new Date();
-    const diffMonths = (endDate.getFullYear() - today.getFullYear()) * 12 + (endDate.getMonth() - today.getMonth());
+    // Reset time for accurate diff
+    const finalEndDateTime = new Date(finalEndDate.getFullYear(), finalEndDate.getMonth(), finalEndDate.getDate());
+    const todayTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const diffMonths = (finalEndDateTime.getFullYear() - todayTime.getFullYear()) * 12 + (finalEndDateTime.getMonth() - todayTime.getMonth());
+    const isExpired = finalEndDateTime.getTime() < todayTime.getTime();
     
     let statusText = "Masih Berlaku";
-    if (diffMonths <= 0) statusText = "Habis";
-    else if (diffMonths <= 6) statusText = "Hampir Habis";
+    if (isExpired) {
+        statusText = isBup ? "Habis (BUP)" : "Habis";
+    } else if (diffMonths <= thresholdHampirHabis) {
+        statusText = "Hampir Habis";
+    }
     
-    const res = { endDateStr, sisaBulan: diffMonths, statusText };
+    const res = { endDateStr, sisaBulan: diffMonths, statusText, isBup, rawDate: finalEndDate };
     if (item && typeof item === "object") {
         item._periodCache = res;
     }

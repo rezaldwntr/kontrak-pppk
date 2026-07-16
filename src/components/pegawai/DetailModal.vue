@@ -300,13 +300,37 @@ watch(() => props.isOpen, (newVal) => {
             else if (parts[2].length === 4) startDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`)
         }
         if (startDate && !isNaN(startDate.getTime())) {
-          const endDate = new Date(startDate)
-          endDate.setFullYear(endDate.getFullYear() + contractYears)
-          endDate.setDate(endDate.getDate() - 1)
+          let standardEndDate = new Date(startDate)
+          standardEndDate.setFullYear(standardEndDate.getFullYear() + contractYears)
+          standardEndDate.setDate(standardEndDate.getDate() - 1)
           
-          const y = endDate.getFullYear()
-          const mStr = String(endDate.getMonth() + 1).padStart(2, '0')
-          const d = String(endDate.getDate()).padStart(2, '0')
+          let finalEndDate = standardEndDate;
+          
+          if (editForm.value['TANGGAL LAHIR']) {
+              let birthDate = null;
+              const bParts = editForm.value['TANGGAL LAHIR'].split('-');
+              if (bParts.length === 3) {
+                  if (bParts[0].length === 4) birthDate = new Date(editForm.value['TANGGAL LAHIR']);
+                  else if (bParts[2].length === 4) birthDate = new Date(`${bParts[2]}-${bParts[1]}-${bParts[0]}`);
+              }
+              if (birthDate && !isNaN(birthDate.getTime())) {
+                  const jabatan = (editForm.value['JABATAN NAMA'] || "").toLowerCase();
+                  const bupAge = jabatan.includes("guru") ? 60 : 58;
+                  
+                  let bupEndDate = new Date(birthDate);
+                  bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge);
+                  bupEndDate.setMonth(bupEndDate.getMonth() + 1);
+                  bupEndDate.setDate(0); 
+                  
+                  if (bupEndDate.getTime() < standardEndDate.getTime()) {
+                      finalEndDate = bupEndDate;
+                  }
+              }
+          }
+          
+          const y = finalEndDate.getFullYear()
+          const mStr = String(finalEndDate.getMonth() + 1).padStart(2, '0')
+          const d = String(finalEndDate.getDate()).padStart(2, '0')
           editForm.value['AKHIR KONTRAK AKTIF'] = `${y}-${mStr}-${d}`
         } else {
           editForm.value['AKHIR KONTRAK AKTIF'] = ''
