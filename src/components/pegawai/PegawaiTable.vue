@@ -91,8 +91,8 @@
                         <td>{{ calculateContractPeriod(item).endDateStr }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>
-                            <span :class="['badge', getBadgeClass(item['STATUS_PERPANJANGAN'])]">
-                                {{ item["STATUS_PERPANJANGAN"] || "Belum Diproses" }}
+                            <span :class="['badge', getBadgeClass(calculateContractPeriod(item).statusText)]">
+                                {{ calculateContractPeriod(item).statusText }}
                             </span>
                         </td>
                         <td>
@@ -160,6 +160,10 @@ const getStatusPppk = (item) => {
   if (s === "Meninggal") return "Meninggal";
   if (s && s.includes("Pensiun")) return "Pensiun";
   if (s === "Tidak Diperpanjang") return "Tidak Diperpanjang";
+  
+  const contractStatus = calculateContractPeriod(item).statusText;
+  if (contractStatus === "Habis (BUP)") return "Pensiun";
+  
   return "Aktif";
 }
 
@@ -391,9 +395,9 @@ const toggleSelectAll = () => {
 
 const getBadgeClass = (status) => {
   if (!status || status === 'Belum Diproses') return 'badge-secondary'
-  if (status === 'Memenuhi Syarat' || status === 'Selesai Diperpanjang' || status === 'Kontrak Masih Berlaku') return 'badge-success'
-  if (status === 'Kontrak Hampir Habis') return 'badge-warning'
-  if (status === 'Tidak Memenuhi Syarat' || status === 'Kontrak Habis' || status === 'Kontrak Habis (BUP)') return 'badge-danger'
+  if (status === 'Memenuhi Syarat' || status === 'Selesai Diperpanjang' || status === 'Kontrak Masih Berlaku' || status === 'Masih Berlaku') return 'badge-success'
+  if (status === 'Kontrak Hampir Habis' || status === 'Hampir Habis') return 'badge-warning'
+  if (status === 'Tidak Memenuhi Syarat' || status === 'Kontrak Habis' || status === 'Kontrak Habis (BUP)' || status === 'Habis' || status === 'Habis (BUP)') return 'badge-danger'
   return 'badge-secondary'
 }
 
