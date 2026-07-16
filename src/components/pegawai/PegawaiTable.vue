@@ -163,6 +163,7 @@ const getStatusPppk = (item) => {
   
   const contractStatus = calculateContractPeriod(item).statusText;
   if (contractStatus === "Habis (BUP)") return "Pensiun";
+  if (contractStatus === "Habis") return "Tidak Diperpanjang";
   
   return "Aktif";
 }

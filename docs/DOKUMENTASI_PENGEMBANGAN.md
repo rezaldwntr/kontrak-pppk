@@ -32,7 +32,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 ### Diperbaiki
 - **Status Kontrak di Tabel Utama**: Memperbaiki masalah ketidaksesuaian (*mismatch*) antara filter status kontrak ("Habis (BUP)") dengan isi tabel. Kolom "STATUS KONTRAK" kini langsung menampilkan hasil kalkulasi kontrak secara *real-time* ("Masih Berlaku", "Habis (BUP)", dsb.) dan bukan menampilkan "Belum Diproses".
-- **Status PPPK Pensiun Otomatis**: Menambahkan logika pada kolom "STATUS PPPK" agar secara otomatis berubah menjadi "Pensiun" jika status kontraknya terdeteksi sebagai "Habis (BUP)".
+- **Status PPPK Pensiun Otomatis**: Menambahkan logika pada kolom "STATUS PPPK" agar secara otomatis berubah menjadi "Pensiun" jika status kontraknya terdeteksi sebagai "Habis (BUP)", dan "Tidak Diperpanjang" jika kontrak berakhir normal ("Habis").
 - **UI Spacing**: Memperbaiki jarak (*margin*) yang terlalu sempit antara deretan Tab dan kolom isian di bawahnya pada `DetailModal.vue`.
 - **Bug Modal Kosong**: Memperbaiki isu form kosong pada DetailModal setelah impor data dengan menambahkan `immediate: true` pada `watch`.
 - **Payload Size Error**: Penanganan isu batasan *payload size* saat deploy ke Vercel/Firebase.
