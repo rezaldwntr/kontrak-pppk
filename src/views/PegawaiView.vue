@@ -67,8 +67,21 @@ const handleView = (item) => {
 
 const handleSaveDetail = async (updatedItem) => {
   try {
-    await pegawaiStore.updatePegawai(updatedItem)
     showDetail.value = false
+    customSwal.fire({
+      title: 'Menyimpan...',
+      html: 'Sedang memproses perubahan. Mohon tunggu...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        customSwal.showLoading()
+      }
+    })
+    
+    // Memberikan jeda waktu agar browser dapat merender UI (SweetAlert & tutup modal) sebelum proses berat memblokir thread (Fix INP Issue)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    await pegawaiStore.updatePegawai(updatedItem)
+    
     customSwal.fire({
       icon: 'success',
       title: 'Tersimpan!',
@@ -105,6 +118,14 @@ const handleDelete = async (item) => {
   
   if (result.isConfirmed) {
     try {
+      customSwal.fire({
+        title: 'Menghapus...',
+        html: 'Sedang menghapus data. Mohon tunggu...',
+        allowOutsideClick: false,
+        didOpen: () => { customSwal.showLoading() }
+      })
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       await pegawaiStore.deletePegawai(item['NIP BARU'])
       customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil dihapus.' })
     } catch (e) {
@@ -125,6 +146,14 @@ const handleBatchDelete = async (selectedIds) => {
   
   if (result.isConfirmed) {
     try {
+      customSwal.fire({
+        title: 'Menghapus...',
+        html: `Sedang menghapus ${selectedIds.length} data. Mohon tunggu...`,
+        allowOutsideClick: false,
+        didOpen: () => { customSwal.showLoading() }
+      })
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       await pegawaiStore.batchDelete(selectedIds)
       customSwal.fire({ icon: 'success', title: 'Berhasil', text: `${selectedIds.length} data pegawai berhasil dihapus.` })
     } catch (e) {

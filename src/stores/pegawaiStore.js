@@ -138,7 +138,13 @@ export const usePegawaiStore = defineStore('pegawai', {
     async saveAllPegawai() {
       const dateNow = new Date().toISOString()
       const pegawaiRef = doc(db, 'database', 'pegawai')
+      
+      // Jeda agar UI bisa merender animasi loading sebelum proses synchronous berat dimulai
+      await new Promise(resolve => setTimeout(resolve, 50))
+      
       const pegawaiJson = JSON.stringify(this.pppkData)
+      
+      await new Promise(resolve => setTimeout(resolve, 50))
       const compressed = LZString.compressToUTF16(pegawaiJson)
       const chunkSize = 250000;
       const numChunks = Math.ceil(compressed.length / chunkSize);
