@@ -32,6 +32,8 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 ### Diperbaiki
 - **Status Kontrak di Tabel Utama**: Memperbaiki masalah ketidaksesuaian (*mismatch*) antara filter status kontrak ("Habis (BUP)") dengan isi tabel. Kolom "STATUS KONTRAK" kini langsung menampilkan hasil kalkulasi kontrak secara *real-time* ("Masih Berlaku", "Habis (BUP)", dsb.) dan bukan menampilkan "Belum Diproses".
+- **Bug Filter Status Ganda**: Memperbaiki isu di mana filter Status Kontrak menampilkan opsi ganda (misal: "Habis" dan "Kontrak Habis") akibat *caching* data lama di database. Kalkulasi status kini murni dilakukan secara *real-time* di sisi klien.
+- **Bug Durasi PPPK Paruh Waktu**: Memperbaiki eror perhitungan (`typo` pada variabel *key*) yang menyebabkan kontrak PPPK Paruh Waktu dikalkulasi menjadi 5 tahun (seharusnya 1 tahun).
 - **Status PPPK Pensiun Otomatis**: Menambahkan logika pada kolom "STATUS PPPK" agar secara otomatis berubah menjadi "Pensiun" jika status kontraknya terdeteksi sebagai "Habis (BUP)", dan "Tidak Diperpanjang" jika kontrak berakhir normal ("Habis").
 - **Penamaan Status Kontrak**: Menambahkan awalan "Kontrak" pada semua label status (misal: "Kontrak Habis", "Kontrak Hampir Habis", dsb) untuk memperjelas konteks.
 - **Parsing Tanggal Lebih Kuat**: Memperbaiki format parsing tanggal untuk dapat menerima input data yang menggunakan format garis miring (`DD/MM/YYYY`) di samping strip (`DD-MM-YYYY`), sehingga meminimalisir eror perhitungan.

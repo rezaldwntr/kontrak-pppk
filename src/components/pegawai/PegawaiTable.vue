@@ -241,10 +241,7 @@ const formatIndoDate = (dateStr) => {
 }
 
 const calculateContractPeriod = (item) => {
-    if (item && typeof item === "object" && item._periodCache) {
-        return item._periodCache;
-    }
-    const isParuhWaktu = (item && typeof item === "object" && item["JENIS_PPPK"] === "PPPK Paruh Waktu");
+    const isParuhWaktu = (item && typeof item === "object" && item["JENIS PPPK"] === "PPPK Paruh Waktu");
     const contractYears = isParuhWaktu ? 1 : 5;
     const thresholdHampirHabis = isParuhWaktu ? 3 : 6;
     
@@ -326,9 +323,6 @@ const calculateContractPeriod = (item) => {
     }
     
     const res = { endDateStr, sisaBulan: diffMonths, statusText, isBup, rawDate: finalEndDate };
-    if (item && typeof item === "object") {
-        item._periodCache = res;
-    }
     return res;
 }
 

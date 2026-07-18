@@ -292,7 +292,7 @@ watch(() => props.isOpen, (newVal) => {
     
     if (!editForm.value['AKHIR KONTRAK AKTIF']) {
       if (editForm.value['AWAL KONTRAK AKTIF']) {
-        const contractYears = editForm.value['JENIS_PPPK'] === 'PPPK Paruh Waktu' ? 1 : 5
+        const contractYears = editForm.value['JENIS PPPK'] === 'PPPK Paruh Waktu' ? 1 : 5
         let startDate = null
         const parts = String(editForm.value['AWAL KONTRAK AKTIF']).split(/[-/]/)
         if (parts.length === 3) {
