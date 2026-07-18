@@ -156,16 +156,22 @@ const handleUnorIndukChange = () => {
 }
 
 const getStatusPppk = (item) => {
-  const s = item["STATUS KEDUDUKAN"];
-  if (s === "Meninggal") return "Meninggal";
-  if (s && s.includes("Pensiun")) return "Pensiun";
-  if (s === "Tidak Diperpanjang") return "Tidak Diperpanjang";
+  const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+  if (manualStatus === "Meninggal") return "Meninggal";
+  
+  if (manualStatus === "Aktif" && item["FORCE_AKTIF"]) {
+      return "Aktif";
+  }
   
   const contractStatus = calculateContractPeriod(item).statusText;
-  if (contractStatus === "Habis (BUP)") return "Pensiun";
-  if (contractStatus === "Habis") return "Tidak Diperpanjang";
+  if (contractStatus === "Kontrak Habis (BUP)") return "Pensiun";
+  if (contractStatus === "Kontrak Habis") return "Tidak Diperpanjang";
   
-  return "Aktif";
+  if (contractStatus === "Kontrak Hampir Habis" || contractStatus === "Kontrak Masih Berlaku") {
+      return "Aktif";
+  }
+  
+  return manualStatus || "Aktif";
 }
 
 const getStatusPppkClass = (status) => {
@@ -246,11 +252,9 @@ const calculateContractPeriod = (item) => {
     const thresholdHampirHabis = isParuhWaktu ? 3 : 6;
     
     if (item && typeof item === "object") {
-        if (item["STATUS KEDUDUKAN"] === "Meninggal") {
-            return { endDateStr: "-", sisaBulan: 0, statusText: "Meninggal" };
-        }
-        if (item["STATUS KEDUDUKAN"] === "Pensiun BUP") {
-            return { endDateStr: "-", sisaBulan: 0, statusText: "Pensiun (BUP)" };
+        const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+        if (manualStatus === "Meninggal") {
+            return { endDateStr: "-", sisaBulan: 0, statusText: "Kontrak Habis", isBup: false, rawDate: new Date() };
         }
     }
     

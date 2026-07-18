@@ -110,7 +110,7 @@
               <label>Kedudukan Hukum</label>
               <input type="text" v-model="editForm['KEDUDUKAN HUKUM']" class="form-control">
             </div>
-            <div class="form-group">
+            <div class="form-group" style="grid-column: span 2;">
               <label>Status Keaktifan PPPK</label>
               <select v-model="editForm['STATUS KEAKTIFAN PPPK']" class="form-control">
                 <option value="Aktif">Aktif</option>
@@ -118,6 +118,9 @@
                 <option value="Meninggal">Meninggal</option>
                 <option value="Pensiun">Pensiun</option>
               </select>
+              <div v-if="editForm['STATUS KEAKTIFAN PPPK'] === 'Aktif' && isContractExpired" style="margin-top: 8px; font-size: 0.85rem; color: #ff9800; background: rgba(255,152,0,0.1); padding: 8px; border-radius: 4px; border: 1px solid rgba(255,152,0,0.3);">
+                <i class="fa-solid fa-triangle-exclamation"></i> Peringatan: Masa kontrak telah habis. Pegawai ini harus segera di non-aktifkan (Pensiun/Tidak Diperpanjang) atau perbarui data kontrak barunya.
+              </div>
             </div>
             <div class="form-group">
               <label>Masa Kerja (Tahun)</label>
@@ -247,7 +250,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 
 const props = defineProps({
@@ -359,7 +362,25 @@ watch(() => editForm.value['GOLONGAN'], (newGol) => {
   }
 })
 
+const isContractExpired = computed(() => {
+  if (!editForm.value['AKHIR KONTRAK AKTIF']) return false
+  const parts = String(editForm.value['AKHIR KONTRAK AKTIF']).split(/[-/]/)
+  let endDate = null
+  if (parts.length === 3) {
+      if (parts[0].length === 4) endDate = new Date(parts[0], parts[1]-1, parts[2])
+      else if (parts[2].length === 4) endDate = new Date(parts[2], parts[1]-1, parts[0])
+  }
+  if (!endDate || isNaN(endDate.getTime())) return false
+  const today = new Date()
+  return new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+})
+
 const handleSave = () => {
+  if (editForm.value['STATUS KEAKTIFAN PPPK'] === 'Aktif' && isContractExpired.value) {
+    editForm.value['FORCE_AKTIF'] = true;
+  } else {
+    delete editForm.value['FORCE_AKTIF'];
+  }
   emit('save', editForm.value)
 }
 </script>
