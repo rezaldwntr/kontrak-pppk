@@ -43,6 +43,14 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Perpanjangan Kontrak</label>
+                    <select v-model="perpanjanganFilter" @change="handleSearch" class="form-control" style="min-width: 220px;">
+                        <option value="all">Semua Perpanjangan</option>
+                        <option value="bup">Kontrak Habis (BUP)</option>
+                        <option v-for="opt in perpanjanganOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <button class="btn btn-outline" @click="resetFilters" style="height: 38px; margin-bottom: 2px;" title="Reset Filter">
                         <i class="fa-solid fa-rotate-left"></i> Reset
                     </button>
@@ -131,6 +139,7 @@ const unorAtasanFilter = ref('all')
 const unorIndukFilter = ref('all')
 const statusFilter = ref('all')
 const statusPppkFilter = ref('all')
+const perpanjanganFilter = ref('all')
 const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
@@ -148,6 +157,7 @@ const resetFilters = () => {
   unorAtasanFilter.value = unorAtasanOptions.value.length === 1 ? unorAtasanOptions.value[0] : 'all'
   statusFilter.value = statusOptions.value.length === 1 ? statusOptions.value[0] : 'all'
   statusPppkFilter.value = statusPppkOptions.value.length === 1 ? statusPppkOptions.value[0] : 'all'
+  perpanjanganFilter.value = 'all'
   searchQuery.value = ''
   handleSearch()
 }
@@ -176,7 +186,8 @@ const filteredData = computed(() => {
     }
     
     // Status Kontrak uses calculateContractPeriod status if available
-    const contractStatus = calculateContractPeriod(item).statusText;
+    const period = calculateContractPeriod(item);
+    const contractStatus = period.statusText;
     const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value
     
     const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value
@@ -184,7 +195,23 @@ const filteredData = computed(() => {
     const matchUnorAtasan = unorAtasanFilter.value === 'all' || getUnorAtasan(item['UNOR NAMA']) === unorAtasanFilter.value
     const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value
     
-    return matchQuery && matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk
+    const matchPerpanjangan = (() => {
+        if (perpanjanganFilter.value === 'all') return true;
+        if (perpanjanganFilter.value === 'bup') return contractStatus === 'Kontrak Habis (BUP)';
+        
+        if (!period.isBup && contractStatus !== 'Meninggal' && period.rawDate) {
+            const newTmt = new Date(period.rawDate);
+            newTmt.setDate(newTmt.getDate() + 1);
+            const y = newTmt.getFullYear();
+            const m = String(newTmt.getMonth() + 1).padStart(2, '0');
+            const d = String(newTmt.getDate()).padStart(2, '0');
+            const dateStr = `${y}-${m}-${d}`;
+            return dateStr === perpanjanganFilter.value;
+        }
+        return false;
+    })();
+    
+    return matchQuery && matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk && matchPerpanjangan
   })
 })
 
@@ -257,6 +284,54 @@ const statusOptions = computed(() => {
 const statusPppkOptions = computed(() => {
   const types = new Set(pegawaiStore.pppkData.map(item => getStatusPppk(item)))
   return Array.from(types).sort()
+})
+
+const perpanjanganOptions = computed(() => {
+  const groups = {}; 
+  pegawaiStore.pppkData.forEach(item => {
+    const period = calculateContractPeriod(item);
+    if (!period.isBup && period.statusText !== 'Meninggal' && period.rawDate && !isNaN(period.rawDate.getTime())) {
+      const newTmt = new Date(period.rawDate);
+      newTmt.setDate(newTmt.getDate() + 1); 
+      
+      const y = newTmt.getFullYear();
+      const m = String(newTmt.getMonth() + 1).padStart(2, '0');
+      const d = String(newTmt.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+      
+      if (!groups[y]) groups[y] = new Set();
+      groups[y].add(dateStr);
+    }
+  });
+
+  const options = [];
+  const sortedYears = Object.keys(groups).sort();
+  const mNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  
+  sortedYears.forEach(year => {
+    const dates = Array.from(groups[year]).sort();
+    if (dates.length === 1) {
+      const parts = dates[0].split('-');
+      const mName = mNames[parseInt(parts[1]) - 1];
+      const dNum = parseInt(parts[2]);
+      options.push({
+        value: dates[0],
+        label: `Perpanjangan Periode ${year} (${dNum} ${mName})`
+      });
+    } else {
+      dates.forEach((dateStr, idx) => {
+        const parts = dateStr.split('-');
+        const mName = mNames[parseInt(parts[1]) - 1];
+        const dNum = parseInt(parts[2]);
+        options.push({
+          value: dateStr,
+          label: `Perpanjangan Periode ${year} - Tahap ${idx + 1} (${dNum} ${mName})`
+        });
+      });
+    }
+  });
+  
+  return options;
 })
 
 // Auto-select if only 1 option available when data loads
