@@ -39,5 +39,6 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Penamaan Status Kontrak**: Menambahkan awalan "Kontrak" pada semua label status (misal: "Kontrak Habis", "Kontrak Hampir Habis", dsb) untuk memperjelas konteks.
 - **Parsing Tanggal Lebih Kuat**: Memperbaiki format parsing tanggal untuk dapat menerima input data yang menggunakan format garis miring (`DD/MM/YYYY`) di samping strip (`DD-MM-YYYY`), sehingga meminimalisir eror perhitungan.
 - **UI Spacing**: Memperbaiki jarak (*margin*) yang terlalu sempit antara deretan Tab dan kolom isian di bawahnya pada `DetailModal.vue`.
+- **Sinkronisasi UI Detail Data**: Menambal celah (*bug*) di mana tabel utama sudah menampilkan status PPPK yang benar (misal: "Tidak Diperpanjang"), namun saat modal "Detail Data" dibuka, pilihan pada *dropdown* masih menampilkan "Aktif" (karena data mentah dari database belum ditimpa logika otomatis). Kini, ketika modal dibuka, formulir akan otomatis menyinkronkan status tersebut sesuai perhitungan terkini sebelum ditampilkan ke pengguna.
 - **Bug Modal Kosong**: Memperbaiki isu form kosong pada DetailModal setelah impor data dengan menambahkan `immediate: true` pada `watch`.
 - **Payload Size Error**: Penanganan isu batasan *payload size* saat deploy ke Vercel/Firebase.

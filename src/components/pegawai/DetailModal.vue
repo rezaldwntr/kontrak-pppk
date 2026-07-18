@@ -308,6 +308,7 @@ watch(() => props.isOpen, (newVal) => {
           standardEndDate.setDate(standardEndDate.getDate() - 1)
           
           let finalEndDate = standardEndDate;
+          let isBup = false;
           
           if (editForm.value['TANGGAL LAHIR']) {
               let birthDate = null;
@@ -327,6 +328,7 @@ watch(() => props.isOpen, (newVal) => {
                   
                   if (bupEndDate.getTime() < standardEndDate.getTime()) {
                       finalEndDate = bupEndDate;
+                      isBup = true;
                   }
               }
           }
@@ -335,6 +337,16 @@ watch(() => props.isOpen, (newVal) => {
           const mStr = String(finalEndDate.getMonth() + 1).padStart(2, '0')
           const d = String(finalEndDate.getDate()).padStart(2, '0')
           editForm.value['AKHIR KONTRAK AKTIF'] = `${y}-${mStr}-${d}`
+          
+          if (!editForm.value['FORCE_AKTIF'] && editForm.value['STATUS KEAKTIFAN PPPK'] !== 'Meninggal') {
+              const today = new Date();
+              const isExpired = new Date(finalEndDate.getFullYear(), finalEndDate.getMonth(), finalEndDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+              if (isExpired) {
+                  editForm.value['STATUS KEAKTIFAN PPPK'] = isBup ? 'Pensiun' : 'Tidak Diperpanjang';
+              } else {
+                  editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif';
+              }
+          }
         } else {
           editForm.value['AKHIR KONTRAK AKTIF'] = ''
         }
