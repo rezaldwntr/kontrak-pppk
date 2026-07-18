@@ -52,6 +52,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/authStore'
 import { usePegawaiStore } from '../stores/pegawaiStore'
 import ChartCard from '../components/dashboard/ChartCard.vue'
+import { calculateContractPeriod } from '../utils/pppkLogic'
 
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
@@ -68,19 +69,20 @@ const totalPegawai = computed(() => filteredData.value.length)
 
 const warningCount = computed(() => {
   return filteredData.value.filter(item => {
-    return item["STATUS_PERPANJANGAN"] === "Kontrak Hampir Habis"
+    return calculateContractPeriod(item).statusText === "Kontrak Hampir Habis"
   }).length
 })
 
 const activeCount = computed(() => {
   return filteredData.value.filter(item => {
-    return item["STATUS_PERPANJANGAN"] === "Kontrak Masih Berlaku" || !item["STATUS_PERPANJANGAN"] || item["STATUS_PERPANJANGAN"] === "Belum Diproses"
+    return calculateContractPeriod(item).statusText === "Kontrak Masih Berlaku"
   }).length
 })
 
 const expiredCount = computed(() => {
   return filteredData.value.filter(item => {
-    return item["STATUS_PERPANJANGAN"] === "Kontrak Habis"
+    const s = calculateContractPeriod(item).statusText;
+    return s === "Kontrak Habis" || s === "Kontrak Habis (BUP)" || s === "Meninggal"
   }).length
 })
 
@@ -109,10 +111,9 @@ const jabatanChartData = computed(() => {
 const kontrakChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
-    // simplified mock extraction, year 2026-2031
-    const tmt = String(item["TMT CPNS"] || "")
-    if (tmt) {
-       const year = parseInt(tmt.split('-')[0]) + 5 // assume 5 year contract
+    const period = calculateContractPeriod(item)
+    if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
+       const year = period.rawDate.getFullYear()
        counts[year] = (counts[year] || 0) + 1
     }
   })
@@ -130,12 +131,27 @@ const kontrakChartData = computed(() => {
 const bupChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
-    const tl = String(item["TANGGAL LAHIR"] || "")
-    if (tl) {
-       const year = parseInt(tl.split('-')[0]) + 58 // assume BUP 58
-       if (year >= 2025 && year <= 2061) {
-           counts[year] = (counts[year] || 0) + 1
-       }
+    const period = calculateContractPeriod(item)
+    // To plot BUP projections, we need the actual BUP year even if they aren't BUP yet
+    // calculateContractPeriod doesn't return the raw BUP date unless they are BUP
+    // Let's re-calculate it quickly for the chart
+    const tglLahirStr = String(item["TANGGAL LAHIR"] || "")
+    if (tglLahirStr) {
+        let birthDate = null;
+        const bParts = tglLahirStr.split(/[-/]/);
+        if (bParts.length === 3) {
+            if (bParts[0].length === 4) birthDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
+            else if (bParts[2].length === 4) birthDate = new Date(bParts[2], bParts[1]-1, bParts[0]);
+        }
+        
+        if (birthDate && !isNaN(birthDate.getTime())) {
+            const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
+            const bupAge = jabatan.includes("guru") ? 60 : 58;
+            const year = birthDate.getFullYear() + bupAge;
+            if (year >= 2025 && year <= 2061) {
+               counts[year] = (counts[year] || 0) + 1
+            }
+        }
     }
   })
   

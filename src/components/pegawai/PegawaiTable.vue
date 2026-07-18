@@ -136,6 +136,8 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const selectedIds = ref([])
 
+import { calculateContractPeriod, getStatusPppk } from '../../utils/pppkLogic';
+
 const handleSearch = () => {
   currentPage.value = 1
 }
@@ -155,24 +157,7 @@ const handleUnorIndukChange = () => {
   handleSearch()
 }
 
-const getStatusPppk = (item) => {
-  const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
-  if (manualStatus === "Meninggal") return "Meninggal";
-  
-  if (manualStatus === "Aktif" && item["FORCE_AKTIF"]) {
-      return "Aktif";
-  }
-  
-  const contractStatus = calculateContractPeriod(item).statusText;
-  if (contractStatus === "Kontrak Habis (BUP)") return "Pensiun";
-  if (contractStatus === "Kontrak Habis") return "Tidak Diperpanjang";
-  
-  if (contractStatus === "Kontrak Hampir Habis" || contractStatus === "Kontrak Masih Berlaku") {
-      return "Aktif";
-  }
-  
-  return manualStatus || "Aktif";
-}
+// getStatusPppk is imported from pppkLogic.js
 
 const getStatusPppkClass = (status) => {
   if (status === 'Aktif') return 'badge-success';
@@ -244,90 +229,6 @@ const formatIndoDate = (dateStr) => {
     const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][startDate.getMonth()];
     const d = startDate.getDate();
     return `${d} ${mStr} ${y}`;
-}
-
-const calculateContractPeriod = (item) => {
-    const isParuhWaktu = (item && typeof item === "object" && item["JENIS PPPK"] === "PPPK Paruh Waktu");
-    const contractYears = isParuhWaktu ? 1 : 5;
-    const thresholdHampirHabis = isParuhWaktu ? 3 : 6;
-    
-    if (item && typeof item === "object") {
-        const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
-        if (manualStatus === "Meninggal") {
-            return { endDateStr: "-", sisaBulan: 0, statusText: "Kontrak Habis", isBup: false, rawDate: new Date() };
-        }
-    }
-    
-    // 1. Standard End Date Calculation
-    const tmtStr = (item && item["TMT CPNS"]) ? item["TMT CPNS"] : "";
-    let startDate = null;
-    const parts = tmtStr.split(/[-/]/);
-    if (parts.length === 3) {
-        if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2]);
-        else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0]);
-    }
-    
-    if (!startDate || isNaN(startDate.getTime())) {
-        return { endDateStr: "Format Tanggal Invalid", sisaBulan: 999, statusText: "Format Tanggal Invalid" };
-    }
-    
-    let standardEndDate = new Date(startDate);
-    standardEndDate.setFullYear(standardEndDate.getFullYear() + contractYears);
-    standardEndDate.setDate(standardEndDate.getDate() - 1);
-    
-    // 2. BUP End Date Calculation
-    let bupEndDate = null;
-    const tglLahirStr = (item && item["TANGGAL LAHIR"]) ? item["TANGGAL LAHIR"] : "";
-    if (tglLahirStr) {
-        let birthDate = null;
-        const bParts = tglLahirStr.split(/[-/]/);
-        if (bParts.length === 3) {
-            if (bParts[0].length === 4) birthDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
-            else if (bParts[2].length === 4) birthDate = new Date(bParts[2], bParts[1]-1, bParts[0]);
-        }
-        if (birthDate && !isNaN(birthDate.getTime())) {
-            const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
-            const bupAge = jabatan.includes("guru") ? 60 : 58;
-            
-            bupEndDate = new Date(birthDate);
-            bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge);
-            // Get the last day of the birth month
-            bupEndDate.setMonth(bupEndDate.getMonth() + 1);
-            bupEndDate.setDate(0); 
-        }
-    }
-    
-    // 3. Final End Date and Status
-    let finalEndDate = standardEndDate;
-    let isBup = false;
-    
-    if (bupEndDate && bupEndDate.getTime() < standardEndDate.getTime()) {
-        finalEndDate = bupEndDate;
-        isBup = true;
-    }
-    
-    const y = finalEndDate.getFullYear();
-    const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][finalEndDate.getMonth()];
-    const d = finalEndDate.getDate();
-    const endDateStr = `${d} ${mStr} ${y}`;
-    
-    const today = new Date();
-    // Reset time for accurate diff
-    const finalEndDateTime = new Date(finalEndDate.getFullYear(), finalEndDate.getMonth(), finalEndDate.getDate());
-    const todayTime = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    
-    const diffMonths = (finalEndDateTime.getFullYear() - todayTime.getFullYear()) * 12 + (finalEndDateTime.getMonth() - todayTime.getMonth());
-    const isExpired = finalEndDateTime.getTime() < todayTime.getTime();
-    
-    let statusText = "Kontrak Masih Berlaku";
-    if (isExpired) {
-        statusText = isBup ? "Kontrak Habis (BUP)" : "Kontrak Habis";
-    } else if (diffMonths <= thresholdHampirHabis) {
-        statusText = "Kontrak Hampir Habis";
-    }
-    
-    const res = { endDateStr, sisaBulan: diffMonths, statusText, isBup, rawDate: finalEndDate };
-    return res;
 }
 
 const jenisPppkOptions = computed(() => {

@@ -45,6 +45,7 @@ import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ImportModal from '../components/pegawai/ImportModal.vue'
 import { exportToExcel } from '../utils/exportImport'
 import { customSwal } from '../utils/swal'
+import { calculateContractPeriod, getStatusPppk } from '../utils/pppkLogic'
 
 const pegawaiStore = usePegawaiStore()
 const showDetail = ref(false)
@@ -136,7 +137,15 @@ const handleAdd = () => {
 }
 const handleExport = () => {
   try {
-    exportToExcel(pegawaiStore.pppkData)
+    const dataToExport = pegawaiStore.pppkData.map(item => {
+      const contractPeriod = calculateContractPeriod(item)
+      return {
+        ...item,
+        'STATUS_KONTRAK_TERKINI': contractPeriod.statusText,
+        'STATUS_PPPK_TERKINI': getStatusPppk(item)
+      }
+    })
+    exportToExcel(dataToExport)
   } catch(e) {
     customSwal.fire({ icon: 'error', title: 'Gagal Ekspor', text: e.message })
   }
