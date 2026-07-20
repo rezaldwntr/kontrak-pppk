@@ -112,8 +112,10 @@ const kontrakChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
     const period = calculateContractPeriod(item)
-    if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
-       const year = period.rawDate.getFullYear()
+    if (!period.isBup && period.statusText !== 'Meninggal' && period.rawDate && !isNaN(period.rawDate.getTime())) {
+       const newTmt = new Date(period.rawDate);
+       newTmt.setDate(newTmt.getDate() + 1);
+       const year = newTmt.getFullYear()
        counts[year] = (counts[year] || 0) + 1
     }
   })
