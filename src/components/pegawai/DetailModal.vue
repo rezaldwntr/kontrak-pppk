@@ -124,11 +124,11 @@
             </div>
             <div class="form-group">
               <label>Masa Kerja (Tahun)</label>
-              <input type="number" v-model="editForm['MASA KERJA TAHUN']" class="form-control">
+              <input type="number" v-model="editForm['MASA KERJA TAHUN']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group">
               <label>Masa Kerja (Bulan)</label>
-              <input type="number" v-model="editForm['MASA KERJA BULAN']" class="form-control">
+              <input type="number" v-model="editForm['MASA KERJA BULAN']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
           </div>
         </div>
@@ -197,11 +197,11 @@
             </div>
             <div class="form-group">
               <label>Awal Kontrak Aktif</label>
-              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control">
+              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group">
               <label>Akhir Kontrak Aktif</label>
-              <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control">
+              <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group" style="grid-column: span 2;">
               <label>Gaji Pokok Saat Ini (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Baru</span></label>
@@ -252,6 +252,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
+import { calculateContractPeriod } from '../../utils/pppkLogic'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -280,78 +281,60 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['JENIS PEGAWAI']) editForm.value['JENIS PEGAWAI'] = 'PNS Daerah Kab./Kota yang bekerja pada Kab./Kota'
     if (!editForm.value['KEDUDUKAN HUKUM']) editForm.value['KEDUDUKAN HUKUM'] = editForm.value['STATUS KEDUDUKAN'] || 'PPPK Aktif'
     if (!editForm.value['STATUS KEAKTIFAN PPPK']) editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif'
-    if (!editForm.value['MASA KERJA TAHUN']) editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
-    if (!editForm.value['MASA KERJA BULAN']) editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
-    if (!editForm.value['JENIS JABATAN']) editForm.value['JENIS JABATAN'] = 'Jabatan Fungsional'
-    if (!editForm.value['TMT JABATAN']) editForm.value['TMT JABATAN'] = ''
-    if (!editForm.value['GOLONGAN']) editForm.value['GOLONGAN'] = editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || ''
-    if (!editForm.value['INSTANSI INDUK']) editForm.value['INSTANSI INDUK'] = 'Pemerintah Kab. Hulu Sungai Utara'
-    if (!editForm.value['TINGKAT PENDIDIKAN']) editForm.value['TINGKAT PENDIDIKAN'] = editForm.value['TINGKAT PENDIDIKAN NAMA'] || ''
-    if (!editForm.value['PENDIDIKAN TERAKHIR']) editForm.value['PENDIDIKAN TERAKHIR'] = editForm.value['PENDIDIKAN NAMA'] || ''
-    if (!editForm.value['TAHUN LULUS']) editForm.value['TAHUN LULUS'] = ''
-    if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
-    if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
-    if (!editForm.value['AWAL KONTRAK AKTIF']) editForm.value['AWAL KONTRAK AKTIF'] = editForm.value['TMT CPNS'] || ''
-    
-    if (!editForm.value['AKHIR KONTRAK AKTIF']) {
-      if (editForm.value['AWAL KONTRAK AKTIF']) {
-        const contractYears = editForm.value['JENIS PPPK'] === 'PPPK Paruh Waktu' ? 1 : 5
-        let startDate = null
-        const parts = String(editForm.value['AWAL KONTRAK AKTIF']).split(/[-/]/)
-        if (parts.length === 3) {
-            if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2])
-            else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0])
+    // Auto-calculate Masa Kerja
+    if (editForm.value['TMT CPNS']) {
+      let tmtDate = null
+      const parts = String(editForm.value['TMT CPNS']).split(/[-/]/)
+      if (parts.length === 3) {
+        if (parts[0].length === 4) tmtDate = new Date(parts[0], parts[1]-1, parts[2])
+        else if (parts[2].length === 4) tmtDate = new Date(parts[2], parts[1]-1, parts[0])
+      }
+      
+      if (tmtDate && !isNaN(tmtDate.getTime())) {
+        const today = new Date()
+        let years = today.getFullYear() - tmtDate.getFullYear()
+        let months = today.getMonth() - tmtDate.getMonth()
+        if (today.getDate() < tmtDate.getDate()) {
+          months--
         }
-        if (startDate && !isNaN(startDate.getTime())) {
-          let standardEndDate = new Date(startDate)
-          standardEndDate.setFullYear(standardEndDate.getFullYear() + contractYears)
-          standardEndDate.setDate(standardEndDate.getDate() - 1)
-          
-          let finalEndDate = standardEndDate;
-          let isBup = false;
-          
-          if (editForm.value['TANGGAL LAHIR']) {
-              let birthDate = null;
-              const bParts = String(editForm.value['TANGGAL LAHIR']).split(/[-/]/);
-              if (bParts.length === 3) {
-                  if (bParts[0].length === 4) birthDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
-                  else if (bParts[2].length === 4) birthDate = new Date(bParts[2], bParts[1]-1, bParts[0]);
-              }
-              if (birthDate && !isNaN(birthDate.getTime())) {
-                  const jabatan = (editForm.value['JABATAN NAMA'] || "").toLowerCase();
-                  const bupAge = jabatan.includes("guru") ? 60 : 58;
-                  
-                  let bupEndDate = new Date(birthDate);
-                  bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge);
-                  bupEndDate.setMonth(bupEndDate.getMonth() + 1);
-                  bupEndDate.setDate(0); 
-                  
-                  if (bupEndDate.getTime() < standardEndDate.getTime()) {
-                      finalEndDate = bupEndDate;
-                      isBup = true;
-                  }
-              }
-          }
-          
-          const y = finalEndDate.getFullYear()
-          const mStr = String(finalEndDate.getMonth() + 1).padStart(2, '0')
-          const d = String(finalEndDate.getDate()).padStart(2, '0')
+        if (months < 0) {
+          years--
+          months += 12
+        }
+        if (years < 0) {
+           years = 0; months = 0;
+        }
+        editForm.value['MASA KERJA TAHUN'] = years.toString()
+        editForm.value['MASA KERJA BULAN'] = months.toString()
+      } else {
+        editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
+        editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
+      }
+    } else {
+      editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
+      editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
+    }
+
+    if (!editForm.value['AKHIR KONTRAK AKTIF'] || editForm.value['AKHIR KONTRAK AKTIF']) {
+      // Force recalculate Akhir Kontrak using unified logic
+      const period = calculateContractPeriod(editForm.value);
+      if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
+          const y = period.rawDate.getFullYear()
+          const mStr = String(period.rawDate.getMonth() + 1).padStart(2, '0')
+          const d = String(period.rawDate.getDate()).padStart(2, '0')
           editForm.value['AKHIR KONTRAK AKTIF'] = `${y}-${mStr}-${d}`
           
           if (!editForm.value['FORCE_AKTIF'] && editForm.value['STATUS KEAKTIFAN PPPK'] !== 'Meninggal') {
               const today = new Date();
-              const isExpired = new Date(finalEndDate.getFullYear(), finalEndDate.getMonth(), finalEndDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+              const isExpired = new Date(y, period.rawDate.getMonth(), period.rawDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
               if (isExpired) {
-                  editForm.value['STATUS KEAKTIFAN PPPK'] = isBup ? 'Pensiun' : 'Tidak Diperpanjang';
+                  editForm.value['STATUS KEAKTIFAN PPPK'] = period.isBup ? 'Pensiun' : 'Tidak Diperpanjang';
               } else {
                   editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif';
               }
           }
-        } else {
-          editForm.value['AKHIR KONTRAK AKTIF'] = ''
-        }
       } else {
-        editForm.value['AKHIR KONTRAK AKTIF'] = ''
+          editForm.value['AKHIR KONTRAK AKTIF'] = ''
       }
     }
     if (!editForm.value['GAJI POKOK SAAT INI']) {
