@@ -162,7 +162,7 @@ export const usePegawaiStore = defineStore('pegawai', {
         lastUpdated: dateNow
       })
     },
-    async batchExtend(selectedIds) {
+    async batchExtend(selectedIds, newTmtDate) {
       this.isLoading = true
       try {
         const dateNow = new Date().toISOString()
@@ -171,21 +171,25 @@ export const usePegawaiStore = defineStore('pegawai', {
         // Process local data
         this.pppkData = this.pppkData.map(item => {
           if (selectedIds.includes(item['PNS ID'])) {
+            const oldTmt = item['AWAL KONTRAK AKTIF'] || item['TMT CPNS'] || ''
             // Log history
             historyEntries.push({
               id: item['PNS ID'],
               nama: item['NAMA'],
               nip: item['NIP BARU'],
               tglDiperpanjang: dateNow,
-              kontrakLama: item['TMT CPNS'], // simplistic mock mapping
-              keterangan: 'Perpanjangan Otomatis 5 Tahun'
+              kontrakLama: oldTmt,
+              keterangan: 'Perpanjangan Otomatis'
             })
             
-            // Actually modify the item's TMT and Status here based on legacy logic
-            // For example, set STATUS_PERPANJANGAN to 'Selesai Diperpanjang'
             return {
               ...item,
-              STATUS_PERPANJANGAN: 'Selesai Diperpanjang'
+              'AWAL KONTRAK AKTIF': newTmtDate,
+              'NOMOR KONTRAK AKTIF': '',
+              'NOMOR SK PERPANJANGAN': '',
+              STATUS_PERPANJANGAN: 'Selesai Diperpanjang',
+              'STATUS KEAKTIFAN PPPK': 'Aktif',
+              FORCE_AKTIF: true
             }
           }
           return item

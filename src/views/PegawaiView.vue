@@ -1,6 +1,7 @@
 <template>
   <div class="card" style="padding: 1.5rem;">
     <PegawaiTable 
+      :allowBatchDelete="true"
       @view="handleView"
       @edit="handleEdit"
       @print="handlePrint"

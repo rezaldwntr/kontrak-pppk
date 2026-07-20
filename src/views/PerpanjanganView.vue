@@ -14,6 +14,7 @@
       </div>
 
       <PegawaiTable 
+        :allowBatchExtend="true"
         @batchExtend="handleBatchExtend"
         @view="handleView"
         @print="handlePrint"
@@ -27,6 +28,14 @@
       :item="selectedItem" 
       @close="showDetail = false" 
       @print="handlePrint"
+    />
+
+    <ExtendModal
+      v-if="showExtendModal"
+      :isOpen="showExtendModal"
+      :selectedIds="extendIds"
+      @close="showExtendModal = false"
+      @submit="submitBatchExtend"
     />
 
     <PrintPreviewModal
@@ -44,11 +53,14 @@ import { usePegawaiStore } from '../stores/pegawaiStore'
 import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
+import ExtendModal from '../components/pegawai/ExtendModal.vue'
 
 const pegawaiStore = usePegawaiStore()
 const showDetail = ref(false)
 const showPrintOptions = ref(false)
+const showExtendModal = ref(false)
 const selectedItem = ref(null)
+const extendIds = ref([])
 
 onMounted(() => {
   if (pegawaiStore.pppkData.length === 0) {
@@ -68,24 +80,28 @@ const handlePrint = (item) => {
 
 import { customSwal } from '../utils/swal'
 
-const handleBatchExtend = async (selectedIds) => {
-  const result = await customSwal.fire({
-    title: 'Perpanjang Kontrak?',
-    text: `Apakah Anda yakin ingin memperpanjang kontrak ${selectedIds.length} pegawai yang dipilih secara otomatis selama 5 tahun?`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Ya, Perpanjang',
-    cancelButtonText: 'Batal',
-    confirmButtonColor: '#10b981'
-  })
-  
-  if (result.isConfirmed) {
-    try {
-      const res = await pegawaiStore.batchExtend(selectedIds)
-      customSwal.fire({ icon: 'success', title: 'Berhasil', text: `Berhasil memperpanjang ${res.count} kontrak pegawai! Silakan cek Riwayat.` })
-    } catch (e) {
-      customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal memperpanjang kontrak: ' + e.message })
-    }
+const handleBatchExtend = (selectedIds) => {
+  extendIds.value = selectedIds
+  showExtendModal.value = true
+}
+
+const submitBatchExtend = async (newTmtDate) => {
+  showExtendModal.value = false
+  try {
+    customSwal.fire({
+      title: 'Memproses...',
+      html: 'Sedang memperpanjang kontrak. Mohon tunggu...',
+      allowOutsideClick: false,
+      didOpen: () => { customSwal.showLoading() }
+    })
+    
+    // Yield thread to allow modal to close and swal to show
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    const res = await pegawaiStore.batchExtend(extendIds.value, newTmtDate)
+    customSwal.fire({ icon: 'success', title: 'Berhasil', text: `Berhasil memperpanjang ${res.count} kontrak pegawai!` })
+  } catch (e) {
+    customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal memperpanjang kontrak: ' + e.message })
   }
 }
 </script>

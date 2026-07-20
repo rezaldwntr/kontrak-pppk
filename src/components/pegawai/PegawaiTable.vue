@@ -59,6 +59,20 @@
         </div>
     </div>
 
+    <div v-if="selectedIds.length > 0 && (allowBatchExtend || allowBatchDelete)" class="batch-action-bar" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-weight: bold; color: #1eaa6e;">
+        <i class="fa-solid fa-check-circle"></i> {{ selectedIds.length }} Data Terpilih
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button v-if="allowBatchExtend" class="btn btn-primary" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="emit('batchExtend', selectedIds)">
+          <i class="fa-solid fa-file-signature"></i> Perpanjang Massal
+        </button>
+        <button v-if="allowBatchDelete" class="btn btn-danger" @click="emit('batchDelete', selectedIds)">
+          <i class="fa-solid fa-trash"></i> Hapus Massal
+        </button>
+      </div>
+    </div>
+
     <div class="widget-card table-widget">
         <div class="widget-header-actions">
             <div class="total-rows text-muted">
@@ -109,7 +123,8 @@
                         <td>
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
                                 <button class="btn btn-icon-only btn-sm" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user && !allowBatchExtend" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: #1eaa6e; color: white;" v-if="authStore.user && allowBatchExtend" @click="emit('batchExtend', [item['PNS ID']])" title="Perpanjang Kontrak"><i class="fa-solid fa-file-signature"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -129,6 +144,11 @@
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
+
+const props = defineProps({
+  allowBatchExtend: { type: Boolean, default: false },
+  allowBatchDelete: { type: Boolean, default: false }
+})
 
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
