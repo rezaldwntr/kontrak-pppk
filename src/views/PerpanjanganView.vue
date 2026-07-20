@@ -1,16 +1,9 @@
 <template>
   <div>
-    <header class="header">
-      <div class="page-title">
-        <h2>Perpanjangan Kontrak Massal</h2>
-        <p>Filter pegawai yang masa kontraknya habis, lalu centang dan perpanjang secara massal.</p>
-      </div>
-    </header>
-    
     <div class="card" style="padding: 1.5rem;">
       <div class="alert alert-warning" style="margin-bottom: 20px; font-size: 14px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; color: #d97706; border-radius: var(--border-radius);">
         <i class="fa-solid fa-circle-info"></i> 
-        <strong>Petunjuk:</strong> Pilih filter <strong>"Kontrak Habis"</strong> atau <strong>"Kontrak Hampir Habis"</strong> pada tabel di bawah. Centang kotak di sebelah kiri nama pegawai yang ingin diperpanjang, lalu klik tombol <strong>"Perpanjang Massal"</strong> yang akan muncul.
+        <strong>Petunjuk:</strong> Tabel di bawah secara otomatis hanya menampilkan pegawai yang membutuhkan perpanjangan. Centang kotak di sebelah kiri nama pegawai yang ingin diperpanjang, lalu klik tombol <strong>"Perpanjang Massal"</strong> yang muncul di atas tabel.
       </div>
 
       <PegawaiTable 
