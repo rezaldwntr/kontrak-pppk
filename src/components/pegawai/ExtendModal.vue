@@ -11,18 +11,45 @@
           Anda akan memperpanjang kontrak untuk <strong>{{ selectedIds.length }}</strong> pegawai terpilih.
         </div>
         
-        <div class="form-group">
-          <label>TMT Kontrak Baru</label>
-          <input type="date" v-model="newTmtDate" class="form-control" required>
-          <small class="text-muted" style="display: block; margin-top: 5px;">
-            Sistem secara otomatis memberikan rekomendasi tanggal TMT baru (1 hari setelah akhir kontrak lama). Anda dapat mengubahnya jika diperlukan.
-          </small>
-        </div>
+        <template v-if="selectedIds.length === 1">
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Nomor Kontrak Baru (Perpanjangan)</label>
+              <input type="text" v-model="nomorKontrakBaru" class="form-control">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Nomor SK Perpanjangan</label>
+              <input type="text" v-model="nomorSk" class="form-control" placeholder="Contoh: SK/PPPK/1023/2026">
+            </div>
+            <div class="form-group">
+              <label>Tanggal SK Perpanjangan</label>
+              <input type="date" v-model="tanggalSk" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>TMT Kontrak Baru (Mulai)</label>
+              <input type="date" v-model="newTmtDate" class="form-control" required>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Gaji Pokok (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Opsional</span></label>
+              <input type="text" v-model="gajiPokok" class="form-control" placeholder="Isi jika gaji pokok berubah">
+            </div>
+          </div>
+        </template>
+        
+        <template v-else>
+          <div class="form-group">
+            <label>TMT Kontrak Baru</label>
+            <input type="date" v-model="newTmtDate" class="form-control" required>
+            <small class="text-muted" style="display: block; margin-top: 5px;">
+              Sistem secara otomatis memberikan rekomendasi tanggal TMT baru (1 hari setelah akhir kontrak lama). Anda dapat mengubahnya jika diperlukan.
+            </small>
+          </div>
 
-        <div class="alert alert-warning" style="margin-top: 15px; font-size: 13px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 10px; color: #d97706; border-radius: var(--border-radius);">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <strong>Catatan:</strong> Nomor SK dan Nomor Kontrak akan dikosongkan secara otomatis dan dapat Anda lengkapi nanti pada menu Detail Data.
-        </div>
+          <div class="alert alert-warning" style="margin-top: 15px; font-size: 13px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 10px; color: #d97706; border-radius: var(--border-radius);">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>Catatan:</strong> Nomor SK dan Nomor Kontrak akan dikosongkan secara otomatis dan dapat Anda lengkapi nanti pada menu Detail Data.
+          </div>
+        </template>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
         <button class="btn btn-outline" @click="emit('close')">Batal</button>
@@ -47,8 +74,17 @@ const props = defineProps({
 const emit = defineEmits(['close', 'submit'])
 const pegawaiStore = usePegawaiStore()
 const newTmtDate = ref('')
+const nomorKontrakBaru = ref('')
+const nomorSk = ref('')
+const tanggalSk = ref('')
+const gajiPokok = ref('')
 
 watch(() => props.isOpen, (newVal) => {
+  nomorKontrakBaru.value = ''
+  nomorSk.value = ''
+  tanggalSk.value = ''
+  gajiPokok.value = ''
+  
   if (newVal && props.selectedIds && props.selectedIds.length > 0) {
     // Cari data pegawai pertama untuk menentukan default TMT baru
     const firstPegawai = pegawaiStore.pppkData.find(p => p['PNS ID'] === props.selectedIds[0])
@@ -77,7 +113,13 @@ watch(() => props.isOpen, (newVal) => {
 
 const handleSubmit = () => {
   if (!newTmtDate.value) return
-  emit('submit', newTmtDate.value)
+  emit('submit', {
+    newTmtDate: newTmtDate.value,
+    nomorKontrakBaru: nomorKontrakBaru.value,
+    nomorSk: nomorSk.value,
+    tanggalSk: tanggalSk.value,
+    gajiPokok: gajiPokok.value
+  })
 }
 </script>
 

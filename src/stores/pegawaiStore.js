@@ -162,11 +162,12 @@ export const usePegawaiStore = defineStore('pegawai', {
         lastUpdated: dateNow
       })
     },
-    async batchExtend(selectedIds, newTmtDate) {
+    async batchExtend(selectedIds, formData) {
       this.isLoading = true
       try {
         const dateNow = new Date().toISOString()
         const historyEntries = []
+        const isSingle = selectedIds.length === 1
         
         // Process local data
         this.pppkData = this.pppkData.map(item => {
@@ -179,18 +180,25 @@ export const usePegawaiStore = defineStore('pegawai', {
               nip: item['NIP BARU'],
               tglDiperpanjang: dateNow,
               kontrakLama: oldTmt,
-              keterangan: 'Perpanjangan Otomatis'
+              keterangan: isSingle ? 'Perpanjangan Individu' : 'Perpanjangan Otomatis'
             })
             
-            return {
+            const updatedItem = {
               ...item,
-              'AWAL KONTRAK AKTIF': newTmtDate,
-              'NOMOR KONTRAK AKTIF': '',
-              'NOMOR SK PERPANJANGAN': '',
+              'AWAL KONTRAK AKTIF': formData.newTmtDate,
+              'NOMOR KONTRAK AKTIF': isSingle ? (formData.nomorKontrakBaru || '') : '',
+              'NOMOR SK PERPANJANGAN': isSingle ? (formData.nomorSk || '') : '',
+              'TANGGAL SK PERPANJANGAN': isSingle ? (formData.tanggalSk || '') : '',
               STATUS_PERPANJANGAN: 'Selesai Diperpanjang',
               'STATUS KEAKTIFAN PPPK': 'Aktif',
               FORCE_AKTIF: true
             }
+            
+            if (isSingle && formData.gajiPokok) {
+              updatedItem['GAJI POKOK SAAT INI'] = formData.gajiPokok
+            }
+            
+            return updatedItem
           }
           return item
         })

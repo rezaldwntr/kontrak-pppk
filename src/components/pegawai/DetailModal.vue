@@ -208,31 +208,6 @@
               <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" placeholder="Contoh: 3500000">
             </div>
           </div>
-          
-          <hr style="border-color: rgba(255,255,255,0.05); margin: 24px 0; border-style: dashed;">
-          
-          <h4 style="margin-bottom: 16px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-file-contract"></i> Proses Perpanjangan Kontrak
-          </h4>
-          
-          <div class="form-grid">
-            <div class="form-group" style="grid-column: span 2;">
-              <label>Nomor Kontrak Baru (Perpanjangan)</label>
-              <input type="text" v-model="editForm['NOMOR KONTRAK BARU']" class="form-control">
-            </div>
-            <div class="form-group" style="grid-column: span 2;">
-              <label>Nomor SK Perpanjangan</label>
-              <input type="text" v-model="editForm['NOMOR SK PERPANJANGAN']" class="form-control" placeholder="Contoh: SK/PPPK/1023/2026">
-            </div>
-            <div class="form-group">
-              <label>Tanggal SK Perpanjangan</label>
-              <input type="date" v-model="editForm['TANGGAL SK PERPANJANGAN']" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>TMT Kontrak Baru (Mulai)</label>
-              <input type="date" v-model="editForm['TMT KONTRAK BARU']" class="form-control">
-            </div>
-          </div>
         </div>
       </div>
       
