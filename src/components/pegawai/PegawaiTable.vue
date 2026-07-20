@@ -147,7 +147,8 @@ import { usePegawaiStore } from '../../stores/pegawaiStore'
 
 const props = defineProps({
   allowBatchExtend: { type: Boolean, default: false },
-  allowBatchDelete: { type: Boolean, default: false }
+  allowBatchDelete: { type: Boolean, default: false },
+  onlyNeedExtension: { type: Boolean, default: false }
 })
 
 const authStore = useAuthStore()
@@ -230,6 +231,12 @@ const filteredData = computed(() => {
         }
         return false;
     })();
+    
+    if (props.onlyNeedExtension) {
+      if (!['Kontrak Hampir Habis', 'Kontrak Habis', 'Kontrak Habis (BUP)'].includes(contractStatus)) {
+        return false;
+      }
+    }
     
     return matchQuery && matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk && matchPerpanjangan
   })

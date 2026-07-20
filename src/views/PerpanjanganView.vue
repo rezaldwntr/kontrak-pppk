@@ -15,6 +15,7 @@
 
       <PegawaiTable 
         :allowBatchExtend="true"
+        :onlyNeedExtension="true"
         @batchExtend="handleBatchExtend"
         @view="handleView"
         @print="handlePrint"
