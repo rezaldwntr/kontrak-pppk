@@ -42,7 +42,7 @@
                         <option v-for="opt in statusPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
-                <div class="filter-group">
+                <div class="filter-group" v-if="!onlyNeedExtension">
                     <label>Perpanjangan Kontrak</label>
                     <select v-model="perpanjanganFilter" @change="handleSearch" class="form-control" style="min-width: 220px;">
                         <option value="all">Semua Perpanjangan</option>
@@ -233,7 +233,7 @@ const filteredData = computed(() => {
     })();
     
     if (props.onlyNeedExtension) {
-      if (!['Kontrak Hampir Habis', 'Kontrak Habis', 'Kontrak Habis (BUP)'].includes(contractStatus)) {
+      if (!['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus)) {
         return false;
       }
     }
