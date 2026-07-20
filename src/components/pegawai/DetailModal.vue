@@ -281,6 +281,39 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['JENIS PEGAWAI']) editForm.value['JENIS PEGAWAI'] = 'PNS Daerah Kab./Kota yang bekerja pada Kab./Kota'
     if (!editForm.value['KEDUDUKAN HUKUM']) editForm.value['KEDUDUKAN HUKUM'] = editForm.value['STATUS KEDUDUKAN'] || 'PPPK Aktif'
     if (!editForm.value['STATUS KEAKTIFAN PPPK']) editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif'
+    
+    if (!editForm.value['JENIS JABATAN']) editForm.value['JENIS JABATAN'] = 'Jabatan Fungsional'
+    if (!editForm.value['TMT JABATAN']) editForm.value['TMT JABATAN'] = ''
+    if (!editForm.value['GOLONGAN']) editForm.value['GOLONGAN'] = editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || ''
+    if (!editForm.value['INSTANSI INDUK']) editForm.value['INSTANSI INDUK'] = 'Pemerintah Kab. Hulu Sungai Utara'
+    if (!editForm.value['TINGKAT PENDIDIKAN']) editForm.value['TINGKAT PENDIDIKAN'] = editForm.value['TINGKAT PENDIDIKAN NAMA'] || ''
+    if (!editForm.value['PENDIDIKAN TERAKHIR']) editForm.value['PENDIDIKAN TERAKHIR'] = editForm.value['PENDIDIKAN NAMA'] || ''
+    if (!editForm.value['TAHUN LULUS']) editForm.value['TAHUN LULUS'] = ''
+    if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
+    if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
+    
+    if (!editForm.value['AWAL KONTRAK AKTIF']) {
+        let tmtRaw = editForm.value['TMT CPNS'] || '';
+        if (tmtRaw) {
+            let tmtDateObj = null;
+            const parts = String(tmtRaw).split(/[-/]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) tmtDateObj = new Date(parts[0], parts[1]-1, parts[2]);
+                else if (parts[2].length === 4) tmtDateObj = new Date(parts[2], parts[1]-1, parts[0]);
+            }
+            if (tmtDateObj && !isNaN(tmtDateObj.getTime())) {
+                const y = tmtDateObj.getFullYear();
+                const m = String(tmtDateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(tmtDateObj.getDate()).padStart(2, '0');
+                editForm.value['AWAL KONTRAK AKTIF'] = `${y}-${m}-${d}`;
+            } else {
+                editForm.value['AWAL KONTRAK AKTIF'] = '';
+            }
+        } else {
+            editForm.value['AWAL KONTRAK AKTIF'] = '';
+        }
+    }
+
     // Auto-calculate Masa Kerja
     if (editForm.value['TMT CPNS']) {
       let tmtDate = null
