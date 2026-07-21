@@ -124,7 +124,7 @@
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
                                 <button class="btn btn-icon-only btn-sm" v-if="!allowBatchExtend" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user && !allowBatchExtend" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="background-color: #1eaa6e; color: white;" v-if="authStore.user && allowBatchExtend" @click.prevent.stop="debugClick(item['PNS ID'])" title="Perpanjang Kontrak"><i class="fa-solid fa-file-signature"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: #1eaa6e; color: white;" v-if="authStore.user && allowBatchExtend" @click="emit('batchExtend', [item['PNS ID']])" title="Perpanjang Kontrak"><i class="fa-solid fa-file-signature"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -154,13 +154,6 @@ const props = defineProps({
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
 const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete'])
-
-import { customSwal } from '../../utils/swal'
-
-const debugClick = (id) => {
-    customSwal.fire({ title: 'Debug', text: 'Tombol hijau diklik! ID: ' + id, icon: 'info' })
-    emit('batchExtend', [id])
-}
 
 const jenisPppkFilter = ref('all')
 const unorAtasanFilter = ref('all')

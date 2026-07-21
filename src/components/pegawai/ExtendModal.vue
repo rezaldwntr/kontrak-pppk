@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isOpen" class="modal-backdrop">
-    <div class="modal" :style="{ maxWidth: selectedIds.length === 1 ? '700px' : '500px' }">
+  <div v-if="isOpen" class="modal-backdrop open">
+    <div class="modal-container" :style="{ maxWidth: selectedIds.length === 1 ? '700px' : '500px' }">
       <div class="modal-header">
         <h3>Proses Perpanjangan Kontrak</h3>
         <button class="close-btn" @click="emit('close')"><i class="fa-solid fa-xmark"></i></button>
