@@ -23,7 +23,7 @@
                 </div>
                 <div class="filter-group">
                     <label>Unor Atasan</label>
-                    <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 150px; max-width: 200px;">
+                    <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 150px; max-width: 200px;" :disabled="unorIndukFilter === 'all'">
                         <option value="all" v-if="unorAtasanOptions.length !== 1">Semua Unor Atasan</option>
                         <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
@@ -300,16 +300,43 @@ const jenisPppkOptions = computed(() => {
   return Array.from(types).sort()
 })
 
+const filteredOptionsBase = computed(() => {
+  return baseData.value.filter(item => {
+    const period = calculateContractPeriod(item);
+    const contractStatus = period.statusText;
+    const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value;
+    const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value;
+    const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value;
+    
+    const matchPerpanjangan = (() => {
+        if (perpanjanganFilter.value === 'all') return true;
+        if (perpanjanganFilter.value === 'bup') return contractStatus === 'Kontrak Habis (BUP)';
+        if (!period.isBup && contractStatus !== 'Meninggal' && period.rawDate) {
+            const newTmt = new Date(period.rawDate);
+            newTmt.setDate(newTmt.getDate() + 1);
+            const y = newTmt.getFullYear();
+            const m = String(newTmt.getMonth() + 1).padStart(2, '0');
+            const d = String(newTmt.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}` === perpanjanganFilter.value;
+        }
+        return false;
+    })();
+
+    return matchStatus && matchStatusPppk && matchJenis && matchPerpanjangan;
+  });
+});
+
 const unorAtasanOptions = computed(() => {
-  const types = new Set(baseData.value
-    .filter(item => unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value)
+  if (unorIndukFilter.value === 'all') return [];
+  const types = new Set(filteredOptionsBase.value
+    .filter(item => getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value)
     .map(item => getUnorAtasan(item['UNOR NAMA']))
   )
   return Array.from(types).filter(t => t !== '-').sort()
 })
 
 const unorIndukOptions = computed(() => {
-  const types = new Set(baseData.value.map(item => getUnorInduk(item['UNOR NAMA'])))
+  const types = new Set(filteredOptionsBase.value.map(item => getUnorInduk(item['UNOR NAMA'])))
   return Array.from(types).filter(t => t !== '-').sort()
 })
 
