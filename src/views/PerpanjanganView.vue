@@ -9,7 +9,7 @@
       <PegawaiTable 
         :allowBatchExtend="true"
         :onlyNeedExtension="true"
-        @batchExtend="handleBatchExtend"
+        @batch-extend="handleBatchExtend"
         @view="handleView"
         @print="handlePrint"
       />
