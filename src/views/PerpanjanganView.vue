@@ -75,6 +75,8 @@ const handlePrint = (item) => {
 import { customSwal } from '../utils/swal'
 
 const handleBatchExtend = (selectedIds) => {
+  // Debug alert to verify event is received
+  customSwal.fire({ title: 'Debug', text: 'handleBatchExtend dipanggil dengan ID: ' + selectedIds, icon: 'info' })
   extendIds.value = selectedIds
   showExtendModal.value = true
 }

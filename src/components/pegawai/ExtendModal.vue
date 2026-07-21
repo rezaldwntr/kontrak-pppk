@@ -115,7 +115,7 @@ watch(() => props.isOpen, (newVal) => {
   } else {
     newTmtDate.value = ''
   }
-})
+}, { immediate: true })
 
 const handleSubmit = () => {
   if (!newTmtDate.value) return
