@@ -35,7 +35,7 @@
                         <option v-for="opt in statusOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
-                <div class="filter-group">
+                <div class="filter-group" v-if="!onlyNeedExtension">
                     <label>Status PPPK</label>
                     <select v-model="statusPppkFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
                         <option value="all" v-if="statusPppkOptions.length !== 1">Semua Status PPPK</option>
@@ -285,13 +285,23 @@ const formatIndoDate = (dateStr) => {
     return `${d} ${mStr} ${y}`;
 }
 
+const baseData = computed(() => {
+  if (props.onlyNeedExtension) {
+    return pegawaiStore.pppkData.filter(item => {
+      const contractStatus = calculateContractPeriod(item).statusText;
+      return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus);
+    });
+  }
+  return pegawaiStore.pppkData;
+});
+
 const jenisPppkOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData.map(item => item['JENIS PPPK'] || 'PPPK'))
+  const types = new Set(baseData.value.map(item => item['JENIS PPPK'] || 'PPPK'))
   return Array.from(types).sort()
 })
 
 const unorAtasanOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData
+  const types = new Set(baseData.value
     .filter(item => unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value)
     .map(item => getUnorAtasan(item['UNOR NAMA']))
   )
@@ -299,17 +309,17 @@ const unorAtasanOptions = computed(() => {
 })
 
 const unorIndukOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData.map(item => getUnorInduk(item['UNOR NAMA'])))
+  const types = new Set(baseData.value.map(item => getUnorInduk(item['UNOR NAMA'])))
   return Array.from(types).filter(t => t !== '-').sort()
 })
 
 const statusOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData.map(item => calculateContractPeriod(item).statusText))
+  const types = new Set(baseData.value.map(item => calculateContractPeriod(item).statusText))
   return Array.from(types).sort()
 })
 
 const statusPppkOptions = computed(() => {
-  const types = new Set(pegawaiStore.pppkData.map(item => getStatusPppk(item)))
+  const types = new Set(baseData.value.map(item => getStatusPppk(item)))
   return Array.from(types).sort()
 })
 
