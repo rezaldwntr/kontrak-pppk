@@ -197,6 +197,9 @@ export const usePegawaiStore = defineStore('pegawai', {
             if (isSingle && formData.gajiPokok) {
               updatedItem['GAJI POKOK SAAT INI'] = formData.gajiPokok
             }
+            if (isSingle && formData.tanggalAkhir) {
+              updatedItem['AKHIR KONTRAK AKTIF'] = formData.tanggalAkhir
+            }
             
             return updatedItem
           }

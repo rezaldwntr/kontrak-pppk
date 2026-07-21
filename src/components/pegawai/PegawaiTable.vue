@@ -122,7 +122,7 @@
                         </td>
                         <td>
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
-                                <button class="btn btn-icon-only btn-sm" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn btn-icon-only btn-sm" v-if="!allowBatchExtend" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user && !allowBatchExtend" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: #1eaa6e; color: white;" v-if="authStore.user && allowBatchExtend" @click="emit('batchExtend', [item['PNS ID']])" title="Perpanjang Kontrak"><i class="fa-solid fa-file-signature"></i></button>
                             </div>

@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="modal-backdrop">
-    <div class="modal" style="max-width: 500px;">
+    <div class="modal" :style="{ maxWidth: selectedIds.length === 1 ? '700px' : '500px' }">
       <div class="modal-header">
         <h3>Proses Perpanjangan Kontrak</h3>
         <button class="close-btn" @click="emit('close')"><i class="fa-solid fa-xmark"></i></button>
@@ -13,11 +13,11 @@
         
         <template v-if="selectedIds.length === 1">
           <div class="form-grid">
-            <div class="form-group" style="grid-column: span 2;">
+            <div class="form-group">
               <label>Nomor Kontrak Baru (Perpanjangan)</label>
-              <input type="text" v-model="nomorKontrakBaru" class="form-control">
+              <input type="text" v-model="nomorKontrakBaru" class="form-control" placeholder="Contoh: SPK/0/2021-Perpanjangan">
             </div>
-            <div class="form-group" style="grid-column: span 2;">
+            <div class="form-group">
               <label>Nomor SK Perpanjangan</label>
               <input type="text" v-model="nomorSk" class="form-control" placeholder="Contoh: SK/PPPK/1023/2026">
             </div>
@@ -29,9 +29,13 @@
               <label>TMT Kontrak Baru (Mulai)</label>
               <input type="date" v-model="newTmtDate" class="form-control" required>
             </div>
-            <div class="form-group" style="grid-column: span 2;">
-              <label>Gaji Pokok (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Opsional</span></label>
-              <input type="text" v-model="gajiPokok" class="form-control" placeholder="Isi jika gaji pokok berubah">
+            <div class="form-group">
+              <label>Tanggal Akhir Kontrak Baru</label>
+              <input type="date" v-model="tanggalAkhir" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Gaji Pokok Baru (Rp)</label>
+              <input type="text" v-model="gajiPokok" class="form-control" placeholder="Contoh: 3500000">
             </div>
           </div>
         </template>
@@ -77,12 +81,14 @@ const newTmtDate = ref('')
 const nomorKontrakBaru = ref('')
 const nomorSk = ref('')
 const tanggalSk = ref('')
+const tanggalAkhir = ref('')
 const gajiPokok = ref('')
 
 watch(() => props.isOpen, (newVal) => {
   nomorKontrakBaru.value = ''
   nomorSk.value = ''
   tanggalSk.value = ''
+  tanggalAkhir.value = ''
   gajiPokok.value = ''
   
   if (newVal && props.selectedIds && props.selectedIds.length > 0) {
@@ -118,6 +124,7 @@ const handleSubmit = () => {
     nomorKontrakBaru: nomorKontrakBaru.value,
     nomorSk: nomorSk.value,
     tanggalSk: tanggalSk.value,
+    tanggalAkhir: tanggalAkhir.value,
     gajiPokok: gajiPokok.value
   })
 }
