@@ -6,7 +6,7 @@
         <button class="close-btn" @click="emit('close')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
-        <div class="alert alert-info" style="margin-bottom: 20px; font-size: 14px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #1d4ed8; border-radius: var(--border-radius);">
+        <div class="alert alert-info" style="margin-bottom: 20px; font-size: 14px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #3b82f6; border-radius: var(--border-radius);">
           <i class="fa-solid fa-info-circle"></i>
           Anda akan memperpanjang kontrak untuk <strong>{{ selectedIds.length }}</strong> pegawai terpilih.
         </div>
@@ -49,7 +49,7 @@
             </small>
           </div>
 
-          <div class="alert alert-warning" style="margin-top: 15px; font-size: 13px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 10px; color: #d97706; border-radius: var(--border-radius);">
+          <div class="alert alert-warning" style="margin-top: 15px; font-size: 13px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 10px; color: #f59e0b; border-radius: var(--border-radius);">
             <i class="fa-solid fa-triangle-exclamation"></i>
             <strong>Catatan:</strong> Nomor SK dan Nomor Kontrak akan dikosongkan secara otomatis dan dapat Anda lengkapi nanti pada menu Detail Data.
           </div>
