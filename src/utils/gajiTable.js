@@ -169,11 +169,29 @@ const GOL_ANNUAL = new Set(['IX','X','XI','XII','XIII','XIV','XV','XVI','XVII'])
  * Normalisasi string golongan menjadi format standar (I, II, ..., XVII)
  * Contoh: "IV/a" → "IV", "Gol. IX" → "IX"
  */
+/**
+ * Normalisasi string golongan menjadi format standar (I, II, ..., XVII)
+ * Contoh: "IV/a" → "IV", "Gol. IX" → "IX", "5" → "V"
+ */
 export function normalizeGolongan(golStr) {
   if (!golStr) return ''
-  const match = String(golStr).toUpperCase().match(/\b(X?I{1,3}|I?V|VI{0,3}|VI{0,2}I{1,2}|IX|X{1,2}I{0,3}|XI{0,2}V|XVI{0,2}|XVII)\b/)
+  const str = String(golStr).trim().toUpperCase()
+
+  // Map langsung untuk angka atau penulisan umum
+  const directMap = {
+    '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V',
+    '6': 'VI', '7': 'VII', '8': 'VIII', '9': 'IX', '10': 'X',
+    '11': 'XI', '12': 'XII', '13': 'XIII', '14': 'XIV', '15': 'XV',
+    '16': 'XVI', '17': 'XVII'
+  }
+  if (directMap[str]) return directMap[str]
+
+  // Cari substring Romawi terbesar lebih dulu (XVII, XVI, ..., I)
+  const romanPattern = /(XVII|XVI|XV|XIV|XIII|XII|XI|X|IX|VIII|VII|VI|V|IV|III|II|I)/
+  const match = str.match(romanPattern)
   if (match) return match[1]
-  return String(golStr).trim()
+
+  return str
 }
 
 /**
@@ -238,21 +256,30 @@ export function calculateGajiFromItem(item) {
   const golRaw = item['GOLONGAN'] || item['GOL AKHIR NAMA'] || item['GOL RUANG'] || ''
   const golongan = normalizeGolongan(golRaw)
 
-  // Parse TMT CPNS
-  const tmtStr = item['TMT CPNS'] || ''
-  if (!tmtStr || !golongan) return { golongan, mkg: 0, gaji: null, yearsOfService: 0 }
-
-  let tmtDate = null
-  const parts = String(tmtStr).split(/[-/]/)
-  if (parts.length === 3) {
-    if (parts[0].length === 4) tmtDate = new Date(parts[0], parts[1] - 1, parts[2])
-    else if (parts[2].length === 4) tmtDate = new Date(parts[2], parts[1] - 1, parts[0])
+  if (!golongan || !TABEL_GAJI[golongan]) {
+    return { golongan: golRaw, mkg: 0, gaji: null, yearsOfService: 0 }
   }
-  if (!tmtDate || isNaN(tmtDate.getTime())) return { golongan, mkg: 0, gaji: null, yearsOfService: 0 }
 
-  // Hitung tahun layanan
-  const today = new Date()
-  const yearsOfService = (today - tmtDate) / (365.25 * 24 * 60 * 60 * 1000)
+  // Parse TMT CPNS jika ada
+  const tmtStr = item['TMT CPNS'] || item['AWAL KONTRAK AKTIF'] || ''
+  let yearsOfService = 0
+
+  if (tmtStr) {
+    let tmtDate = null
+    const parts = String(tmtStr).split(/[-/]/)
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        tmtDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+      } else if (parts[2].length === 4) {
+        tmtDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
+      }
+    }
+    if (tmtDate && !isNaN(tmtDate.getTime())) {
+      const today = new Date()
+      yearsOfService = (today - tmtDate) / (365.25 * 24 * 60 * 60 * 1000)
+      if (yearsOfService < 0) yearsOfService = 0
+    }
+  }
 
   const mkg = calculateMkg(golongan, yearsOfService)
   const gaji = getGajiPokok(golongan, mkg)

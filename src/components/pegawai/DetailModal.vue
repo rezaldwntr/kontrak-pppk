@@ -123,32 +123,18 @@
               </div>
             </div>
             <div class="form-group">
-              <label>MKG / Masa Kerja (Tahun) <span style="font-size:0.75rem; color: #1eaa6e; font-weight:600;">Otomatis</span></label>
-              <input type="number" v-model="editForm['MASA KERJA TAHUN']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
+              <label>MKG / Masa Kerja (Tahun) <span style="font-size:0.75rem; color: #1eaa6e; font-weight:600;">(Otomatis)</span></label>
+              <input type="text" :value="editForm['MASA KERJA TAHUN'] !== undefined && editForm['MASA KERJA TAHUN'] !== null ? editForm['MASA KERJA TAHUN'] : '0'" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
             </div>
             <div class="form-group">
-              <label>MKG / Masa Kerja (Bulan)</label>
-              <input type="number" v-model="editForm['MASA KERJA BULAN']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
+              <label>MKG / Masa Kerja (Bulan) <span style="font-size:0.75rem; color: #1eaa6e; font-weight:600;">(Otomatis)</span></label>
+              <input type="text" :value="editForm['MASA KERJA BULAN'] !== undefined && editForm['MASA KERJA BULAN'] !== null ? editForm['MASA KERJA BULAN'] : '0'" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
             </div>
           </div>
         </div>
 
         <!-- TAB 3: JABATAN & KERJA -->
         <div class="tab-content" v-show="activeTab === 'jabatan'" :class="{ active: activeTab === 'jabatan' }">
-          <!-- Info banner MKG & Gaji -->
-          <div v-if="gajiInfo.gaji" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
-            <i class="fa-solid fa-sack-dollar" style="color: #1eaa6e; font-size: 1.3rem;"></i>
-            <div>
-              <div style="font-size: 0.82rem; color: #a0aec0;">Gaji Pokok berdasarkan Perpres No. 11/2024</div>
-              <div style="font-size: 1rem; font-weight: 700; color: #1eaa6e;">
-                Rp {{ formatRupiahDisplay(gajiInfo.gaji) }}
-                <span style="font-size: 0.8rem; font-weight: 400; color: #a0aec0; margin-left: 6px;">(Golongan {{ gajiInfo.golongan }} &bull; MKG {{ gajiInfo.mkg }} Tahun)</span>
-              </div>
-            </div>
-          </div>
-          <div v-else-if="editForm['GOLONGAN'] && editForm['TMT CPNS']" style="background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.85rem; color: #ff9800;">
-            <i class="fa-solid fa-triangle-exclamation"></i> Gaji tidak ditemukan di tabel — periksa format Golongan (contoh: I, II, IX)
-          </div>
           <div class="form-grid">
             <div class="form-group" style="grid-column: span 2;">
               <label>Nama Jabatan</label>
@@ -218,8 +204,8 @@
               <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group" style="grid-column: span 2;">
-              <label>Gaji Pokok Saat Ini (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Baru</span></label>
-              <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" placeholder="Contoh: 3500000">
+              <label>Gaji Pokok Saat Ini (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Otomatis (Perpres 11/2024)</span></label>
+              <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
             </div>
           </div>
         </div>
@@ -386,9 +372,9 @@ const recalculateMkgAndGaji = () => {
     editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
   }
 
-  // Auto-fill Gaji Pokok Saat Ini jika belum diisi manual
-  if (result.gaji && !editForm.value['_GAJI_MANUAL']) {
-    editForm.value['GAJI POKOK SAAT INI'] = result.gaji.toString()
+  // Auto-fill Gaji Pokok Saat Ini dari tabel Perpres 11/2024
+  if (result.gaji) {
+    editForm.value['GAJI POKOK SAAT INI'] = formatRupiahDisplay(result.gaji)
   }
 }
 
