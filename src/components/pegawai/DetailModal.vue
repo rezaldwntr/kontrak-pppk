@@ -227,7 +227,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { calculateContractPeriod } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -241,10 +241,29 @@ const activeTab = ref('personal')
 const editForm = ref({})
 const gajiInfo = ref({ golongan: '', mkg: 0, gaji: null })
 
+const formatDateToInput = (dateObj) => {
+  if (!dateObj || isNaN(dateObj.getTime())) return ''
+  const y = dateObj.getFullYear()
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const d = String(dateObj.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.item) {
     editForm.value = JSON.parse(JSON.stringify(props.item)) // Deep copy
     
+    // Format TMT CPNS & TANGGAL LAHIR if raw format is DD/MM/YYYY or ISO
+    const tmtDate = parseDate(editForm.value['TMT CPNS'])
+    if (tmtDate) {
+      const yyyymmdd = formatDateToInput(tmtDate)
+      editForm.value['TMT CPNS'] = yyyymmdd
+    }
+    const birthDate = parseDate(editForm.value['TANGGAL LAHIR'])
+    if (birthDate) {
+      editForm.value['TANGGAL LAHIR'] = formatDateToInput(birthDate)
+    }
+
     // Default mapped values based on existing structure if missing
     if (editForm.value['JENIS KELAMIN'] !== 'L' && editForm.value['JENIS KELAMIN'] !== 'P') {
       editForm.value['JENIS KELAMIN'] = 'P'
@@ -269,53 +288,13 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
     if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
     
-    if (!editForm.value['AWAL KONTRAK AKTIF']) {
-        let tmtRaw = editForm.value['TMT CPNS'] || '';
-        if (tmtRaw) {
-            let tmtDateObj = null;
-            const parts = String(tmtRaw).split(/[-/]/);
-            if (parts.length === 3) {
-                if (parts[0].length === 4) tmtDateObj = new Date(parts[0], parts[1]-1, parts[2]);
-                else if (parts[2].length === 4) tmtDateObj = new Date(parts[2], parts[1]-1, parts[0]);
-            }
-            if (tmtDateObj && !isNaN(tmtDateObj.getTime())) {
-                const y = tmtDateObj.getFullYear();
-                const m = String(tmtDateObj.getMonth() + 1).padStart(2, '0');
-                const d = String(tmtDateObj.getDate()).padStart(2, '0');
-                editForm.value['AWAL KONTRAK AKTIF'] = `${y}-${m}-${d}`;
-            } else {
-                editForm.value['AWAL KONTRAK AKTIF'] = '';
-            }
-        } else {
-            editForm.value['AWAL KONTRAK AKTIF'] = '';
-        }
+    if (tmtDate) {
+      editForm.value['AWAL KONTRAK AKTIF'] = formatDateToInput(tmtDate)
     }
 
-    // Auto-calculate MKG & Masa Kerja (berdasarkan Golongan + TMT CPNS)
+    // Auto-calculate MKG, Gaji & Akhir Kontrak
     recalculateMkgAndGaji()
 
-    if (!editForm.value['AKHIR KONTRAK AKTIF'] || editForm.value['AKHIR KONTRAK AKTIF']) {
-      // Force recalculate Akhir Kontrak using unified logic
-      const period = calculateContractPeriod(editForm.value);
-      if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
-          const y = period.rawDate.getFullYear()
-          const mStr = String(period.rawDate.getMonth() + 1).padStart(2, '0')
-          const d = String(period.rawDate.getDate()).padStart(2, '0')
-          editForm.value['AKHIR KONTRAK AKTIF'] = `${y}-${mStr}-${d}`
-          
-          if (!editForm.value['FORCE_AKTIF'] && editForm.value['STATUS KEAKTIFAN PPPK'] !== 'Meninggal') {
-              const today = new Date();
-              const isExpired = new Date(y, period.rawDate.getMonth(), period.rawDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-              if (isExpired) {
-                  editForm.value['STATUS KEAKTIFAN PPPK'] = period.isBup ? 'Pensiun' : 'Tidak Diperpanjang';
-              } else {
-                  editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif';
-              }
-          }
-      } else {
-          editForm.value['AKHIR KONTRAK AKTIF'] = ''
-      }
-    }
     if (!editForm.value['NOMOR KONTRAK BARU']) editForm.value['NOMOR KONTRAK BARU'] = ''
     if (!editForm.value['NOMOR SK PERPANJANGAN']) editForm.value['NOMOR SK PERPANJANGAN'] = ''
     if (!editForm.value['TANGGAL SK PERPANJANGAN']) editForm.value['TANGGAL SK PERPANJANGAN'] = ''
@@ -332,37 +311,27 @@ watch([() => editForm.value['GOLONGAN'], () => editForm.value['TMT CPNS']], () =
 
 const isContractExpired = computed(() => {
   if (!editForm.value['AKHIR KONTRAK AKTIF']) return false
-  const parts = String(editForm.value['AKHIR KONTRAK AKTIF']).split(/[-/]/)
-  let endDate = null
-  if (parts.length === 3) {
-      if (parts[0].length === 4) endDate = new Date(parts[0], parts[1]-1, parts[2])
-      else if (parts[2].length === 4) endDate = new Date(parts[2], parts[1]-1, parts[0])
-  }
+  const endDate = parseDate(editForm.value['AKHIR KONTRAK AKTIF'])
   if (!endDate || isNaN(endDate.getTime())) return false
   const today = new Date()
   return new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
 })
 
-// Hitung ulang MKG dan Gaji Pokok dari Golongan + TMT CPNS
+// Hitung ulang MKG, Akhir Kontrak, dan Gaji Pokok
 const recalculateMkgAndGaji = () => {
   const result = calculateGajiFromItem(editForm.value)
   gajiInfo.value = result
 
+  const tmtDate = parseDate(editForm.value['TMT CPNS'] || editForm.value['AWAL KONTRAK AKTIF'])
+
   if (result.mkg !== undefined) {
     editForm.value['MASA KERJA TAHUN'] = result.mkg.toString()
 
-    // Hitung sisa bulan dalam periode MKG saat ini
-    const tmtStr = editForm.value['TMT CPNS'] || ''
-    let tmtDate = null
-    const parts = String(tmtStr).split(/[-/]/)
-    if (parts.length === 3) {
-      if (parts[0].length === 4) tmtDate = new Date(parts[0], parts[1]-1, parts[2])
-      else if (parts[2].length === 4) tmtDate = new Date(parts[2], parts[1]-1, parts[0])
-    }
     if (tmtDate && !isNaN(tmtDate.getTime())) {
       const today = new Date()
       const totalMonths = (today.getFullYear() - tmtDate.getFullYear()) * 12 + (today.getMonth() - tmtDate.getMonth())
-      const sisaBulan = totalMonths % (result.golongan && ['IX','X','XI','XII','XIII','XIV','XV','XVI','XVII'].includes(result.golongan) ? 12 : 24)
+      const isAnnual = result.golongan && ['IX','X','XI','XII','XIII','XIV','XV','XVI','XVII'].includes(result.golongan)
+      const sisaBulan = totalMonths % (isAnnual ? 12 : 24)
       editForm.value['MASA KERJA BULAN'] = Math.max(0, sisaBulan).toString()
     } else {
       editForm.value['MASA KERJA BULAN'] = '0'
@@ -370,6 +339,24 @@ const recalculateMkgAndGaji = () => {
   } else {
     editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
     editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
+  }
+
+  // Hitung Akhir Kontrak Aktif
+  const period = calculateContractPeriod(editForm.value)
+  if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
+    editForm.value['AKHIR KONTRAK AKTIF'] = formatDateToInput(period.rawDate)
+    
+    if (!editForm.value['FORCE_AKTIF'] && editForm.value['STATUS KEAKTIFAN PPPK'] !== 'Meninggal') {
+      const today = new Date()
+      const isExpired = period.rawDate.getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
+      if (isExpired) {
+        editForm.value['STATUS KEAKTIFAN PPPK'] = period.isBup ? 'Pensiun' : 'Tidak Diperpanjang'
+      } else {
+        editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif'
+      }
+    }
+  } else {
+    editForm.value['AKHIR KONTRAK AKTIF'] = ''
   }
 
   // Auto-fill Gaji Pokok Saat Ini dari tabel Perpres 11/2024

@@ -246,6 +246,8 @@ export function getGajiPokok(golongan, mkg) {
   return gol.data[selectedMkg] || null
 }
 
+import { parseDate } from './pppkLogic'
+
 /**
  * Hitung MKG dan Gaji Pokok dari data pegawai (objek item)
  * @param {Object} item - Data pegawai dari store
@@ -265,15 +267,7 @@ export function calculateGajiFromItem(item) {
   let yearsOfService = 0
 
   if (tmtStr) {
-    let tmtDate = null
-    const parts = String(tmtStr).split(/[-/]/)
-    if (parts.length === 3) {
-      if (parts[0].length === 4) {
-        tmtDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
-      } else if (parts[2].length === 4) {
-        tmtDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
-      }
-    }
+    const tmtDate = parseDate(tmtStr)
     if (tmtDate && !isNaN(tmtDate.getTime())) {
       const today = new Date()
       yearsOfService = (today - tmtDate) / (365.25 * 24 * 60 * 60 * 1000)

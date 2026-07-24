@@ -1,3 +1,34 @@
+export const parseDate = (raw) => {
+    if (!raw) return null;
+    if (raw instanceof Date) return isNaN(raw.getTime()) ? null : raw;
+
+    const str = String(raw).trim();
+    if (!str) return null;
+
+    // Clean off time portion if present e.g. "2022-03-01T00:00:00" -> "2022-03-01"
+    const cleanStr = str.split(/[T ]/)[0];
+
+    const parts = cleanStr.split(/[-/]/);
+    if (parts.length === 3) {
+        const p0 = parseInt(parts[0], 10);
+        const p1 = parseInt(parts[1], 10);
+        const p2 = parseInt(parts[2], 10);
+
+        if (!isNaN(p0) && !isNaN(p1) && !isNaN(p2)) {
+            if (parts[0].length === 4) {
+                // YYYY-MM-DD
+                return new Date(p0, p1 - 1, p2);
+            } else if (parts[2].length === 4) {
+                // DD-MM-YYYY
+                return new Date(p2, p1 - 1, p0);
+            }
+        }
+    }
+
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+};
+
 export const calculateContractPeriod = (item) => {
     const isParuhWaktu = (item && typeof item === "object" && item["JENIS PPPK"] === "PPPK Paruh Waktu");
     const contractYears = isParuhWaktu ? 1 : 5;
@@ -11,13 +42,8 @@ export const calculateContractPeriod = (item) => {
     }
     
     // 1. Standard End Date Calculation
-    const tmtStr = (item && item["TMT CPNS"]) ? item["TMT CPNS"] : "";
-    let startDate = null;
-    const parts = tmtStr.split(/[-/]/);
-    if (parts.length === 3) {
-        if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2]);
-        else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0]);
-    }
+    const tmtRaw = item ? (item["TMT CPNS"] || item["AWAL KONTRAK AKTIF"] || "") : "";
+    const startDate = parseDate(tmtRaw);
     
     if (!startDate || isNaN(startDate.getTime())) {
         return { endDateStr: "Format Tanggal Invalid", sisaBulan: 999, statusText: "Format Tanggal Invalid" };
@@ -29,24 +55,16 @@ export const calculateContractPeriod = (item) => {
     
     // 2. BUP End Date Calculation
     let bupEndDate = null;
-    const tglLahirStr = (item && item["TANGGAL LAHIR"]) ? item["TANGGAL LAHIR"] : "";
-    if (tglLahirStr) {
-        let birthDate = null;
-        const bParts = tglLahirStr.split(/[-/]/);
-        if (bParts.length === 3) {
-            if (bParts[0].length === 4) birthDate = new Date(bParts[0], bParts[1]-1, bParts[2]);
-            else if (bParts[2].length === 4) birthDate = new Date(bParts[2], bParts[1]-1, bParts[0]);
-        }
+    const tglLahirRaw = item ? (item["TANGGAL LAHIR"] || "") : "";
+    const birthDate = parseDate(tglLahirRaw);
+    if (birthDate && !isNaN(birthDate.getTime())) {
+        const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
+        const bupAge = jabatan.includes("guru") ? 60 : 58;
         
-        if (birthDate && !isNaN(birthDate.getTime())) {
-            const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
-            const bupAge = jabatan.includes("guru") ? 60 : 58;
-            
-            bupEndDate = new Date(birthDate);
-            bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge);
-            bupEndDate.setMonth(bupEndDate.getMonth() + 1);
-            bupEndDate.setDate(0); 
-        }
+        bupEndDate = new Date(birthDate);
+        bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge);
+        bupEndDate.setMonth(bupEndDate.getMonth() + 1);
+        bupEndDate.setDate(0); 
     }
     
     // 3. Finalize End Date
