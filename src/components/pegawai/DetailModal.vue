@@ -123,11 +123,11 @@
               </div>
             </div>
             <div class="form-group">
-              <label>Masa Kerja (Tahun)</label>
+              <label>MKG / Masa Kerja (Tahun) <span style="font-size:0.75rem; color: #1eaa6e; font-weight:600;">Otomatis</span></label>
               <input type="number" v-model="editForm['MASA KERJA TAHUN']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group">
-              <label>Masa Kerja (Bulan)</label>
+              <label>MKG / Masa Kerja (Bulan)</label>
               <input type="number" v-model="editForm['MASA KERJA BULAN']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
           </div>
@@ -135,6 +135,20 @@
 
         <!-- TAB 3: JABATAN & KERJA -->
         <div class="tab-content" v-show="activeTab === 'jabatan'" :class="{ active: activeTab === 'jabatan' }">
+          <!-- Info banner MKG & Gaji -->
+          <div v-if="gajiInfo.gaji" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-sack-dollar" style="color: #1eaa6e; font-size: 1.3rem;"></i>
+            <div>
+              <div style="font-size: 0.82rem; color: #a0aec0;">Gaji Pokok berdasarkan Perpres No. 11/2024</div>
+              <div style="font-size: 1rem; font-weight: 700; color: #1eaa6e;">
+                Rp {{ formatRupiahDisplay(gajiInfo.gaji) }}
+                <span style="font-size: 0.8rem; font-weight: 400; color: #a0aec0; margin-left: 6px;">(Golongan {{ gajiInfo.golongan }} &bull; MKG {{ gajiInfo.mkg }} Tahun)</span>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="editForm['GOLONGAN'] && editForm['TMT CPNS']" style="background: rgba(255,152,0,0.08); border: 1px solid rgba(255,152,0,0.3); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.85rem; color: #ff9800;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Gaji tidak ditemukan di tabel — periksa format Golongan (contoh: I, II, IX)
+          </div>
           <div class="form-grid">
             <div class="form-group" style="grid-column: span 2;">
               <label>Nama Jabatan</label>
@@ -228,6 +242,7 @@
 import { ref, watch, computed } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 import { calculateContractPeriod } from '../../utils/pppkLogic'
+import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -238,6 +253,7 @@ const emit = defineEmits(['close', 'print', 'save'])
 const authStore = useAuthStore()
 const activeTab = ref('personal')
 const editForm = ref({})
+const gajiInfo = ref({ golongan: '', mkg: 0, gaji: null })
 
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.item) {
@@ -289,39 +305,8 @@ watch(() => props.isOpen, (newVal) => {
         }
     }
 
-    // Auto-calculate Masa Kerja
-    if (editForm.value['TMT CPNS']) {
-      let tmtDate = null
-      const parts = String(editForm.value['TMT CPNS']).split(/[-/]/)
-      if (parts.length === 3) {
-        if (parts[0].length === 4) tmtDate = new Date(parts[0], parts[1]-1, parts[2])
-        else if (parts[2].length === 4) tmtDate = new Date(parts[2], parts[1]-1, parts[0])
-      }
-      
-      if (tmtDate && !isNaN(tmtDate.getTime())) {
-        const today = new Date()
-        let years = today.getFullYear() - tmtDate.getFullYear()
-        let months = today.getMonth() - tmtDate.getMonth()
-        if (today.getDate() < tmtDate.getDate()) {
-          months--
-        }
-        if (months < 0) {
-          years--
-          months += 12
-        }
-        if (years < 0) {
-           years = 0; months = 0;
-        }
-        editForm.value['MASA KERJA TAHUN'] = years.toString()
-        editForm.value['MASA KERJA BULAN'] = months.toString()
-      } else {
-        editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
-        editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
-      }
-    } else {
-      editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
-      editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
-    }
+    // Auto-calculate MKG & Masa Kerja (berdasarkan Golongan + TMT CPNS)
+    recalculateMkgAndGaji()
 
     if (!editForm.value['AKHIR KONTRAK AKTIF'] || editForm.value['AKHIR KONTRAK AKTIF']) {
       // Force recalculate Akhir Kontrak using unified logic
@@ -345,10 +330,6 @@ watch(() => props.isOpen, (newVal) => {
           editForm.value['AKHIR KONTRAK AKTIF'] = ''
       }
     }
-    if (!editForm.value['GAJI POKOK SAAT INI']) {
-      const gajiRules = { 'I': '1938500', 'III': '2206500', 'V': '2511500', 'VII': '2858800', 'IX': '3203600', 'X': '3339100' }
-      editForm.value['GAJI POKOK SAAT INI'] = gajiRules[editForm.value['GOLONGAN']] || ''
-    }
     if (!editForm.value['NOMOR KONTRAK BARU']) editForm.value['NOMOR KONTRAK BARU'] = ''
     if (!editForm.value['NOMOR SK PERPANJANGAN']) editForm.value['NOMOR SK PERPANJANGAN'] = ''
     if (!editForm.value['TANGGAL SK PERPANJANGAN']) editForm.value['TANGGAL SK PERPANJANGAN'] = ''
@@ -358,11 +339,9 @@ watch(() => props.isOpen, (newVal) => {
   }
 }, { immediate: true })
 
-watch(() => editForm.value['GOLONGAN'], (newGol) => {
-  const gajiRules = { 'I': '1938500', 'III': '2206500', 'V': '2511500', 'VII': '2858800', 'IX': '3203600', 'X': '3339100' }
-  if (newGol && gajiRules[newGol]) {
-    editForm.value['GAJI POKOK SAAT INI'] = gajiRules[newGol]
-  }
+// Watch golongan or TMT changes → recalculate
+watch([() => editForm.value['GOLONGAN'], () => editForm.value['TMT CPNS']], () => {
+  recalculateMkgAndGaji()
 })
 
 const isContractExpired = computed(() => {
@@ -378,6 +357,47 @@ const isContractExpired = computed(() => {
   return new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()).getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
 })
 
+// Hitung ulang MKG dan Gaji Pokok dari Golongan + TMT CPNS
+const recalculateMkgAndGaji = () => {
+  const result = calculateGajiFromItem(editForm.value)
+  gajiInfo.value = result
+
+  if (result.mkg !== undefined) {
+    editForm.value['MASA KERJA TAHUN'] = result.mkg.toString()
+
+    // Hitung sisa bulan dalam periode MKG saat ini
+    const tmtStr = editForm.value['TMT CPNS'] || ''
+    let tmtDate = null
+    const parts = String(tmtStr).split(/[-/]/)
+    if (parts.length === 3) {
+      if (parts[0].length === 4) tmtDate = new Date(parts[0], parts[1]-1, parts[2])
+      else if (parts[2].length === 4) tmtDate = new Date(parts[2], parts[1]-1, parts[0])
+    }
+    if (tmtDate && !isNaN(tmtDate.getTime())) {
+      const today = new Date()
+      const totalMonths = (today.getFullYear() - tmtDate.getFullYear()) * 12 + (today.getMonth() - tmtDate.getMonth())
+      const sisaBulan = totalMonths % (result.golongan && ['IX','X','XI','XII','XIII','XIV','XV','XVI','XVII'].includes(result.golongan) ? 12 : 24)
+      editForm.value['MASA KERJA BULAN'] = Math.max(0, sisaBulan).toString()
+    } else {
+      editForm.value['MASA KERJA BULAN'] = '0'
+    }
+  } else {
+    editForm.value['MASA KERJA TAHUN'] = editForm.value['MK TAHUN'] || '0'
+    editForm.value['MASA KERJA BULAN'] = editForm.value['MK BULAN'] || '0'
+  }
+
+  // Auto-fill Gaji Pokok Saat Ini jika belum diisi manual
+  if (result.gaji && !editForm.value['_GAJI_MANUAL']) {
+    editForm.value['GAJI POKOK SAAT INI'] = result.gaji.toString()
+  }
+}
+
+// Format rupiah untuk ditampilkan di template
+const formatRupiahDisplay = (amount) => {
+  if (!amount) return '-'
+  return Number(amount).toLocaleString('id-ID')
+}
+
 const handleSave = () => {
   if (editForm.value['STATUS KEAKTIFAN PPPK'] === 'Aktif' && isContractExpired.value) {
     editForm.value['FORCE_AKTIF'] = true;
@@ -391,3 +411,4 @@ const handleSave = () => {
 <style scoped>
 /* Scoped overrides if needed, relies on styles.css */
 </style>
+
