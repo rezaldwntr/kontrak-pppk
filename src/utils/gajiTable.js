@@ -144,22 +144,75 @@ export const TABEL_GAJI = {
     data: genArithData(2979700, 4744400, 96600, 2, 3, 33)
   },
 
-  // --- GOLONGAN IX - XVII ---
-  // MKG: 0, 1, 2, ..., 32 (every year, starts at MKG 0)
-  // Sumber: MKG 0 dan MKG 32 konfirmasi; nilai antara = ESTIMASI
-  'IX':   { initialMkg: 0, data: genArithData(3203600, 5261500, 49400, 1, 0, 32) },
-  'X':    { initialMkg: 0, data: genArithData(3339100, 5484000, 52100, 1, 0, 32) },
-  'XI':   { initialMkg: 0, data: genArithData(3480300, 5716000, 55000, 1, 0, 32) },
-  'XII':  { initialMkg: 0, data: genArithData(3627500, 5957800, 57900, 1, 0, 32) },
+  // --- GOLONGAN IX - XII ---
+  // MKG: 0, 2, 4, 6, ..., 32 (BIENNIAL - setiap 2 tahun, mulai MKG 0)
+  // Sumber: Foto tabel Perpres No. 11 Tahun 2024
+  'IX': {
+    initialMkg: 0,
+    data: {
+       0: 3203600,  2: 3304400,  4: 3408500,  6: 3515900,
+       8: 3626800, 10: 3740800, 12: 3858600, 14: 3979400,
+      16: 4104500, 18: 4234200, 20: 4366200, 22: 4505800,
+      24: 4647700, 26: 4793900, 28: 4945100, 30: 5100800,
+      32: 5261500
+    }
+  },
+  'X': {
+    initialMkg: 0,
+    data: {
+       0: 3339100,  2: 3444200,  4: 3552700,  6: 3664600,
+       8: 3780000, 10: 3899100, 12: 4021900, 14: 4148300,
+      16: 4279200, 18: 4414300, 20: 4553300, 22: 4696400,
+      24: 4844300, 26: 4995900, 28: 5153200, 30: 5316000,
+      32: 5484000
+    }
+  },
+  'XI': {
+    initialMkg: 0,
+    data: {
+       0: 3480300,  2: 3589300,  4: 3703000,  6: 3819600,
+       8: 3939900, 10: 4064000, 12: 4192000, 14: 4324000,
+      16: 4460200, 18: 4599900, 20: 4745400, 22: 4895600,
+      24: 5050500, 26: 5210100, 28: 5374400, 30: 5543400,
+      32: 5716000
+    }
+  },
+  'XII': {
+    initialMkg: 0,
+    data: {
+       0: 3627500,  2: 3741800,  4: 3859600,  6: 3981200,
+       8: 4106600, 10: 4235900, 12: 4369300, 14: 4506900,
+      16: 4649200, 18: 4795900, 20: 4946300, 22: 5102100,
+      24: 5262800, 26: 5428500, 28: 5600400, 30: 5776400,
+      32: 5957800
+    }
+  },
+
+  // --- GOLONGAN XIII - XVII ---
+  // MKG: 0, 1, 2, ..., 32 (ANNUAL - setiap 1 tahun, mulai MKG 0)
+  // Sumber: Foto tabel Perpres No. 11 Tahun 2024
   'XIII': { initialMkg: 0, data: genArithData(3781000, 6209800, 61000, 1, 0, 32) },
-  'XIV':  { initialMkg: 0, data: genArithData(3940900, 6472500, 64200, 1, 0, 32) },
-  'XV':   { initialMkg: 0, data: genArithData(4107600, 6746200, 67500, 1, 0, 32) },
-  'XVI':  { initialMkg: 0, data: genArithData(4281400, 7031600, 71000, 1, 0, 32) },
-  'XVII': { initialMkg: 0, data: genArithData(4462500, 7329000, 74700, 1, 0, 32) },
+  'XIV': {
+    initialMkg: 0,
+    data: genArithData(3940900, 6472500, 64200, 1, 0, 32)
+  },
+  'XV':  {
+    initialMkg: 0,
+    data: genArithData(4107600, 6746200, 67500, 1, 0, 32)
+  },
+  'XVI': {
+    initialMkg: 0,
+    data: genArithData(4281400, 7031600, 71000, 1, 0, 32)
+  },
+  'XVII': {
+    initialMkg: 0,
+    data: genArithData(4462500, 7329000, 74700, 1, 0, 32)
+  },
 }
 
-// Golongan yang kenaikan berkalanya tahunan (bukan 2 tahun)
-const GOL_ANNUAL = new Set(['IX','X','XI','XII','XIII','XIV','XV','XVI','XVII'])
+// Golongan yang kenaikan berkalanya TAHUNAN (setiap 1 tahun)
+// IX-XII: BIENNIAL (setiap 2 tahun) - sudah ditangani di calculateMkg
+const GOL_ANNUAL = new Set(['XIII', 'XIV', 'XV', 'XVI', 'XVII'])
 
 // ============================================================
 // FUNGSI UTAMA
@@ -221,7 +274,14 @@ export function calculateMkg(golongan, yearsOfService) {
   // Kenaikan 2 tahun: initialMkg + floor(years/2)*2
   const initialMkg = gol.initialMkg || 0
   const mkg = initialMkg + Math.floor(years / 2) * 2
-  const maxMkg = golongan === 'I' ? 26 : 27
+
+  let maxMkg
+  if (golongan === 'I') maxMkg = 26
+  else if (['II', 'III', 'IV'].includes(golongan)) maxMkg = 27
+  else if (['VI', 'VII', 'VIII'].includes(golongan)) maxMkg = 33
+  else if (['IX', 'X', 'XI', 'XII'].includes(golongan)) maxMkg = 32
+  else maxMkg = 27
+
   return Math.min(mkg, maxMkg)
 }
 
