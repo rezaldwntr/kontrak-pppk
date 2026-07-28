@@ -1,227 +1,379 @@
 /**
  * TABEL GAJI POKOK PPPK - Perpres Nomor 11 Tahun 2024
  * ======================================================
- *
- * ATURAN MKG (Masa Kerja Golongan):
- * - Gol I, V    : initialMkg = 0 (MKG mulai dari 0 saat diangkat)
- * - Gol II, III, IV, VI, VII, VIII : initialMkg = 3
- *   (saat diangkat/TMT CPNS, pegawai SUDAH memiliki MKG 3 Tahun 0 Bulan)
- * - Gol IX - XVII : initialMkg = 0
- *
- * KENAIKAN BERKALA:
- * - Gol I - IV   : setiap 2 tahun (MKG 0,2,4,6... atau 3,5,7...)
- * - Gol V - VIII : setiap 2 tahun (MKG 0,1,3,5,7... atau 3,5,7...)
- *   Khusus Gol V: MKG 0→1 setelah 1 tahun, lalu setiap 2 tahun
- * - Gol IX - XVII: setiap 1 tahun (MKG 0,1,2,3,...)
- *
- * CATATAN:
- * - Nilai Gol I, II, III, IV, V(MKG 0-5) = KONFIRMASI dari tabel Perpres
- * - Nilai Gol V(MKG 7-33) = ESTIMASI (arithmetic progression, a₀=82900, d=3000)
- * - Nilai Gol VI, VII, VIII = ESTIMASI
- * - Nilai Gol IX-XVII = ESTIMASI (linear interpolation)
- * - Harap verifikasi nilai estimasi dengan dokumen resmi Perpres No. 11/2024
+ * Data eksak berdasarkan Lampiran Perpres 11/2024.
+ * Seluruh golongan (I s.d. XVII) menggunakan kenaikan biennial (setiap 2 tahun),
+ * kecuali Golongan V dari MKG 0 ke MKG 1 yang naik setelah 1 tahun.
  */
-
-// ============================================================
-// HELPER: Generate arithmetic progression salary data
-// ============================================================
-function genArithData(min, max, firstIncrement, mkgStep, startMkg, endMkg) {
-  const numSteps = (endMkg - startMkg) / mkgStep
-  const sumN = numSteps * (numSteps - 1) / 2
-  const d = (max - min - numSteps * firstIncrement) / sumN
-
-  const data = {}
-  let val = min
-  let inc = firstIncrement
-
-  for (let mkg = startMkg; mkg <= endMkg; mkg += mkgStep) {
-    data[mkg] = Math.round(val / 100) * 100
-    if (mkg < endMkg) {
-      val += inc
-      inc += d
-    }
-  }
-  // Ensure exact max value
-  data[endMkg] = max
-  return data
-}
 
 // ============================================================
 // TABEL GAJI LENGKAP
 // ============================================================
 export const TABEL_GAJI = {
-
-  // --- GOLONGAN I ---
-  // MKG: 0, 2, 4, 6, 8, ..., 26 (every 2 years)
-  // Sumber: Konfirmasi dari tabel foto (MKG 4 = estimasi)
-  'I': {
-    initialMkg: 0,
-    data: {
-      0: 1938500, 2: 1999500, 4: 2062800,
-      6: 2127500,  8: 2194500,  10: 2263800,
-      12: 2334900, 14: 2408400, 16: 2484300,
-      18: 2562500, 20: 2643200, 22: 2726500,
-      24: 2812400, 26: 2900900
+  "I": {
+    "initialMkg": 0,
+    "data": {
+      "0": 1938500,
+      "2": 1999500,
+      "4": 2062500,
+      "6": 2127500,
+      "8": 2194500,
+      "10": 2263600,
+      "12": 2334900,
+      "14": 2408400,
+      "16": 2484300,
+      "18": 2562500,
+      "20": 2643200,
+      "22": 2726500,
+      "24": 2812400,
+      "26": 2900900
     }
   },
-
-  // --- GOLONGAN II ---
-  // MKG: 3, 5, 7, ..., 27 (every 2 years, starts at MKG 3)
-  // Sumber: Konfirmasi dari tabel foto
-  'II': {
-    initialMkg: 3,
-    data: {
-      3: 2116900,  5: 2183600,  7: 2252400,  9: 2323300,
-      11: 2398500, 13: 2472000, 15: 2549600, 17: 2630100,
-      19: 2713000, 21: 2798400, 23: 2886800, 25: 2977500,
-      27: 3071200
+  "II": {
+    "initialMkg": 3,
+    "data": {
+      "3": 2116900,
+      "5": 2183600,
+      "7": 2252400,
+      "9": 2323300,
+      "11": 2396500,
+      "13": 2472000,
+      "15": 2549800,
+      "17": 2630100,
+      "19": 2713000,
+      "21": 2798400,
+      "23": 2886600,
+      "25": 2977500,
+      "27": 3071200
     }
   },
-
-  // --- GOLONGAN III ---
-  // MKG: 3, 5, 7, ..., 27 (every 2 years, starts at MKG 3)
-  // Sumber: Konfirmasi dari tabel foto
-  'III': {
-    initialMkg: 3,
-    data: {
-      3: 2206500,  5: 2276000,  7: 2347700,  9: 2421600,
-      11: 2497900, 13: 2576500, 15: 2657700, 17: 2741400,
-      19: 2827700, 21: 2918800, 23: 3008700, 25: 3103400,
-      27: 3201200
+  "III": {
+    "initialMkg": 3,
+    "data": {
+      "3": 2206500,
+      "5": 2276000,
+      "7": 2347700,
+      "9": 2421600,
+      "11": 2497900,
+      "13": 2576500,
+      "15": 2657700,
+      "17": 2741400,
+      "19": 2827700,
+      "21": 2916800,
+      "23": 3008700,
+      "25": 3103400,
+      "27": 3201200
     }
   },
-
-  // --- GOLONGAN IV ---
-  // MKG: 3, 5, 7, ..., 27 (every 2 years, starts at MKG 3)
-  // Sumber: Konfirmasi dari tabel foto (MKG 9 = estimasi)
-  'IV': {
-    initialMkg: 3,
-    data: {
-      3: 2299800,  5: 2372300,  7: 2447000,  9: 2524000,
-      11: 2603500, 13: 2685500, 15: 2770100, 17: 2857400,
-      19: 2947400, 21: 3040200, 23: 3135900, 25: 3234700,
-      27: 3336600
+  "IV": {
+    "initialMkg": 3,
+    "data": {
+      "3": 2299800,
+      "5": 2372300,
+      "7": 2447000,
+      "9": 2524000,
+      "11": 2603500,
+      "13": 2685500,
+      "15": 2770100,
+      "17": 2857400,
+      "19": 2947400,
+      "21": 3040200,
+      "23": 3135900,
+      "25": 3234700,
+      "27": 3336600
     }
   },
-
-  // --- GOLONGAN V ---
-  // MKG: 0, 1, 3, 5, 7, ..., 33
-  // (MKG 0→1 setelah 1 tahun, lalu setiap 2 tahun dari MKG 1)
-  // Sumber: MKG 0,1,3,5 konfirmasi; MKG 7-33 estimasi (a₀=82900, d=3000)
-  'V': {
-    initialMkg: 0,
-    specialV: true, // flag untuk penanganan khusus MKG 0→1
-    data: {
-      0: 2511500,  1: 2551100,
-      3: 2631400,  5: 2714300,  7: 2800200,  9: 2889100,
-      11: 2981000, 13: 3075900, 15: 3173800, 17: 3274700,
-      19: 3378600, 21: 3485500, 23: 3595400, 25: 3708300,
-      27: 3824200, 29: 3943100, 31: 4065000, 33: 4189900
+  "V": {
+    "initialMkg": 0,
+    "data": {
+      "0": 2511500,
+      "1": 2551100,
+      "3": 2631400,
+      "5": 2714300,
+      "7": 2799800,
+      "9": 2888000,
+      "11": 2978900,
+      "13": 3072800,
+      "15": 3169500,
+      "17": 3269400,
+      "19": 3372300,
+      "21": 3478500,
+      "23": 3588100,
+      "25": 3701100,
+      "27": 3817700,
+      "29": 3937900,
+      "31": 4061900,
+      "33": 4189900
+    },
+    "specialV": true
+  },
+  "VI": {
+    "initialMkg": 3,
+    "data": {
+      "3": 2742800,
+      "5": 2829100,
+      "7": 2918200,
+      "9": 3010100,
+      "11": 3105000,
+      "13": 3202700,
+      "15": 3303600,
+      "17": 3407700,
+      "19": 3515000,
+      "21": 3625700,
+      "23": 3739900,
+      "25": 3857700,
+      "27": 3979200,
+      "29": 4104500,
+      "31": 4233800,
+      "33": 4367100
     }
   },
-
-  // --- GOLONGAN VI ---
-  // MKG: 3, 5, 7, ..., 33 (every 2 years, starts at MKG 3)
-  // Sumber: MKG 3 konfirmasi; MKG 5-33 estimasi (a₀=87300, d≈3000)
-  'VI': {
-    initialMkg: 3,
-    data: genArithData(2742800, 4367100, 87300, 2, 3, 33)
-  },
-
-  // --- GOLONGAN VII ---
-  // MKG: 3, 5, 7, ..., 33 (every 2 years, starts at MKG 3)
-  // Sumber: MKG 3 konfirmasi; MKG 5-33 estimasi (a₀=91900, d≈3000)
-  'VII': {
-    initialMkg: 3,
-    data: genArithData(2858800, 4551800, 91900, 2, 3, 33)
-  },
-
-  // --- GOLONGAN VIII ---
-  // MKG: 3, 5, 7, ..., 33 (every 2 years, starts at MKG 3)
-  // Sumber: MKG 3 konfirmasi; MKG 5-33 estimasi (a₀=96600, d≈3000)
-  'VIII': {
-    initialMkg: 3,
-    data: genArithData(2979700, 4744400, 96600, 2, 3, 33)
-  },
-
-  // --- GOLONGAN IX - XII ---
-  // MKG: 0, 2, 4, 6, ..., 32 (BIENNIAL - setiap 2 tahun, mulai MKG 0)
-  // Sumber: Foto tabel Perpres No. 11 Tahun 2024
-  'IX': {
-    initialMkg: 0,
-    data: {
-       0: 3203600,  2: 3304400,  4: 3408500,  6: 3515900,
-       8: 3626800, 10: 3740800, 12: 3858600, 14: 3979400,
-      16: 4104500, 18: 4234200, 20: 4366200, 22: 4505800,
-      24: 4647700, 26: 4793900, 28: 4945100, 30: 5100800,
-      32: 5261500
+  "VII": {
+    "initialMkg": 3,
+    "data": {
+      "3": 2858800,
+      "5": 2948800,
+      "7": 3041700,
+      "9": 3137500,
+      "11": 3238300,
+      "13": 3338200,
+      "15": 3443400,
+      "17": 3551800,
+      "19": 3663700,
+      "21": 3779100,
+      "23": 3898100,
+      "25": 4020800,
+      "27": 4147500,
+      "29": 4278100,
+      "31": 4412800,
+      "33": 4551800
     }
   },
-  'X': {
-    initialMkg: 0,
-    data: {
-       0: 3339100,  2: 3444200,  4: 3552700,  6: 3664600,
-       8: 3780000, 10: 3899100, 12: 4021900, 14: 4148300,
-      16: 4279200, 18: 4414300, 20: 4553300, 22: 4696400,
-      24: 4844300, 26: 4995900, 28: 5153200, 30: 5316000,
-      32: 5484000
+  "VIII": {
+    "initialMkg": 3,
+    "data": {
+      "3": 2979700,
+      "5": 3073500,
+      "7": 3170300,
+      "9": 3270200,
+      "11": 3373200,
+      "13": 3479400,
+      "15": 3589000,
+      "17": 3702000,
+      "19": 3818600,
+      "21": 3938900,
+      "23": 4063000,
+      "25": 4190900,
+      "27": 4322900,
+      "29": 4459100,
+      "31": 4599500,
+      "33": 4744400
     }
   },
-  'XI': {
-    initialMkg: 0,
-    data: {
-       0: 3480300,  2: 3589300,  4: 3703000,  6: 3819600,
-       8: 3939900, 10: 4064000, 12: 4192000, 14: 4324000,
-      16: 4460200, 18: 4599900, 20: 4745400, 22: 4895600,
-      24: 5050500, 26: 5210100, 28: 5374400, 30: 5543400,
-      32: 5716000
+  "IX": {
+    "initialMkg": 0,
+    "data": {
+      "0": 3203600,
+      "2": 3304400,
+      "4": 3408500,
+      "6": 3515900,
+      "8": 3626600,
+      "10": 3740800,
+      "12": 3858600,
+      "14": 3980200,
+      "16": 4105500,
+      "18": 4234800,
+      "20": 4368200,
+      "22": 4505800,
+      "24": 4647700,
+      "26": 4794100,
+      "28": 4945100,
+      "30": 5100800,
+      "32": 5261500
     }
   },
-  'XII': {
-    initialMkg: 0,
-    data: {
-       0: 3627500,  2: 3741800,  4: 3859600,  6: 3981200,
-       8: 4106600, 10: 4235900, 12: 4369300, 14: 4506900,
-      16: 4649200, 18: 4795900, 20: 4946300, 22: 5102100,
-      24: 5262800, 26: 5428500, 28: 5600400, 30: 5776400,
-      32: 5957800
+  "X": {
+    "initialMkg": 0,
+    "data": {
+      "0": 3339100,
+      "2": 3444200,
+      "4": 3552700,
+      "6": 3664600,
+      "8": 3780000,
+      "10": 3899100,
+      "12": 4021900,
+      "14": 4148500,
+      "16": 4279200,
+      "18": 4414000,
+      "20": 4553000,
+      "22": 4696400,
+      "24": 4844300,
+      "26": 4996900,
+      "28": 5154200,
+      "30": 5316600,
+      "32": 5484000
     }
   },
-
-  // --- GOLONGAN XIII - XVII ---
-  // MKG: 0, 1, 2, ..., 32 (ANNUAL - setiap 1 tahun, mulai MKG 0)
-  // Sumber: Foto tabel Perpres No. 11 Tahun 2024
-  'XIII': { initialMkg: 0, data: genArithData(3781000, 6209800, 61000, 1, 0, 32) },
-  'XIV': {
-    initialMkg: 0,
-    data: genArithData(3940900, 6472500, 64200, 1, 0, 32)
+  "XI": {
+    "initialMkg": 0,
+    "data": {
+      "0": 3480300,
+      "2": 3589900,
+      "4": 3703000,
+      "6": 3819600,
+      "8": 3939900,
+      "10": 4084000,
+      "12": 4192000,
+      "14": 4324000,
+      "16": 4460200,
+      "18": 4600700,
+      "20": 4745600,
+      "22": 4895000,
+      "24": 5049200,
+      "26": 5208200,
+      "28": 5372300,
+      "30": 5541500,
+      "32": 5716000
+    }
   },
-  'XV':  {
-    initialMkg: 0,
-    data: genArithData(4107600, 6746200, 67500, 1, 0, 32)
+  "XII": {
+    "initialMkg": 0,
+    "data": {
+      "0": 3627500,
+      "2": 3741800,
+      "4": 3859600,
+      "6": 3981200,
+      "8": 4106600,
+      "10": 4235900,
+      "12": 4369300,
+      "14": 4506900,
+      "16": 4648900,
+      "18": 4795300,
+      "20": 4946300,
+      "22": 5102100,
+      "24": 5262800,
+      "26": 5428500,
+      "28": 5599500,
+      "30": 5775900,
+      "32": 5957800
+    }
   },
-  'XVI': {
-    initialMkg: 0,
-    data: genArithData(4281400, 7031600, 71000, 1, 0, 32)
+  "XIII": {
+    "initialMkg": 0,
+    "data": {
+      "0": 3761000,
+      "2": 3900000,
+      "4": 4022900,
+      "6": 4149600,
+      "8": 4260300,
+      "10": 4415100,
+      "12": 4554100,
+      "14": 4697600,
+      "16": 4845500,
+      "18": 4998100,
+      "20": 5155500,
+      "22": 5317900,
+      "24": 5485400,
+      "26": 5658200,
+      "28": 5836400,
+      "30": 6020200,
+      "32": 6209800
+    }
   },
-  'XVII': {
-    initialMkg: 0,
-    data: genArithData(4462500, 7329000, 74700, 1, 0, 32)
+  "XIV": {
+    "initialMkg": 0,
+    "data": {
+      "0": 3940900,
+      "2": 4065000,
+      "4": 4193000,
+      "6": 4325100,
+      "8": 4461300,
+      "10": 4601800,
+      "12": 4746800,
+      "14": 4896300,
+      "16": 5050500,
+      "18": 5209500,
+      "20": 5373600,
+      "22": 5542900,
+      "24": 5717400,
+      "26": 5897500,
+      "28": 6083200,
+      "30": 6274800,
+      "32": 6472500
+    }
   },
-}
-
-// Golongan yang kenaikan berkalanya TAHUNAN (setiap 1 tahun)
-// IX-XII: BIENNIAL (setiap 2 tahun) - sudah ditangani di calculateMkg
-const GOL_ANNUAL = new Set(['XIII', 'XIV', 'XV', 'XVI', 'XVII'])
+  "XV": {
+    "initialMkg": 0,
+    "data": {
+      "0": 4107600,
+      "2": 4237000,
+      "4": 4370400,
+      "6": 4508100,
+      "8": 4650000,
+      "10": 4796500,
+      "12": 4947600,
+      "14": 5103400,
+      "16": 5264100,
+      "18": 5429900,
+      "20": 5600900,
+      "22": 5777300,
+      "24": 5959300,
+      "26": 6147000,
+      "28": 6340600,
+      "30": 6540300,
+      "32": 6746200
+    }
+  },
+  "XVI": {
+    "initialMkg": 0,
+    "data": {
+      "0": 4281400,
+      "2": 4416200,
+      "4": 4555300,
+      "6": 4698700,
+      "8": 4846700,
+      "10": 4999400,
+      "12": 5156800,
+      "14": 5319300,
+      "16": 5486800,
+      "18": 5659600,
+      "20": 5837800,
+      "22": 6021700,
+      "24": 6211400,
+      "26": 6407000,
+      "28": 6608800,
+      "30": 6816900,
+      "32": 7031600
+    }
+  },
+  "XVII": {
+    "initialMkg": 0,
+    "data": {
+      "0": 4462500,
+      "2": 4603000,
+      "4": 4748000,
+      "6": 4897500,
+      "8": 5051800,
+      "10": 5210900,
+      "12": 5375000,
+      "14": 5544300,
+      "16": 5718900,
+      "18": 5899000,
+      "20": 6084800,
+      "22": 6276400,
+      "24": 6474100,
+      "26": 6678000,
+      "28": 6888300,
+      "30": 7105300,
+      "32": 7329000
+    }
+  }
+};
 
 // ============================================================
 // FUNGSI UTAMA
 // ============================================================
 
-/**
- * Normalisasi string golongan menjadi format standar (I, II, ..., XVII)
- * Contoh: "IV/a" → "IV", "Gol. IX" → "IX"
- */
 /**
  * Normalisasi string golongan menjadi format standar (I, II, ..., XVII)
  * Contoh: "IV/a" → "IV", "Gol. IX" → "IX", "5" → "V"
@@ -259,11 +411,6 @@ export function calculateMkg(golongan, yearsOfService) {
 
   const years = Math.max(0, yearsOfService)
 
-  if (GOL_ANNUAL.has(golongan)) {
-    // Kenaikan tahunan: MKG = tahun layanan (maks 32)
-    return Math.min(Math.floor(years), 32)
-  }
-
   if (golongan === 'V') {
     // Kenaikan khusus: 0→1 setelah 1 tahun, lalu setiap 2 tahun
     if (years < 1) return 0
@@ -275,12 +422,11 @@ export function calculateMkg(golongan, yearsOfService) {
   const initialMkg = gol.initialMkg || 0
   const mkg = initialMkg + Math.floor(years / 2) * 2
 
-  let maxMkg
+  let maxMkg = 27; // Default
   if (golongan === 'I') maxMkg = 26
   else if (['II', 'III', 'IV'].includes(golongan)) maxMkg = 27
   else if (['VI', 'VII', 'VIII'].includes(golongan)) maxMkg = 33
-  else if (['IX', 'X', 'XI', 'XII'].includes(golongan)) maxMkg = 32
-  else maxMkg = 27
+  else if (['IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII'].includes(golongan)) maxMkg = 32
 
   return Math.min(mkg, maxMkg)
 }
@@ -365,14 +511,10 @@ export function calculateGajiFromItem(item) {
   const mkg = calculateMkg(golongan, yearsOfService)
   const gaji = getGajiPokok(golongan, mkg)
 
-  return { golongan, mkg, gaji, yearsOfService }
-}
-
-/**
- * Format angka rupiah tanpa desimal
- * Contoh: 2500000 → "2.500.000"
- */
-export function formatRupiah(amount) {
-  if (!amount) return ''
-  return Number(amount).toLocaleString('id-ID')
+  return {
+    golongan,
+    mkg,
+    gaji,
+    yearsOfService: parseFloat(yearsOfService.toFixed(2))
+  }
 }
