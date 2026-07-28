@@ -518,3 +518,12 @@ export function calculateGajiFromItem(item) {
     yearsOfService: parseFloat(yearsOfService.toFixed(2))
   }
 }
+
+/**
+ * Format angka rupiah tanpa desimal
+ * Contoh: 2500000 → "2.500.000"
+ */
+export function formatRupiah(amount) {
+  if (!amount) return ''
+  return Number(amount).toLocaleString('id-ID')
+}
