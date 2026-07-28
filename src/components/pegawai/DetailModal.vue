@@ -225,7 +225,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 import { calculateContractPeriod, parseDate } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
@@ -292,8 +292,10 @@ watch(() => props.isOpen, (newVal) => {
       editForm.value['AWAL KONTRAK AKTIF'] = formatDateToInput(tmtDate)
     }
 
-    // Auto-calculate MKG, Gaji & Akhir Kontrak
-    recalculateMkgAndGaji()
+    // Auto-calculate MKG, Gaji & Akhir Kontrak setelah semua field terisi
+    nextTick(() => {
+      recalculateMkgAndGaji()
+    })
 
     if (!editForm.value['NOMOR KONTRAK BARU']) editForm.value['NOMOR KONTRAK BARU'] = ''
     if (!editForm.value['NOMOR SK PERPANJANGAN']) editForm.value['NOMOR SK PERPANJANGAN'] = ''
@@ -304,9 +306,16 @@ watch(() => props.isOpen, (newVal) => {
   }
 }, { immediate: true })
 
-// Watch golongan or TMT changes → recalculate
-watch([() => editForm.value['GOLONGAN'], () => editForm.value['TMT CPNS']], () => {
-  recalculateMkgAndGaji()
+// Watch perubahan GOLONGAN atau TMT CPNS → recalculate
+// Menggunakan debounce via setTimeout agar GOLONGAN dan TMT CPNS keduanya sudah ready
+let recalcTimer = null
+watch([() => editForm.value['GOLONGAN'], () => editForm.value['TMT CPNS']], ([newGol, newTmt]) => {
+  // Hanya recalculate jika keduanya ada nilai
+  if (!newGol || !newTmt) return
+  clearTimeout(recalcTimer)
+  recalcTimer = setTimeout(() => {
+    recalculateMkgAndGaji()
+  }, 50)
 })
 
 const isContractExpired = computed(() => {

@@ -246,7 +246,34 @@ export function getGajiPokok(golongan, mkg) {
   return gol.data[selectedMkg] || null
 }
 
-import { parseDate } from './pppkLogic'
+// ============================================================
+// HELPER: Parse tanggal dari berbagai format string
+// Mendukung: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, ISO 8601
+// ============================================================
+function parseDateLocal(raw) {
+  if (!raw) return null
+  if (raw instanceof Date) return isNaN(raw.getTime()) ? null : raw
+
+  const str = String(raw).trim()
+  if (!str) return null
+
+  // Hapus bagian waktu: "2022-03-01T00:00:00" -> "2022-03-01"
+  const cleanStr = str.split(/[T ]/)[0]
+
+  const parts = cleanStr.split(/[-/]/)
+  if (parts.length === 3) {
+    const p0 = parseInt(parts[0], 10)
+    const p1 = parseInt(parts[1], 10)
+    const p2 = parseInt(parts[2], 10)
+    if (!isNaN(p0) && !isNaN(p1) && !isNaN(p2)) {
+      if (parts[0].length === 4) return new Date(p0, p1 - 1, p2) // YYYY-MM-DD
+      if (parts[2].length === 4) return new Date(p2, p1 - 1, p0) // DD-MM-YYYY
+    }
+  }
+
+  const d = new Date(str)
+  return isNaN(d.getTime()) ? null : d
+}
 
 /**
  * Hitung MKG dan Gaji Pokok dari data pegawai (objek item)
@@ -267,7 +294,7 @@ export function calculateGajiFromItem(item) {
   let yearsOfService = 0
 
   if (tmtStr) {
-    const tmtDate = parseDate(tmtStr)
+    const tmtDate = parseDateLocal(tmtStr)
     if (tmtDate && !isNaN(tmtDate.getTime())) {
       const today = new Date()
       yearsOfService = (today - tmtDate) / (365.25 * 24 * 60 * 60 * 1000)
