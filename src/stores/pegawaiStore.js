@@ -180,6 +180,7 @@ export const usePegawaiStore = defineStore('pegawai', {
               nip: item['NIP BARU'],
               tglDiperpanjang: dateNow,
               kontrakLama: oldTmt,
+              tmtBaru: formData.newTmtDate,
               keterangan: isSingle ? 'Perpanjangan Individu' : 'Perpanjangan Otomatis'
             })
             
@@ -237,6 +238,50 @@ export const usePegawaiStore = defineStore('pegawai', {
         return { success: true, count: selectedIds.length }
       } catch (error) {
         console.error("Batch extend error:", error)
+        throw error
+      } finally {
+        this.isLoading = false
+      }
+    },
+    async cancelExtension(historyItem, index) {
+      this.isLoading = true
+      try {
+        const dateNow = new Date().toISOString()
+        
+        // Revert TMT on the specific Pegawai
+        const pIndex = this.pppkData.findIndex(p => p['PNS ID'] === historyItem.id)
+        if (pIndex !== -1) {
+          this.pppkData[pIndex]['AWAL KONTRAK AKTIF'] = historyItem.kontrakLama
+          // Note: We leave other fields like NOMOR KONTRAK AKTIF empty or as is, 
+          // reverting AWAL KONTRAK AKTIF is the primary goal to restore the contract period.
+        }
+
+        // Remove from history
+        this.extensionHistory.splice(index, 1)
+
+        // Save Pegawai data
+        const pegawaiRef = doc(db, 'database', 'pegawai')
+        const pegawaiJson = JSON.stringify(this.pppkData)
+        const compressed = LZString.compressToUTF16(pegawaiJson)
+        const chunkSize = 250000;
+        const numChunks = Math.ceil(compressed.length / chunkSize);
+        
+        for (let i = 0; i < numChunks; i++) {
+          const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
+          await setDoc(chunkRef, {
+            payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
+          })
+        }
+        await setDoc(pegawaiRef, { compressed: true, numChunks, lastUpdated: dateNow })
+        
+        // Save History
+        const historyRef = doc(db, 'database', 'riwayat')
+        await setDoc(historyRef, {
+          jsonString: JSON.stringify(this.extensionHistory),
+          lastUpdated: dateNow
+        })
+      } catch (error) {
+        console.error("Cancel extension error:", error)
         throw error
       } finally {
         this.isLoading = false

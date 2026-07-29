@@ -1,12 +1,5 @@
 <template>
   <div>
-    <header class="header">
-      <div class="page-title">
-        <h2>Riwayat Perpanjangan Kontrak</h2>
-        <p>Catatan riwayat perpanjangan kontrak otomatis yang telah dilakukan.</p>
-      </div>
-    </header>
-
     <div class="card" style="padding: 1.5rem;">
       <div class="table-responsive">
         <table class="table">
@@ -15,8 +8,9 @@
               <th>TANGGAL DIPERPANJANG</th>
               <th>NAMA PEGAWAI</th>
               <th>NIP BARU</th>
-              <th>KONTRAK LAMA</th>
-              <th>KETERANGAN</th>
+              <th>TMT LAMA</th>
+              <th>TMT BARU</th>
+              <th v-if="authStore?.user">AKSI</th>
             </tr>
           </thead>
           <tbody>
@@ -31,7 +25,12 @@
               <td><strong>{{ history.nama }}</strong></td>
               <td>{{ history.nip }}</td>
               <td>{{ history.kontrakLama || '-' }}</td>
-              <td><span class="badge badge-success">{{ history.keterangan }}</span></td>
+              <td>{{ history.tmtBaru || '-' }}</td>
+              <td v-if="authStore?.user">
+                <button class="btn btn-danger btn-sm" @click="handleCancel(history, index)" title="Batalkan Perpanjangan">
+                  <i class="fa-solid fa-rotate-left"></i> Batal
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -43,14 +42,37 @@
 <script setup>
 import { onMounted } from 'vue'
 import { usePegawaiStore } from '../stores/pegawaiStore'
+import { useAuthStore } from '../stores/authStore'
+import { customSwal } from '../utils/swal'
 
 const pegawaiStore = usePegawaiStore()
+const authStore = useAuthStore()
 
 onMounted(() => {
   if (pegawaiStore.pppkData.length === 0) {
     pegawaiStore.loadData() // also loads history
   }
 })
+
+const handleCancel = async (history, index) => {
+  const result = await customSwal.fire({
+    title: 'Batalkan Perpanjangan?',
+    text: `TMT pegawai ${history.nama} akan dikembalikan ke ${history.kontrakLama || 'semula'}.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa-solid fa-rotate-left"></i> Ya, Batalkan',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#ef4444'
+  })
+  if (result.isConfirmed) {
+    try {
+      await pegawaiStore.cancelExtension(history, index)
+      customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Perpanjangan dibatalkan.' })
+    } catch (e) {
+      customSwal.fire({ icon: 'error', title: 'Gagal', text: e.message })
+    }
+  }
+}
 
 const formatDate = (isoString) => {
   if (!isoString) return '-'
