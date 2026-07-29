@@ -42,7 +42,7 @@ export const calculateContractPeriod = (item) => {
     }
     
     // 1. Standard End Date Calculation
-    const tmtRaw = item ? (item["TMT CPNS"] || item["AWAL KONTRAK AKTIF"] || "") : "";
+    const tmtRaw = item ? (item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"] || "") : "";
     const startDate = parseDate(tmtRaw);
     
     if (!startDate || isNaN(startDate.getTime())) {
