@@ -103,17 +103,18 @@ export const calculateContractPeriod = (item) => {
 };
 
 export const getStatusPppk = (item) => {
-    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
-    if (manualStatus === "Meninggal") return "Meninggal";
-    
-    if (manualStatus === "Aktif" && item["FORCE_AKTIF"]) {
-        return "Aktif";
-    }
-    
+    // 1. Dapatkan status hitungan otomatis dari tanggal
     const contractStatus = calculateContractPeriod(item).statusText;
+    
+    // 2. Jika secara tanggal kontrak sudah benar-benar habis, maka PASTI Tidak Diperpanjang / Pensiun
     if (contractStatus === "Kontrak Habis (BUP)") return "Pensiun";
     if (contractStatus === "Kontrak Habis") return "Tidak Diperpanjang";
     
+    // 3. Jika belum habis, cek apakah ada status manual (Meninggal, dll)
+    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+    if (manualStatus === "Meninggal") return "Meninggal";
+    
+    // 4. Jika masih aktif, kembalikan Aktif atau status manual lainnya
     if (contractStatus === "Kontrak Hampir Habis" || contractStatus === "Kontrak Masih Berlaku") {
         return "Aktif";
     }

@@ -197,7 +197,7 @@
             </div>
             <div class="form-group">
               <label>Awal Kontrak Aktif / TMT</label>
-              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" @change="recalculateMkgAndGaji">
+              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group">
               <label>Akhir Kontrak Aktif</label>
@@ -388,16 +388,12 @@ const formatRupiahDisplay = (amount) => {
 }
 
 const handleSave = () => {
-  if (editForm.value['STATUS KEAKTIFAN PPPK'] === 'Aktif' && isContractExpired.value) {
-    editForm.value['FORCE_AKTIF'] = true;
-  } else {
-    delete editForm.value['FORCE_AKTIF'];
-  }
-  emit('save', editForm.value)
+  recalculateMkgAndGaji()
+  emit('save', { ...editForm.value })
+  emit('close')
 }
 </script>
 
 <style scoped>
 /* Scoped overrides if needed, relies on styles.css */
 </style>
-
