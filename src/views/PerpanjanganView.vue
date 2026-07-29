@@ -48,6 +48,7 @@ import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ExtendModal from '../components/pegawai/ExtendModal.vue'
+import { customSwal } from '../utils/swal'
 
 const pegawaiStore = usePegawaiStore()
 const showDetail = ref(false)
@@ -77,7 +78,7 @@ const handleBatchExtend = (selectedIds) => {
   showExtendModal.value = true
 }
 
-const submitBatchExtend = async (newTmtDate) => {
+const submitBatchExtend = async (extendData) => {
   showExtendModal.value = false
   try {
     customSwal.fire({
@@ -90,7 +91,7 @@ const submitBatchExtend = async (newTmtDate) => {
     // Yield thread to allow modal to close and swal to show
     await new Promise(resolve => setTimeout(resolve, 100))
     
-    const res = await pegawaiStore.batchExtend(extendIds.value, newTmtDate)
+    const res = await pegawaiStore.batchExtend(extendIds.value, extendData)
     customSwal.fire({ icon: 'success', title: 'Berhasil', text: `Berhasil memperpanjang ${res.count} kontrak pegawai!` })
   } catch (e) {
     customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal memperpanjang kontrak: ' + e.message })
