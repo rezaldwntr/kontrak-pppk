@@ -196,8 +196,8 @@
               <input type="text" v-model="editForm['NOMOR KONTRAK AKTIF']" class="form-control">
             </div>
             <div class="form-group">
-              <label>Awal Kontrak Aktif</label>
-              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
+              <label>Awal Kontrak Aktif / TMT</label>
+              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" @change="recalculateMkgAndGaji">
             </div>
             <div class="form-group">
               <label>Akhir Kontrak Aktif</label>

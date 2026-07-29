@@ -29,28 +29,6 @@ onMounted(() => {
   const savedTheme = localStorage.getItem('theme') || 'dark'
   document.body.setAttribute('data-theme', savedTheme)
 })
-
-import { watch } from 'vue'
-import { usePegawaiStore } from './stores/pegawaiStore'
-const pegawaiStore = usePegawaiStore()
-
-watch(() => pegawaiStore.pppkData, async (data) => {
-  if (data && data.length > 0) {
-    const pIndex = data.findIndex(p => p['NIP BARU'] === '197802262021211003')
-    if (pIndex !== -1 && data[pIndex]['AWAL KONTRAK AKTIF'] === '2026-01-01') {
-      const fixedData = { ...data[pIndex] }
-      fixedData['AWAL KONTRAK AKTIF'] = '2021-01-01'
-      delete fixedData['FORCE_AKTIF']
-      delete fixedData['STATUS_PERPANJANGAN']
-      try {
-        await pegawaiStore.updatePegawai(fixedData['PNS ID'], fixedData)
-        console.log('✅ Anomaly data fixed for NIP 197802262021211003')
-      } catch (e) {
-        console.error('Failed to fix anomaly data', e)
-      }
-    }
-  }
-}, { immediate: true })
 </script>
 
 <style>
