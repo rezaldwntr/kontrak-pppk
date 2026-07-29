@@ -204,7 +204,7 @@
               <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
             </div>
             <div class="form-group" style="grid-column: span 2;">
-              <label>Gaji Pokok Saat Ini (Rp) <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Otomatis (Perpres 11/2024)</span></label>
+              <label>Gaji Pokok Saat Ini (Rp)</label>
               <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
             </div>
           </div>
