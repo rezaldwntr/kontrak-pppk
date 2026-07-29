@@ -339,15 +339,17 @@ const recalculateMkgAndGaji = () => {
   const tmtDate = parseDate(editForm.value['TMT CPNS'] || editForm.value['AWAL KONTRAK AKTIF'])
 
   if (result.mkg !== undefined) {
-    editForm.value['MASA KERJA TAHUN'] = result.mkg.toString()
-
     if (tmtDate && !isNaN(tmtDate.getTime())) {
+      // Tampilkan TOTAL TAHUN dan BULAN KERJA AKTUAL dari TMT CPNS ke hari ini
+      // (MKG digunakan internal untuk lookup gaji, tapi bukan yang ditampilkan)
       const today = new Date()
       const totalMonths = (today.getFullYear() - tmtDate.getFullYear()) * 12 + (today.getMonth() - tmtDate.getMonth())
-      const isAnnual = result.golongan && ['IX','X','XI','XII','XIII','XIV','XV','XVI','XVII'].includes(result.golongan)
-      const sisaBulan = totalMonths % (isAnnual ? 12 : 24)
+      const totalTahun = Math.floor(totalMonths / 12)
+      const sisaBulan = totalMonths % 12
+      editForm.value['MASA KERJA TAHUN'] = Math.max(0, totalTahun).toString()
       editForm.value['MASA KERJA BULAN'] = Math.max(0, sisaBulan).toString()
     } else {
+      editForm.value['MASA KERJA TAHUN'] = '0'
       editForm.value['MASA KERJA BULAN'] = '0'
     }
   } else {
