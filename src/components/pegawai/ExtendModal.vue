@@ -15,11 +15,11 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Nomor Kontrak Baru (Perpanjangan)</label>
-              <input type="text" v-model="nomorKontrakBaru" class="form-control" placeholder="Contoh: SPK/0/2021-Perpanjangan">
+              <input type="text" v-model="nomorKontrakBaru" class="form-control">
             </div>
             <div class="form-group">
               <label>Nomor SK Perpanjangan</label>
-              <input type="text" v-model="nomorSk" class="form-control" placeholder="Contoh: SK/PPPK/1023/2026">
+              <input type="text" v-model="nomorSk" class="form-control">
             </div>
             <div class="form-group">
               <label>Tanggal SK Perpanjangan</label>
@@ -27,16 +27,28 @@
             </div>
             <div class="form-group">
               <label>TMT Kontrak Baru (Mulai)</label>
-              <input type="date" v-model="newTmtDate" class="form-control" required>
+              <input type="date" v-model="newTmtDate" class="form-control" required @change="recalculate">
             </div>
             <div class="form-group">
-              <label>Tanggal Akhir Kontrak Baru</label>
+              <label>
+                Tanggal Akhir Kontrak Baru
+                <span
+                  v-if="isBup"
+                  style="display: inline-block; background: rgba(239,68,68,0.15); color: #ef4444; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: 6px; letter-spacing: 0.5px; border: 1px solid rgba(239,68,68,0.35);"
+                >BUP</span>
+              </label>
               <input type="date" v-model="tanggalAkhir" class="form-control">
             </div>
             <div class="form-group">
               <label>Gaji Pokok Baru (Rp)</label>
-              <input type="text" v-model="gajiPokok" class="form-control" placeholder="Contoh: 3500000">
+              <input type="text" v-model="gajiPokok" class="form-control">
             </div>
+          </div>
+
+          <!-- BUP info banner -->
+          <div v-if="isBup" style="margin-top: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; color: #ef4444; font-size: 0.85rem; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-user-clock"></i>
+            <span>Tanggal akhir kontrak disesuaikan dengan <strong>Batas Usia Pensiun (BUP)</strong> pegawai ini.</span>
           </div>
         </template>
         
@@ -68,7 +80,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
-import { calculateContractPeriod } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate } from '../../utils/pppkLogic'
+import { calculateGajiFromItem, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -77,12 +90,77 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit'])
 const pegawaiStore = usePegawaiStore()
+
 const newTmtDate = ref('')
 const nomorKontrakBaru = ref('')
 const nomorSk = ref('')
 const tanggalSk = ref('')
 const tanggalAkhir = ref('')
 const gajiPokok = ref('')
+const isBup = ref(false)
+
+let currentPegawai = null
+
+const formatDateToInput = (dateObj) => {
+  if (!dateObj || isNaN(dateObj.getTime())) return ''
+  const y = dateObj.getFullYear()
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const d = String(dateObj.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+const recalculate = () => {
+  if (!currentPegawai || !newTmtDate.value) return
+
+  const isParuhWaktu = currentPegawai['JENIS PPPK'] === 'PPPK Paruh Waktu'
+  const contractYears = isParuhWaktu ? 1 : 5
+
+  // Hitung tanggal akhir standar (dari TMT baru)
+  const tmtStart = parseDate(newTmtDate.value)
+  if (!tmtStart || isNaN(tmtStart.getTime())) return
+
+  let standardEndDate = new Date(tmtStart)
+  standardEndDate.setFullYear(standardEndDate.getFullYear() + contractYears)
+  standardEndDate.setDate(standardEndDate.getDate() - 1)
+
+  // Hitung BUP
+  let bupEndDate = null
+  const birthDate = parseDate(currentPegawai['TANGGAL LAHIR'] || '')
+  if (birthDate && !isNaN(birthDate.getTime())) {
+    const jabatan = (currentPegawai['JABATAN NAMA'] || '').toLowerCase()
+    const bupAge = jabatan.includes('guru') ? 60 : 58
+    bupEndDate = new Date(birthDate)
+    bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge)
+    bupEndDate.setMonth(bupEndDate.getMonth() + 1)
+    bupEndDate.setDate(0)
+  }
+
+  // Pilih tanggal yang lebih awal
+  let finalEndDate = standardEndDate
+  isBup.value = false
+  if (bupEndDate && bupEndDate.getTime() < standardEndDate.getTime()) {
+    finalEndDate = bupEndDate
+    isBup.value = true
+  }
+
+  tanggalAkhir.value = formatDateToInput(finalEndDate)
+
+  // Hitung gaji pokok baru berdasarkan TMT baru sebagai titik awal masa kerja
+  // Masa kerja dihitung dari TMT CPNS awal hingga TMT baru
+  const tmtCpns = parseDate(currentPegawai['TMT CPNS'] || currentPegawai['AWAL KONTRAK AKTIF'] || '')
+  if (tmtCpns && !isNaN(tmtCpns.getTime())) {
+    const yearsFromCpns = (tmtStart - tmtCpns) / (1000 * 60 * 60 * 24 * 365.25)
+    const gajiItem = { ...currentPegawai, 'TMT CPNS': formatDateToInput(tmtCpns) }
+    // Buat item khusus dengan masa kerja berdasarkan dari TMT CPNS ke TMT baru
+    const gajiResult = calculateGajiFromItem({
+      ...gajiItem,
+      '_override_years': yearsFromCpns
+    })
+    if (gajiResult && gajiResult.gaji) {
+      gajiPokok.value = formatRupiah(gajiResult.gaji)
+    }
+  }
+}
 
 watch(() => props.isOpen, (newVal) => {
   nomorKontrakBaru.value = ''
@@ -90,27 +168,22 @@ watch(() => props.isOpen, (newVal) => {
   tanggalSk.value = ''
   tanggalAkhir.value = ''
   gajiPokok.value = ''
-  
+  isBup.value = false
+  currentPegawai = null
+
   if (newVal && props.selectedIds && props.selectedIds.length > 0) {
-    // Cari data pegawai pertama untuk menentukan default TMT baru
-    const firstPegawai = pegawaiStore.pppkData.find(p => p['PNS ID'] === props.selectedIds[0])
-    if (firstPegawai) {
-      const period = calculateContractPeriod(firstPegawai)
+    currentPegawai = pegawaiStore.pppkData.find(p => p['PNS ID'] === props.selectedIds[0])
+    if (currentPegawai) {
+      const period = calculateContractPeriod(currentPegawai)
       if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
         const nextDate = new Date(period.rawDate)
         nextDate.setDate(nextDate.getDate() + 1) // 1 hari setelah akhir kontrak
-        
-        const y = nextDate.getFullYear()
-        const m = String(nextDate.getMonth() + 1).padStart(2, '0')
-        const d = String(nextDate.getDate()).padStart(2, '0')
-        newTmtDate.value = `${y}-${m}-${d}`
+        newTmtDate.value = formatDateToInput(nextDate)
       } else {
         const today = new Date()
-        const y = today.getFullYear()
-        const m = String(today.getMonth() + 1).padStart(2, '0')
-        const d = String(today.getDate()).padStart(2, '0')
-        newTmtDate.value = `${y}-${m}-${d}`
+        newTmtDate.value = formatDateToInput(today)
       }
+      recalculate()
     }
   } else {
     newTmtDate.value = ''

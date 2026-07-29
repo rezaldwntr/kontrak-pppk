@@ -495,16 +495,20 @@ export function calculateGajiFromItem(item) {
     return { golongan: golRaw, mkg: 0, gaji: null, yearsOfService: 0 }
   }
 
-  // Parse TMT CPNS jika ada
-  const tmtStr = item['TMT CPNS'] || item['AWAL KONTRAK AKTIF'] || ''
+  // Jika ada override years (digunakan saat perpanjangan untuk hitung gaji di TMT baru)
   let yearsOfService = 0
-
-  if (tmtStr) {
-    const tmtDate = parseDateLocal(tmtStr)
-    if (tmtDate && !isNaN(tmtDate.getTime())) {
-      const today = new Date()
-      yearsOfService = (today - tmtDate) / (365.25 * 24 * 60 * 60 * 1000)
-      if (yearsOfService < 0) yearsOfService = 0
+  if (typeof item['_override_years'] === 'number') {
+    yearsOfService = Math.max(0, item['_override_years'])
+  } else {
+    // Parse TMT CPNS jika ada
+    const tmtStr = item['TMT CPNS'] || item['AWAL KONTRAK AKTIF'] || ''
+    if (tmtStr) {
+      const tmtDate = parseDateLocal(tmtStr)
+      if (tmtDate && !isNaN(tmtDate.getTime())) {
+        const today = new Date()
+        yearsOfService = (today - tmtDate) / (365.25 * 24 * 60 * 60 * 1000)
+        if (yearsOfService < 0) yearsOfService = 0
+      }
     }
   }
 
