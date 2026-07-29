@@ -109,7 +109,7 @@
                         <td>
                             <strong>{{ getNamaLengkap(item) }}</strong>
                         </td>
-                        <td>{{ formatIndoDate(item["TMT CPNS"]) }}</td>
+                        <td>{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
                         <td>{{ calculateContractPeriod(item).endDateStr }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>

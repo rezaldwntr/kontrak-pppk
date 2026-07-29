@@ -288,8 +288,13 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
     if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
     
-    if (tmtDate) {
+    // Hanya set AWAL KONTRAK AKTIF dari TMT CPNS jika belum ada (belum pernah diperpanjang)
+    if (!editForm.value['AWAL KONTRAK AKTIF'] && tmtDate) {
       editForm.value['AWAL KONTRAK AKTIF'] = formatDateToInput(tmtDate)
+    } else if (editForm.value['AWAL KONTRAK AKTIF']) {
+      // Format AWAL KONTRAK AKTIF yang sudah ada ke format input
+      const awalDate = parseDate(editForm.value['AWAL KONTRAK AKTIF'])
+      if (awalDate) editForm.value['AWAL KONTRAK AKTIF'] = formatDateToInput(awalDate)
     }
 
     // Auto-calculate MKG, Gaji & Akhir Kontrak setelah semua field terisi
