@@ -252,8 +252,12 @@ export const usePegawaiStore = defineStore('pegawai', {
         const pIndex = this.pppkData.findIndex(p => p['PNS ID'] === historyItem.id)
         if (pIndex !== -1) {
           this.pppkData[pIndex]['AWAL KONTRAK AKTIF'] = historyItem.kontrakLama
-          // Note: We leave other fields like NOMOR KONTRAK AKTIF empty or as is, 
-          // reverting AWAL KONTRAK AKTIF is the primary goal to restore the contract period.
+          // Hapus flag FORCE_AKTIF dan STATUS_PERPANJANGAN agar status kembali dihitung otomatis
+          delete this.pppkData[pIndex]['FORCE_AKTIF']
+          delete this.pppkData[pIndex]['STATUS_PERPANJANGAN']
+          
+          // Jika TMT Lama sudah habis (misal 2021-2025), maka tanpa FORCE_AKTIF
+          // tabel dan sistem akan otomatis mengembalikannya menjadi "Kontrak Habis"
         }
 
         // Remove from history
