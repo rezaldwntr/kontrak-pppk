@@ -487,6 +487,11 @@ function parseDateLocal(raw) {
  * @returns {{ golongan: string, mkg: number, gaji: number|null, yearsOfService: number }}
  */
 export function calculateGajiFromItem(item) {
+  // PPPK Paruh Waktu: gaji pokok tetap Rp 1.500.000
+  if (item['JENIS PPPK'] === 'PPPK Paruh Waktu') {
+    return { golongan: '-', mkg: 0, gaji: 1500000, yearsOfService: 0 }
+  }
+
   // Ambil dan normalisasi golongan
   const golRaw = item['GOLONGAN'] || item['GOL AKHIR NAMA'] || item['GOL RUANG'] || ''
   const golongan = normalizeGolongan(golRaw)
