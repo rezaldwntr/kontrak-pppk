@@ -124,11 +124,11 @@
             </div>
             <div class="form-group">
               <label>MKG / Masa Kerja (Tahun) <span style="font-size:0.75rem; color: #1eaa6e; font-weight:600;">(Otomatis)</span></label>
-              <input type="text" :value="editForm['MASA KERJA TAHUN'] !== undefined && editForm['MASA KERJA TAHUN'] !== null ? editForm['MASA KERJA TAHUN'] : '0'" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
+              <input type="text" :value="editForm['MASA KERJA TAHUN'] !== undefined && editForm['MASA KERJA TAHUN'] !== null ? editForm['MASA KERJA TAHUN'] : '0'" class="form-control" disabled>
             </div>
             <div class="form-group">
               <label>MKG / Masa Kerja (Bulan) <span style="font-size:0.75rem; color: #1eaa6e; font-weight:600;">(Otomatis)</span></label>
-              <input type="text" :value="editForm['MASA KERJA BULAN'] !== undefined && editForm['MASA KERJA BULAN'] !== null ? editForm['MASA KERJA BULAN'] : '0'" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
+              <input type="text" :value="editForm['MASA KERJA BULAN'] !== undefined && editForm['MASA KERJA BULAN'] !== null ? editForm['MASA KERJA BULAN'] : '0'" class="form-control" disabled>
             </div>
           </div>
         </div>
