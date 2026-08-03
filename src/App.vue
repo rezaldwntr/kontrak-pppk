@@ -40,7 +40,14 @@ const checkIdleStatus = () => {
     if (now - lastActivity > IDLE_TIMEOUT_MS) {
       authStore.logout();
       localStorage.removeItem('lastActivity');
-      alert("Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.");
+      
+      // Cek apakah di hari yang sama
+      const lastDate = new Date(lastActivity).toDateString();
+      const nowDate = new Date(now).toDateString();
+      
+      if (lastDate === nowDate) {
+        alert("Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.");
+      }
     }
   }
 };
