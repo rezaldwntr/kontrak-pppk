@@ -197,15 +197,15 @@
             </div>
             <div class="form-group">
               <label>Awal Kontrak Aktif / TMT</label>
-              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
+              <input type="date" v-model="editForm['AWAL KONTRAK AKTIF']" class="form-control" disabled>
             </div>
             <div class="form-group">
               <label>Akhir Kontrak Aktif</label>
-              <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #888; cursor: not-allowed;">
+              <input type="date" v-model="editForm['AKHIR KONTRAK AKTIF']" class="form-control" disabled>
             </div>
             <div class="form-group" style="grid-column: span 2;">
               <label>Gaji Pokok Saat Ini (Rp)</label>
-              <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" disabled style="background: rgba(255,255,255,0.05); color: #e2e8f0; cursor: not-allowed;">
+              <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" disabled>
             </div>
           </div>
         </div>
