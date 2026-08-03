@@ -35,6 +35,12 @@
     @close="pegawaiStore.showImportModal = false"
     @imported="handleImportSuccess"
   />
+  <PasswordPromptModal 
+    :isOpen="showPasswordModal" 
+    :description="passwordPromptDesc"
+    @close="showPasswordModal = false"
+    @success="handlePasswordSuccess"
+  />
 </template>
 
 <script setup>
@@ -44,6 +50,7 @@ import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ImportModal from '../components/pegawai/ImportModal.vue'
+import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import { exportToExcel } from '../utils/exportImport'
 import { customSwal } from '../utils/swal'
 import { calculateContractPeriod, getStatusPppk } from '../utils/pppkLogic'
@@ -53,6 +60,10 @@ const showDetail = ref(false)
 const showPrintOptions = ref(false)
 const showImportOptions = ref(false)
 const selectedItem = ref(null)
+
+const showPasswordModal = ref(false)
+const passwordPromptDesc = ref('')
+let pendingAction = null // { type: 'delete' | 'batchDelete', data: any }
 
 onMounted(() => {
   if (pegawaiStore.pppkData.length === 0) {
@@ -78,9 +89,7 @@ const handleSaveDetail = async (updatedItem) => {
       }
     })
     
-    // Memberikan jeda waktu agar browser dapat merender UI (SweetAlert & tutup modal) sebelum proses berat memblokir thread (Fix INP Issue)
     await new Promise(resolve => setTimeout(resolve, 100))
-    
     await pegawaiStore.updatePegawai(updatedItem)
     
     customSwal.fire({
@@ -106,6 +115,7 @@ const handlePrint = (item) => {
   selectedItem.value = item
   showPrintOptions.value = true
 }
+
 const handleDelete = async (item) => {
   const result = await customSwal.fire({
     title: 'Hapus Data Pegawai?',
@@ -118,22 +128,12 @@ const handleDelete = async (item) => {
   })
   
   if (result.isConfirmed) {
-    try {
-      customSwal.fire({
-        title: 'Menghapus...',
-        html: 'Sedang menghapus data. Mohon tunggu...',
-        allowOutsideClick: false,
-        didOpen: () => { customSwal.showLoading() }
-      })
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      await pegawaiStore.deletePegawai(item['NIP BARU'])
-      customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil dihapus.' })
-    } catch (e) {
-      customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghapus data: ' + e.message })
-    }
+    pendingAction = { type: 'delete', data: item }
+    passwordPromptDesc.value = `Masukkan password Anda untuk mengonfirmasi penghapusan data pegawai ${item['NAMA']}.`
+    showPasswordModal.value = true
   }
 }
+
 const handleBatchDelete = async (selectedIds) => {
   const result = await customSwal.fire({
     title: 'Hapus Data Terpilih?',
@@ -146,22 +146,55 @@ const handleBatchDelete = async (selectedIds) => {
   })
   
   if (result.isConfirmed) {
-    try {
-      customSwal.fire({
-        title: 'Menghapus...',
-        html: `Sedang menghapus ${selectedIds.length} data. Mohon tunggu...`,
-        allowOutsideClick: false,
-        didOpen: () => { customSwal.showLoading() }
-      })
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      await pegawaiStore.batchDelete(selectedIds)
-      customSwal.fire({ icon: 'success', title: 'Berhasil', text: `${selectedIds.length} data pegawai berhasil dihapus.` })
-    } catch (e) {
-      customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghapus data: ' + e.message })
-    }
+    pendingAction = { type: 'batchDelete', data: selectedIds }
+    passwordPromptDesc.value = `Masukkan password Anda untuk mengonfirmasi penghapusan massal ${selectedIds.length} data pegawai.`
+    showPasswordModal.value = true
   }
 }
+
+const handlePasswordSuccess = async () => {
+  if (pendingAction.type === 'delete') {
+    await executeDelete(pendingAction.data)
+  } else if (pendingAction.type === 'batchDelete') {
+    await executeBatchDelete(pendingAction.data)
+  }
+  pendingAction = null
+}
+
+const executeDelete = async (item) => {
+  try {
+    customSwal.fire({
+      title: 'Menghapus...',
+      html: 'Sedang menghapus data. Mohon tunggu...',
+      allowOutsideClick: false,
+      didOpen: () => { customSwal.showLoading() }
+    })
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    await pegawaiStore.deletePegawai(item['NIP BARU'])
+    customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil dihapus.' })
+  } catch (e) {
+    customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghapus data: ' + e.message })
+  }
+}
+
+const executeBatchDelete = async (selectedIds) => {
+  try {
+    customSwal.fire({
+      title: 'Menghapus...',
+      html: `Sedang menghapus ${selectedIds.length} data. Mohon tunggu...`,
+      allowOutsideClick: false,
+      didOpen: () => { customSwal.showLoading() }
+    })
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    await pegawaiStore.batchDelete(selectedIds)
+    customSwal.fire({ icon: 'success', title: 'Berhasil', text: `${selectedIds.length} data pegawai berhasil dihapus.` })
+  } catch (e) {
+    customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menghapus data: ' + e.message })
+  }
+}
+
 const handleAdd = () => {
   console.log("Add new data")
 }
@@ -181,6 +214,5 @@ const handleExport = () => {
   }
 }
 const handleImportSuccess = () => {
-  // Data is already updated in the store, we can show a toast or alert if needed
 }
 </script>

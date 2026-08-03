@@ -76,6 +76,28 @@
       <div v-if="errorMsg" class="alert alert-danger" style="margin-top: 20px; font-size: 13px;">
         {{ errorMsg }}
       </div>
+
+      <h3 style="margin-top: 40px; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+        <i class="fa-solid fa-shield-halved"></i> Keamanan & Akun
+      </h3>
+
+      <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div class="template-card">
+          <h4><i class="fa-solid fa-envelope"></i> Ganti Email</h4>
+          <p class="text-muted">Perbarui alamat email yang digunakan untuk masuk ke aplikasi.</p>
+          <button class="btn btn-outline" style="width: 100%; display: block;" @click="handleChangeEmail">
+            Ubah Email
+          </button>
+        </div>
+
+        <div class="template-card">
+          <h4><i class="fa-solid fa-key"></i> Ganti Password</h4>
+          <p class="text-muted">Perbarui kata sandi untuk mengamankan akun Anda.</p>
+          <button class="btn btn-outline" style="width: 100%; display: block;" @click="handleChangePassword">
+            Ubah Password
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -84,7 +106,10 @@
 import { ref, reactive } from 'vue'
 import { db } from '../services/firebase'
 import { doc, setDoc } from 'firebase/firestore'
+import { useAuthStore } from '../stores/authStore'
+import { customSwal } from '../utils/swal'
 
+const authStore = useAuthStore()
 const isUploading = ref(false)
 const errorMsg = ref('')
 const uploadStatus = reactive({
@@ -111,7 +136,6 @@ const handleUpload = (event, typeKey) => {
     try {
       const base64String = e.target.result
       
-      // Save to config collection in Firestore
       const configRef = doc(db, 'config', 'templates')
       await setDoc(configRef, {
         [typeKey]: base64String,
@@ -134,6 +158,82 @@ const handleUpload = (event, typeKey) => {
   }
   
   reader.readAsDataURL(file)
+}
+
+const handleChangeEmail = async () => {
+  const { value: formValues } = await customSwal.fire({
+    title: 'Ganti Email',
+    html:
+      '<input id="swal-old-pwd" type="password" class="swal2-input" placeholder="Password Saat Ini" style="width: 80%">' +
+      '<input id="swal-new-email" type="email" class="swal2-input" placeholder="Email Baru" style="width: 80%">',
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Simpan Email',
+    cancelButtonText: 'Batal',
+    preConfirm: () => {
+      const pwd = document.getElementById('swal-old-pwd').value
+      const email = document.getElementById('swal-new-email').value
+      if (!pwd || !email) {
+        customSwal.showValidationMessage('Semua kolom harus diisi')
+        return false
+      }
+      return { pwd, email }
+    }
+  })
+
+  if (formValues) {
+    try {
+      customSwal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => customSwal.showLoading() })
+      await authStore.changeEmail(formValues.pwd, formValues.email)
+      customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Email berhasil diperbarui.' })
+    } catch (e) {
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+        customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Password saat ini salah.' })
+      } else {
+        customSwal.fire({ icon: 'error', title: 'Gagal', text: e.message })
+      }
+    }
+  }
+}
+
+const handleChangePassword = async () => {
+  const { value: formValues } = await customSwal.fire({
+    title: 'Ganti Password',
+    html:
+      '<input id="swal-old-pwd" type="password" class="swal2-input" placeholder="Password Lama" style="width: 80%">' +
+      '<input id="swal-new-pwd" type="password" class="swal2-input" placeholder="Password Baru" style="width: 80%">',
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Simpan Password',
+    cancelButtonText: 'Batal',
+    preConfirm: () => {
+      const oldPwd = document.getElementById('swal-old-pwd').value
+      const newPwd = document.getElementById('swal-new-pwd').value
+      if (!oldPwd || !newPwd) {
+        customSwal.showValidationMessage('Semua kolom harus diisi')
+        return false
+      }
+      if (newPwd.length < 6) {
+        customSwal.showValidationMessage('Password baru minimal 6 karakter')
+        return false
+      }
+      return { oldPwd, newPwd }
+    }
+  })
+
+  if (formValues) {
+    try {
+      customSwal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => customSwal.showLoading() })
+      await authStore.changePassword(formValues.oldPwd, formValues.newPwd)
+      customSwal.fire({ icon: 'success', title: 'Berhasil', text: 'Password berhasil diperbarui.' })
+    } catch (e) {
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+        customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Password lama salah.' })
+      } else {
+        customSwal.fire({ icon: 'error', title: 'Gagal', text: e.message })
+      }
+    }
+  }
 }
 </script>
 
