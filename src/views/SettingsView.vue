@@ -7,7 +7,33 @@
       </div>
     </header>
 
-    <div class="card" style="padding: 1.5rem;">
+    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</div>
+        <span v-if="isSavingPihakPertama" class="text-muted" style="font-size: 12px;"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...</span>
+      </h3>
+      
+      <div class="alert alert-info" style="margin-bottom: 20px; font-size: 13px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #2563eb; border-radius: var(--border-radius);">
+        <i class="fa-solid fa-circle-info"></i> Atur identitas Pihak Pertama (Bupati / Pj. Bupati) yang akan menandatangani dokumen kontrak.
+      </div>
+
+      <div style="max-width: 600px;">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Nama Lengkap Bupati / Pj. Bupati</label>
+          <input type="text" class="form-control" v-model="pihakPertama.nama" @blur="savePihakPertama" placeholder="Contoh: H. SAHRUJANI">
+        </div>
+
+        <div class="form-group">
+          <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Jabatan Pihak Pertama</label>
+          <select class="form-control" v-model="pihakPertama.jabatan" @change="savePihakPertama">
+            <option value="Bupati">Bupati</option>
+            <option value="Pj. Bupati">Pj. Bupati</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
         <i class="fa-solid fa-file-word"></i> Template Perjanjian Kerja (DOCX)
       </h3>
@@ -76,8 +102,10 @@
       <div v-if="errorMsg" class="alert alert-danger" style="margin-top: 20px; font-size: 13px;">
         {{ errorMsg }}
       </div>
+    </div>
 
-      <h3 style="margin-top: 40px; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
         <i class="fa-solid fa-shield-halved"></i> Keamanan & Akun
       </h3>
 
@@ -103,13 +131,66 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { db } from '../services/firebase'
-import { doc, setDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
 import { useAuthStore } from '../stores/authStore'
 import { customSwal } from '../utils/swal'
 
 const authStore = useAuthStore()
+
+// --- State Pihak Pertama ---
+const pihakPertama = reactive({
+  nama: '',
+  jabatan: 'Bupati'
+})
+const isSavingPihakPertama = ref(false)
+
+const loadPihakPertama = async () => {
+  try {
+    const docRef = doc(db, 'config', 'pihak_pertama')
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+      const data = docSnap.data()
+      pihakPertama.nama = data.nama || ''
+      pihakPertama.jabatan = data.jabatan || 'Bupati'
+    }
+  } catch (error) {
+    console.error("Failed to load pihak_pertama", error)
+  }
+}
+
+const savePihakPertama = async () => {
+  isSavingPihakPertama.value = true
+  try {
+    const docRef = doc(db, 'config', 'pihak_pertama')
+    await setDoc(docRef, {
+      nama: pihakPertama.nama,
+      jabatan: pihakPertama.jabatan,
+      lastUpdated: new Date().toISOString()
+    }, { merge: true })
+    
+    const Toast = customSwal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    })
+    Toast.fire({ icon: 'success', title: 'Tersimpan!' })
+  } catch (error) {
+    console.error("Failed to save pihak_pertama", error)
+    customSwal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: error.message })
+  } finally {
+    isSavingPihakPertama.value = false
+  }
+}
+
+onMounted(() => {
+  loadPihakPertama()
+})
+
+// --- State Upload Template ---
 const isUploading = ref(false)
 const errorMsg = ref('')
 const uploadStatus = reactive({
@@ -160,6 +241,7 @@ const handleUpload = (event, typeKey) => {
   reader.readAsDataURL(file)
 }
 
+// --- Keamanan & Akun ---
 const handleChangeEmail = async () => {
   const { value: formValues } = await customSwal.fire({
     title: 'Ganti Email',
