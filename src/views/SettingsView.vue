@@ -1,12 +1,5 @@
 <template>
   <div>
-    <header class="header">
-      <div class="page-title">
-        <h2>Pengaturan Sistem</h2>
-        <p>Konfigurasi template cetak Perjanjian Kerja dan preferensi aplikasi lainnya.</p>
-      </div>
-    </header>
-
     <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
         <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</div>
