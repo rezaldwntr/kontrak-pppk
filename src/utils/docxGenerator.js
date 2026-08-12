@@ -187,6 +187,7 @@ async function generateDocx(item, templateBase64, pihakPertama) {
     paragraphLoop: true,
     linebreaks: true,
     nullGetter: () => '',
+    delimiters: { start: '{{', end: '}}' }
   })
   
   const tagData = buildTagData(item, pihakPertama)
