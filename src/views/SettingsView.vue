@@ -10,7 +10,6 @@
     <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
         <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</div>
-        <span v-if="isSavingPihakPertama" class="text-muted" style="font-size: 12px;"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...</span>
       </h3>
       
       <div class="alert alert-info" style="margin-bottom: 20px; font-size: 13px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #2563eb; border-radius: var(--border-radius);">
@@ -20,16 +19,22 @@
       <div style="max-width: 600px;">
         <div class="form-group" style="margin-bottom: 15px;">
           <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Nama Lengkap Bupati / Pj. Bupati</label>
-          <input type="text" class="form-control" v-model="pihakPertama.nama" @blur="savePihakPertama" placeholder="Contoh: H. SAHRUJANI">
+          <input type="text" class="form-control" v-model="pihakPertama.nama" placeholder="Contoh: H. SAHRUJANI">
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 20px;">
           <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Jabatan Pihak Pertama</label>
-          <select class="form-control" v-model="pihakPertama.jabatan" @change="savePihakPertama">
+          <select class="form-control" v-model="pihakPertama.jabatan">
             <option value="Bupati">Bupati</option>
             <option value="Pj. Bupati">Pj. Bupati</option>
           </select>
         </div>
+        
+        <button class="btn btn-primary" @click="savePihakPertama" :disabled="isSavingPihakPertama" style="background-color: var(--primary-color);">
+          <i v-if="isSavingPihakPertama" class="fa-solid fa-spinner fa-spin"></i>
+          <i v-else class="fa-solid fa-save"></i> 
+          Simpan Pengaturan
+        </button>
       </div>
     </div>
 
