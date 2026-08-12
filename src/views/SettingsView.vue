@@ -46,24 +46,34 @@
           <span style="background: rgba(30,170,110,0.15); color: #1eaa6e; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem;">PPPK Penuh Waktu</span>
         </div>
         <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <!-- Card 1 -->
           <div class="template-card">
             <h4><i class="fa-regular fa-file-word" style="color: #2563eb;"></i> Template PPPK (Kertas F4)</h4>
             <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Penuh Waktu.</p>
+            <div v-if="availableTemplates.template_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
+              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_f4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
+            </div>
             <div class="upload-wrapper">
               <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_f4')" id="upload-f4" hidden>
               <label for="upload-f4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> Pilih File .docx
+                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_f4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
               </label>
             </div>
             <div v-if="uploadStatus.template_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
           </div>
+          <!-- Card 2 -->
           <div class="template-card">
             <h4><i class="fa-regular fa-file-word" style="color: #2563eb;"></i> Template PPPK (Kertas A4)</h4>
             <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Penuh Waktu.</p>
+            <div v-if="availableTemplates.template_a4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
+              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_a4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
+            </div>
             <div class="upload-wrapper">
               <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_a4')" id="upload-a4" hidden>
               <label for="upload-a4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> Pilih File .docx
+                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_a4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
               </label>
             </div>
             <div v-if="uploadStatus.template_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
@@ -77,24 +87,34 @@
           <span style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem;">PPPK Paruh Waktu</span>
         </div>
         <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <!-- Card 3 -->
           <div class="template-card">
             <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Paruh Waktu (F4)</h4>
             <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Paruh Waktu.</p>
+            <div v-if="availableTemplates.template_paruh_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
+              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_paruh_f4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
+            </div>
             <div class="upload-wrapper">
               <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_f4')" id="upload-pf4" hidden>
               <label for="upload-pf4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> Pilih File .docx
+                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_paruh_f4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
               </label>
             </div>
             <div v-if="uploadStatus.template_paruh_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
           </div>
+          <!-- Card 4 -->
           <div class="template-card">
             <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Paruh Waktu (A4)</h4>
             <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Paruh Waktu.</p>
+            <div v-if="availableTemplates.template_paruh_a4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
+              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_paruh_a4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
+            </div>
             <div class="upload-wrapper">
               <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_a4')" id="upload-pa4" hidden>
               <label for="upload-pa4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> Pilih File .docx
+                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_paruh_a4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
               </label>
             </div>
             <div v-if="uploadStatus.template_paruh_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
@@ -189,7 +209,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { db } from '../services/firebase'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore'
 import { useAuthStore } from '../stores/authStore'
 import { customSwal } from '../utils/swal'
 
@@ -242,11 +262,6 @@ const savePihakPertama = async () => {
   }
 }
 
-onMounted(() => {
-  loadPihakPertama()
-})
-
-// --- State Upload Template ---
 const isUploading = ref(false)
 const errorMsg = ref('')
 const uploadStatus = reactive({
@@ -254,6 +269,33 @@ const uploadStatus = reactive({
   template_a4: false,
   template_paruh_f4: false,
   template_paruh_a4: false
+})
+const availableTemplates = reactive({
+  template_f4: false,
+  template_a4: false,
+  template_paruh_f4: false,
+  template_paruh_a4: false
+})
+
+const loadTemplatesStatus = async () => {
+  try {
+    const docRef = doc(db, 'config', 'templates')
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+      const data = docSnap.data()
+      availableTemplates.template_f4 = !!data.template_f4
+      availableTemplates.template_a4 = !!data.template_a4
+      availableTemplates.template_paruh_f4 = !!data.template_paruh_f4
+      availableTemplates.template_paruh_a4 = !!data.template_paruh_a4
+    }
+  } catch (error) {
+    console.error("Failed to load templates status", error)
+  }
+}
+
+onMounted(() => {
+  loadPihakPertama()
+  loadTemplatesStatus()
 })
 
 const handleUpload = (event, typeKey) => {
@@ -280,6 +322,7 @@ const handleUpload = (event, typeKey) => {
       }, { merge: true })
       
       uploadStatus[typeKey] = true
+      availableTemplates[typeKey] = true
       setTimeout(() => uploadStatus[typeKey] = false, 3000)
     } catch (error) {
       console.error("Upload error:", error)
@@ -295,6 +338,33 @@ const handleUpload = (event, typeKey) => {
   }
   
   reader.readAsDataURL(file)
+}
+
+const handleDeleteTemplate = async (typeKey) => {
+  const result = await customSwal.fire({
+    title: 'Hapus Template?',
+    text: "Template ini akan dihapus dari sistem.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus!'
+  })
+  
+  if (result.isConfirmed) {
+    try {
+      const configRef = doc(db, 'config', 'templates')
+      await updateDoc(configRef, {
+        [typeKey]: deleteField(),
+        lastUpdated: new Date().toISOString()
+      })
+      availableTemplates[typeKey] = false
+      customSwal.fire('Terhapus!', 'Template berhasil dihapus.', 'success')
+    } catch (error) {
+      console.error("Delete template error:", error)
+      customSwal.fire('Error', 'Gagal menghapus template.', 'error')
+    }
+  }
 }
 
 // --- Keamanan & Akun ---
