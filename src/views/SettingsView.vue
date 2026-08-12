@@ -125,7 +125,7 @@
                 <th>Keterangan</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody v-pre>
               <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Lengkap Bupati / Pj. Bupati aktif</td></tr>
               <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Status Jabatan (Bupati / Pj. Bupati)</td></tr>
               <tr><td><code>{{NO_KONTRAK_BARU}}</code></td><td>Nomor Perjanjian Kontrak Baru</td></tr>
