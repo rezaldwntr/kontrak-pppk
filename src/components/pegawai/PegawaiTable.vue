@@ -59,13 +59,16 @@
         </div>
     </div>
 
-    <div v-if="selectedIds.length > 0 && (allowBatchExtend || allowBatchDelete)" class="batch-action-bar" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div v-if="selectedIds.length > 0 && (allowBatchExtend || allowBatchDelete || allowBatchDownload)" class="batch-action-bar" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div style="font-weight: bold; color: #1eaa6e;">
         <i class="fa-solid fa-check-circle"></i> {{ selectedIds.length }} Data Terpilih
       </div>
       <div style="display: flex; gap: 10px;">
         <button v-if="allowBatchExtend" class="btn btn-primary" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="emit('batchExtend', selectedIds)">
           <i class="fa-solid fa-file-signature"></i> Perpanjang Massal
+        </button>
+        <button v-if="allowBatchDownload || !allowBatchExtend" class="btn btn-primary" style="background-color: #2563eb; border-color: #2563eb; color: white;" @click="emit('batchDownload', getSelectedItems())">
+          <i class="fa-solid fa-download"></i> Unduh Massal
         </button>
         <button v-if="allowBatchDelete" class="btn btn-danger" @click="emit('batchDelete', selectedIds)">
           <i class="fa-solid fa-trash"></i> Hapus Massal
@@ -123,8 +126,10 @@
                         <td>
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
                                 <button class="btn btn-icon-only btn-sm" v-if="!allowBatchExtend" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: #2563eb; color: white;" v-if="!allowBatchExtend" @click="emit('download', item)" title="Unduh Perjanjian Kerja"><i class="fa-solid fa-download"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: var(--primary-color); color: white;" v-if="authStore.user && !allowBatchExtend" @click="emit('print', item)" title="Cetak"><i class="fa-solid fa-print"></i></button>
                                 <button class="btn btn-icon-only btn-sm" style="background-color: #1eaa6e; color: white;" v-if="authStore.user && allowBatchExtend" @click="emit('batchExtend', [item['PNS ID']])" title="Perpanjang Kontrak"><i class="fa-solid fa-file-signature"></i></button>
+                                <button class="btn btn-icon-only btn-sm" style="background-color: #2563eb; color: white;" v-if="allowBatchExtend" @click="emit('download', item)" title="Unduh Perjanjian Kerja"><i class="fa-solid fa-download"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -148,12 +153,13 @@ import { usePegawaiStore } from '../../stores/pegawaiStore'
 const props = defineProps({
   allowBatchExtend: { type: Boolean, default: false },
   allowBatchDelete: { type: Boolean, default: false },
+  allowBatchDownload: { type: Boolean, default: false },
   onlyNeedExtension: { type: Boolean, default: false }
 })
 
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()
-const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete'])
+const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete', 'download', 'batchDownload'])
 
 const jenisPppkFilter = ref('all')
 const unorAtasanFilter = ref('all')
@@ -186,6 +192,11 @@ const resetFilters = () => {
 const handleUnorIndukChange = () => {
   unorAtasanFilter.value = 'all'
   handleSearch()
+}
+
+// Get full item objects from selectedIds
+const getSelectedItems = () => {
+  return pegawaiStore.pppkData.filter(item => selectedIds.value.includes(item['PNS ID']))
 }
 
 // getStatusPppk is imported from pppkLogic.js

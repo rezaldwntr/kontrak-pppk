@@ -2,6 +2,7 @@
   <div class="card" style="padding: 1.5rem;">
     <PegawaiTable 
       :allowBatchDelete="true"
+      :allowBatchDownload="true"
       @view="handleView"
       @edit="handleEdit"
       @print="handlePrint"
@@ -10,6 +11,8 @@
       @export="handleExport"
       @show-import="showImportOptions = true"
       @batch-delete="handleBatchDelete"
+      @download="handleDownload"
+      @batch-download="handleBatchDownload"
     />
   </div>
 
@@ -41,6 +44,11 @@
     @close="showPasswordModal = false"
     @success="handlePasswordSuccess"
   />
+  <DownloadContractModal
+    :isOpen="showDownloadModal"
+    :items="downloadItems"
+    @close="showDownloadModal = false"
+  />
 </template>
 
 <script setup>
@@ -51,6 +59,7 @@ import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ImportModal from '../components/pegawai/ImportModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
+import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
 import { exportToExcel } from '../utils/exportImport'
 import { customSwal } from '../utils/swal'
 import { calculateContractPeriod, getStatusPppk } from '../utils/pppkLogic'
@@ -64,6 +73,19 @@ const selectedItem = ref(null)
 const showPasswordModal = ref(false)
 const passwordPromptDesc = ref('')
 let pendingAction = null // { type: 'delete' | 'batchDelete', data: any }
+
+const showDownloadModal = ref(false)
+const downloadItems = ref([])
+
+const handleDownload = (item) => {
+  downloadItems.value = [item]
+  showDownloadModal.value = true
+}
+
+const handleBatchDownload = (items) => {
+  downloadItems.value = items
+  showDownloadModal.value = true
+}
 
 onMounted(() => {
   if (pegawaiStore.pppkData.length === 0) {

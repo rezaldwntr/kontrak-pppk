@@ -8,8 +8,11 @@
 
       <PegawaiTable 
         :allowBatchExtend="true"
+        :allowBatchDownload="true"
         :onlyNeedExtension="true"
         @batch-extend="handleBatchExtend"
+        @download="handleDownload"
+        @batch-download="handleBatchDownload"
         @view="handleView"
         @print="handlePrint"
       />
@@ -45,6 +48,11 @@
       @close="showPasswordModal = false"
       @success="executeBatchExtend"
     />
+    <DownloadContractModal
+      :isOpen="showDownloadModal"
+      :items="downloadItems"
+      @close="showDownloadModal = false"
+    />
   </div>
 </template>
 
@@ -56,6 +64,7 @@ import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ExtendModal from '../components/pegawai/ExtendModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
+import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
 import { customSwal } from '../utils/swal'
 
 const pegawaiStore = usePegawaiStore()
@@ -68,6 +77,19 @@ const extendIds = ref([])
 const showPasswordModal = ref(false)
 const passwordPromptDesc = ref('')
 let pendingExtendData = null
+
+const showDownloadModal = ref(false)
+const downloadItems = ref([])
+
+const handleDownload = (item) => {
+  downloadItems.value = [item]
+  showDownloadModal.value = true
+}
+
+const handleBatchDownload = (items) => {
+  downloadItems.value = items
+  showDownloadModal.value = true
+}
 
 onMounted(() => {
   if (pegawaiStore.pppkData.length === 0) {

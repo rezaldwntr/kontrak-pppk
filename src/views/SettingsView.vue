@@ -37,60 +37,68 @@
       </h3>
       
       <div class="alert alert-info" style="margin-bottom: 20px; font-size: 13px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #2563eb; border-radius: var(--border-radius);">
-        <i class="fa-solid fa-circle-info"></i> Unggah file <strong>.docx</strong> untuk dijadikan template cetak. Pastikan dokumen Anda memiliki tag seperti <code>{NAMA}</code>, <code>{NIP BARU}</code>, <code>{JABATAN NAMA}</code>.
+        <i class="fa-solid fa-circle-info"></i> Unggah file <strong>.docx</strong> yang berisi tag sesuai tabel referensi di bawah. Aplikasi akan mengganti tag secara otomatis dengan data masing-masing pegawai.
       </div>
 
-      <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <!-- Template PPPK Penuh Waktu F4 -->
-        <div class="template-card">
-          <h4>Template PPPK (Kertas F4)</h4>
-          <p class="text-muted">Digunakan saat mencetak Perjanjian Kerja PPPK Penuh Waktu dengan ukuran kertas F4/Legal.</p>
-          <div class="upload-wrapper">
-            <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_f4')" id="upload-f4" hidden>
-            <label for="upload-f4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-              <i class="fa-solid fa-upload"></i> Pilih File .docx
-            </label>
-          </div>
-          <div v-if="uploadStatus.template_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+      <!-- PPPK Penuh Waktu -->
+      <div style="margin-bottom: 10px;">
+        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+          <span style="background: rgba(30,170,110,0.15); color: #1eaa6e; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem;">PPPK Penuh Waktu</span>
         </div>
+        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div class="template-card">
+            <h4><i class="fa-regular fa-file-word" style="color: #2563eb;"></i> Template PPPK (Kertas F4)</h4>
+            <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Penuh Waktu.</p>
+            <div class="upload-wrapper">
+              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_f4')" id="upload-f4" hidden>
+              <label for="upload-f4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
+                <i class="fa-solid fa-upload"></i> Pilih File .docx
+              </label>
+            </div>
+            <div v-if="uploadStatus.template_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+          </div>
+          <div class="template-card">
+            <h4><i class="fa-regular fa-file-word" style="color: #2563eb;"></i> Template PPPK (Kertas A4)</h4>
+            <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Penuh Waktu.</p>
+            <div class="upload-wrapper">
+              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_a4')" id="upload-a4" hidden>
+              <label for="upload-a4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
+                <i class="fa-solid fa-upload"></i> Pilih File .docx
+              </label>
+            </div>
+            <div v-if="uploadStatus.template_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+          </div>
+        </div>
+      </div>
 
-        <!-- Template PPPK Penuh Waktu A4 -->
-        <div class="template-card">
-          <h4>Template PPPK (Kertas A4)</h4>
-          <p class="text-muted">Digunakan saat mencetak Perjanjian Kerja PPPK Penuh Waktu dengan ukuran kertas A4.</p>
-          <div class="upload-wrapper">
-            <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_a4')" id="upload-a4" hidden>
-            <label for="upload-a4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-              <i class="fa-solid fa-upload"></i> Pilih File .docx
-            </label>
-          </div>
-          <div v-if="uploadStatus.template_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+      <!-- PPPK Paruh Waktu -->
+      <div>
+        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+          <span style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem;">PPPK Paruh Waktu</span>
         </div>
-        
-        <!-- Template PPPK Paruh Waktu F4 -->
-        <div class="template-card">
-          <h4>Template Paruh Waktu (F4)</h4>
-          <p class="text-muted">Digunakan khusus untuk PPPK Paruh Waktu (F4).</p>
-          <div class="upload-wrapper">
-            <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_f4')" id="upload-pf4" hidden>
-            <label for="upload-pf4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-              <i class="fa-solid fa-upload"></i> Pilih File .docx
-            </label>
+        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <div class="template-card">
+            <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Paruh Waktu (F4)</h4>
+            <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Paruh Waktu.</p>
+            <div class="upload-wrapper">
+              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_f4')" id="upload-pf4" hidden>
+              <label for="upload-pf4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
+                <i class="fa-solid fa-upload"></i> Pilih File .docx
+              </label>
+            </div>
+            <div v-if="uploadStatus.template_paruh_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
           </div>
-          <div v-if="uploadStatus.template_paruh_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
-        </div>
-
-        <!-- Template PPPK Paruh Waktu A4 -->
-        <div class="template-card">
-          <h4>Template Paruh Waktu (A4)</h4>
-          <p class="text-muted">Digunakan khusus untuk PPPK Paruh Waktu (A4).</p>
-          <div class="upload-wrapper">
-            <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_a4')" id="upload-pa4" hidden>
-            <label for="upload-pa4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-              <i class="fa-solid fa-upload"></i> Pilih File .docx
-            </label>
+          <div class="template-card">
+            <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Paruh Waktu (A4)</h4>
+            <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Paruh Waktu.</p>
+            <div class="upload-wrapper">
+              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_a4')" id="upload-pa4" hidden>
+              <label for="upload-pa4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
+                <i class="fa-solid fa-upload"></i> Pilih File .docx
+              </label>
+            </div>
+            <div v-if="uploadStatus.template_paruh_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
           </div>
-          <div v-if="uploadStatus.template_paruh_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
         </div>
       </div>
       
@@ -100,7 +108,57 @@
       <div v-if="errorMsg" class="alert alert-danger" style="margin-top: 20px; font-size: 13px;">
         {{ errorMsg }}
       </div>
+
+      <!-- Daftar Tag Referensi -->
+      <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+        <div style="font-weight: 700; font-size: 1rem; margin-bottom: 16px; color: var(--text-dark);">
+          <i class="fa-solid fa-tags" style="color: var(--primary-color);"></i> Daftar Tag Template
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          Salin tag di bawah ke dalam dokumen Word (.docx) Anda. Pastikan ditulis persis sama (termasuk huruf besar dan kurung kurawal ganda).
+        </div>
+        <div class="table-responsive">
+          <table class="table" style="font-size: 12.5px;">
+            <thead>
+              <tr>
+                <th style="min-width: 230px;">Tag</th>
+                <th>Keterangan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Lengkap Bupati / Pj. Bupati aktif</td></tr>
+              <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Status Jabatan (Bupati / Pj. Bupati)</td></tr>
+              <tr><td><code>{{NO_KONTRAK_BARU}}</code></td><td>Nomor Perjanjian Kontrak Baru</td></tr>
+              <tr><td><code>{{NO_SK_BARU}}</code></td><td>Nomor SK Perpanjangan Baru</td></tr>
+              <tr><td><code>{{TGL_SK_BARU}}</code></td><td>Tanggal penetapan SK Baru</td></tr>
+              <tr><td><code>{{NAMA_PEGAWAI}}</code></td><td>Nama Lengkap PPPK (beserta gelar)</td></tr>
+              <tr><td><code>{{NIP_BARU}}</code></td><td>NIP Baru PPPK</td></tr>
+              <tr><td><code>{{NIK_PEGAWAI}}</code></td><td>NIK (KTP) Pegawai</td></tr>
+              <tr><td><code>{{ALAMAT}}</code></td><td>Alamat tempat tinggal pegawai</td></tr>
+              <tr><td><code>{{JABATAN}}</code></td><td>Nama Jabatan Kerja PPPK</td></tr>
+              <tr><td><code>{{UNOR_NAMA}}</code></td><td>Nama Unit Kerja / UNOR pegawai</td></tr>
+              <tr><td><code>{{UNIT_KERJA}}</code></td><td>Nama Unit Kerja / UNOR pegawai (alternatif)</td></tr>
+              <tr><td><code>{{KELOMPOK_PEGAWAI}}</code></td><td>Kelompok Kerja (Tenaga Guru / Tenaga Kesehatan / Tenaga Teknis)</td></tr>
+              <tr><td><code>{{FUNGSI_PEGAWAI}}</code></td><td>Fungsi PPPK (contoh: PPPK Fungsional Guru)</td></tr>
+              <tr><td><code>{{SASARAN_PELAYANAN}}</code></td><td>Sasaran Penerima Pelayanan (contoh: Anak Didik, Pasien, Masyarakat)</td></tr>
+              <tr><td><code>{{GOLONGAN}}</code></td><td>Golongan PPPK (Akhir)</td></tr>
+              <tr><td><code>{{TEMPAT_TGL_LAHIR}}</code></td><td>Tempat, Tanggal Lahir (Format: Tempat, Tanggal)</td></tr>
+              <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan, Tahun : Tahun Lulus</td></tr>
+              <tr><td><code>{{TMT_AWAL_BARU}}</code></td><td>TMT Kontrak Baru (Mulai)</td></tr>
+              <tr><td><code>{{TMT_AKHIR_BARU}}</code></td><td>Tanggal Selesai Kontrak Baru</td></tr>
+              <tr><td><code>{{GAJI_BARU}}</code></td><td>Nominal Gaji Pokok Baru (Format Rupiah)</td></tr>
+              <tr><td><code>{{GAJI_BARU_ANGKA}}</code></td><td>Nominal Gaji Pokok Baru (Angka Saja)</td></tr>
+              <tr><td><code>{{GAJI_TERBILANG}}</code></td><td>Nominal Gaji Pokok Baru (Terbilang Rupiah)</td></tr>
+              <tr><td><code>{{KONTRAK_HARI}}</code></td><td>Hari Mulai Kontrak Baru (contoh: Senin)</td></tr>
+              <tr><td><code>{{KONTRAK_TANGGAL_TERBILANG}}</code></td><td>Tanggal Mulai Kontrak Baru (Terbilang, contoh: Dua Puluh Lima)</td></tr>
+              <tr><td><code>{{KONTRAK_BULAN}}</code></td><td>Bulan Mulai Kontrak Baru (contoh: Juni)</td></tr>
+              <tr><td><code>{{KONTRAK_TAHUN_TERBILANG}}</code></td><td>Tahun Mulai Kontrak Baru (Terbilang, contoh: Dua Ribu Dua Puluh Enam)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
 
     <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 class="section-header">
