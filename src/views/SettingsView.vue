@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
-      <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
+      <h3 class="section-header">
         <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</div>
       </h3>
       
@@ -31,9 +31,9 @@
       </div>
     </div>
 
-    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
-      <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-        <i class="fa-solid fa-file-word"></i> Template Perjanjian Kerja (DOCX)
+    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
+      <h3 class="section-header">
+        <div><i class="fa-solid fa-file-word"></i> Template Perjanjian Kerja (DOCX)</div>
       </h3>
       
       <div class="alert alert-info" style="margin-bottom: 20px; font-size: 13px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #2563eb; border-radius: var(--border-radius);">
@@ -102,9 +102,9 @@
       </div>
     </div>
 
-    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
-      <h3 style="margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-        <i class="fa-solid fa-shield-halved"></i> Keamanan & Akun
+    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
+      <h3 class="section-header">
+        <div><i class="fa-solid fa-shield-halved"></i> Keamanan & Akun</div>
       </h3>
 
       <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
@@ -318,32 +318,153 @@ const handleChangePassword = async () => {
 </script>
 
 <style scoped>
+/* Card Styles */
+.settings-section-card {
+  padding: 2rem;
+  margin-bottom: 25px;
+  border-radius: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-section-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-color);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.settings-section-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-color: rgba(var(--primary-color-rgb), 0.3);
+}
+
+.settings-section-card:hover::before {
+  opacity: 1;
+}
+
+.section-header {
+  margin-bottom: 25px;
+  font-size: 1.3rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-dark);
+  font-weight: 600;
+  transition: border-color 0.3s ease;
+}
+
+.settings-section-card:hover .section-header {
+  border-bottom-color: rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Template Cards */
 .template-card {
   border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  border-radius: var(--border-radius);
+  padding: 1.8rem;
+  border-radius: 12px;
+  background: var(--bg-secondary, rgba(0,0,0,0.02));
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.template-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border-color: var(--primary-color);
   background: var(--bg-primary);
+  z-index: 2;
 }
 
 .template-card h4 {
-  font-size: 1.05rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
   color: var(--text-dark);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .template-card p {
-  font-size: 0.85rem;
-  margin-bottom: 1.5rem;
-  min-height: 40px;
+  font-size: 0.9rem;
+  margin-bottom: 1.8rem;
+  min-height: 45px;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
+/* Inputs and Buttons inside settings */
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: block;
+  color: var(--text-dark);
+  transition: color 0.3s ease;
+}
+
+.form-control {
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.form-control:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.15);
+  background: var(--bg-primary);
+}
+
+.form-group:focus-within label {
+  color: var(--primary-color);
+}
+
+/* Status Text Animation */
 .status-text {
-  margin-top: 10px;
-  font-size: 0.85rem;
+  margin-top: 15px;
+  font-size: 0.9rem;
   text-align: center;
+  font-weight: 600;
+  padding: 8px;
+  border-radius: 6px;
 }
 
 .status-text.success {
   color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  animation: slideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Alert styling tweaks */
+.alert-info {
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+.alert-info:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
 }
 </style>
