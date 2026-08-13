@@ -13,7 +13,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
 import Sidebar from './components/layout/Sidebar.vue'
 import Header from './components/layout/Header.vue'
@@ -22,6 +22,7 @@ import { customSwal } from './utils/swal'
 
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 
 const isAuthenticated = computed(() => !!authStore.user)
 
@@ -52,7 +53,16 @@ const checkIdleStatus = () => {
           title: 'Sesi Berakhir',
           text: 'Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.',
           confirmButtonText: 'OK'
+        }).then(() => {
+          if (route.meta.requiresAuth) {
+            router.push('/')
+            authStore.showLoginModal = true
+          }
         });
+      } else {
+        if (route.meta.requiresAuth) {
+          router.push('/')
+        }
       }
     }
   }
