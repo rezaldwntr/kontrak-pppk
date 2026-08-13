@@ -18,6 +18,7 @@ import { useAuthStore } from './stores/authStore'
 import Sidebar from './components/layout/Sidebar.vue'
 import Header from './components/layout/Header.vue'
 import LoginModal from './components/auth/LoginModal.vue'
+import { customSwal } from './utils/swal'
 
 const authStore = useAuthStore()
 const route = useRoute()
@@ -46,7 +47,12 @@ const checkIdleStatus = () => {
       const nowDate = new Date(now).toDateString();
       
       if (lastDate === nowDate) {
-        alert("Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.");
+        customSwal.fire({
+          icon: 'info',
+          title: 'Sesi Berakhir',
+          text: 'Sesi Anda telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan login kembali.',
+          confirmButtonText: 'OK'
+        });
       }
     }
   }
