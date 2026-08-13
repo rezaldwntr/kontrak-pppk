@@ -174,42 +174,92 @@ async function loadTemplate(templateKey) {
  * Generate satu file .docx dari item pegawai dan template
  */
 async function generateDocx(item, templateBase64, pihakPertama) {
+  console.log('[DEBUG] generateDocx START')
+  console.log('[DEBUG] templateBase64 type:', typeof templateBase64)
+  console.log('[DEBUG] templateBase64 length:', templateBase64?.length)
+  console.log('[DEBUG] templateBase64 prefix:', templateBase64?.substring(0, 80))
+
   // Decode base64 → binary bytes
   const base64Data = templateBase64.includes(',') ? templateBase64.split(',')[1] : templateBase64
-  const binaryStr = atob(base64Data)
+  console.log('[DEBUG] base64Data length after split:', base64Data?.length)
+  console.log('[DEBUG] base64Data preview:', base64Data?.substring(0, 30))
+
+  let binaryStr
+  try {
+    binaryStr = atob(base64Data)
+    console.log('[DEBUG] atob() success, binary length:', binaryStr.length)
+  } catch (e) {
+    console.error('[DEBUG] atob() FAILED:', e.message)
+    throw new Error('Gagal mendekode base64 template: ' + e.message)
+  }
+
   const bytes = new Uint8Array(binaryStr.length)
   for (let i = 0; i < binaryStr.length; i++) {
     bytes[i] = binaryStr.charCodeAt(i)
   }
-  
-  // PENTING: pass bytes (Uint8Array) langsung, BUKAN bytes.buffer (ArrayBuffer)
-  const zip = new PizZip(bytes)
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    nullGetter: () => '',
-    delimiters: { start: '{{', end: '}}' }
-  })
-  
+  console.log('[DEBUG] Uint8Array created, first 4 bytes (PK header check):', bytes[0], bytes[1], bytes[2], bytes[3])
+  // PK header: 80, 75, 3, 4 (valid ZIP/DOCX)
+  const isValidZip = bytes[0] === 80 && bytes[1] === 75
+  console.log('[DEBUG] Is valid ZIP/DOCX header:', isValidZip)
+
+  let zip
+  try {
+    zip = new PizZip(bytes)
+    console.log('[DEBUG] PizZip loaded OK. Files in zip:', Object.keys(zip.files).join(', '))
+  } catch (e) {
+    console.error('[DEBUG] PizZip FAILED:', e.message)
+    throw new Error('Gagal membaca file ZIP template: ' + e.message)
+  }
+
+  // Cek apakah document.xml ada dan tidak kosong
+  const docXml = zip.files['word/document.xml']
+  if (docXml) {
+    const xmlContent = docXml.asText()
+    console.log('[DEBUG] word/document.xml length:', xmlContent.length)
+    console.log('[DEBUG] word/document.xml preview:', xmlContent.substring(0, 300))
+  } else {
+    console.error('[DEBUG] word/document.xml NOT FOUND in zip!')
+    throw new Error('Template tidak valid: word/document.xml tidak ditemukan.')
+  }
+
+  let doc
+  try {
+    doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+      nullGetter: () => '',
+      delimiters: { start: '{{', end: '}}' }
+    })
+    console.log('[DEBUG] Docxtemplater instantiated OK')
+  } catch (e) {
+    console.error('[DEBUG] Docxtemplater init FAILED:', e)
+    throw new Error('Gagal inisialisasi Docxtemplater: ' + e.message)
+  }
+
   const tagData = buildTagData(item, pihakPertama)
-  
+  console.log('[DEBUG] tagData keys:', Object.keys(tagData).join(', '))
+  console.log('[DEBUG] tagData sample:', JSON.stringify({ NAMA_PEGAWAI: tagData.NAMA_PEGAWAI, NIP_BARU: tagData.NIP_BARU }))
+
   try {
     doc.render(tagData)
+    console.log('[DEBUG] doc.render() SUCCESS')
   } catch (e) {
-    // Jika Multi Error, tampilkan detail error tag yang bermasalah
+    console.error('[DEBUG] doc.render() FAILED:', e)
     if (e.properties && e.properties.errors) {
       const errDetails = e.properties.errors.map(err => 
         `Tag: ${err.properties?.id || '?'} - ${err.message}`
       ).join('; ')
-      throw new Error(`Gagal me-render template. Pastikan tag di dokumen sesuai format {{TAG}}. Detail: ${errDetails}`)
+      throw new Error(`Gagal me-render template. Detail: ${errDetails}`)
     }
     throw e
   }
-  
-  return doc.getZip().generate({ 
+
+  const blob = doc.getZip().generate({ 
     type: 'blob', 
     mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
   })
+  console.log('[DEBUG] Blob generated, size:', blob.size, 'bytes')
+  return blob
 }
 
 /**
