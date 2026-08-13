@@ -174,7 +174,7 @@ async function loadTemplate(templateKey) {
  * Generate satu file .docx dari item pegawai dan template
  */
 async function generateDocx(item, templateBase64, pihakPertama) {
-  // Decode base64 → ArrayBuffer
+  // Decode base64 → binary bytes
   const base64Data = templateBase64.includes(',') ? templateBase64.split(',')[1] : templateBase64
   const binaryStr = atob(base64Data)
   const bytes = new Uint8Array(binaryStr.length)
@@ -182,7 +182,8 @@ async function generateDocx(item, templateBase64, pihakPertama) {
     bytes[i] = binaryStr.charCodeAt(i)
   }
   
-  const zip = new PizZip(bytes.buffer)
+  // PENTING: pass bytes (Uint8Array) langsung, BUKAN bytes.buffer (ArrayBuffer)
+  const zip = new PizZip(bytes)
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
     linebreaks: true,
@@ -191,9 +192,24 @@ async function generateDocx(item, templateBase64, pihakPertama) {
   })
   
   const tagData = buildTagData(item, pihakPertama)
-  doc.render(tagData)
   
-  return doc.getZip().generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+  try {
+    doc.render(tagData)
+  } catch (e) {
+    // Jika Multi Error, tampilkan detail error tag yang bermasalah
+    if (e.properties && e.properties.errors) {
+      const errDetails = e.properties.errors.map(err => 
+        `Tag: ${err.properties?.id || '?'} - ${err.message}`
+      ).join('; ')
+      throw new Error(`Gagal me-render template. Pastikan tag di dokumen sesuai format {{TAG}}. Detail: ${errDetails}`)
+    }
+    throw e
+  }
+  
+  return doc.getZip().generate({ 
+    type: 'blob', 
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+  })
 }
 
 /**
