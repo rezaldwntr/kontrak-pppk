@@ -225,7 +225,6 @@ async function generateDocx(item, templateBase64, pihakPertama) {
   let doc
   try {
     doc = new Docxtemplater(zip, {
-      paragraphLoop: true,
       linebreaks: true,
       nullGetter: () => '',
       delimiters: { start: '{{', end: '}}' }
