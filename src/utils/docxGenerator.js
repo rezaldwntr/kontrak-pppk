@@ -254,7 +254,16 @@ async function generateDocx(item, templateBase64, pihakPertama) {
     throw e
   }
 
-  const blob = doc.getZip().generate({ 
+  // Cek XML setelah render — apakah konten hilang?
+  const renderedZip = doc.getZip()
+  const renderedXml = renderedZip.files['word/document.xml']?.asText() || ''
+  console.log('[DEBUG] POST-RENDER word/document.xml length:', renderedXml.length)
+  console.log('[DEBUG] POST-RENDER preview (first 500 chars):', renderedXml.substring(0, 500))
+  // Cek apakah ada teks tersisa (indikator sederhana: <w:t> tags)
+  const textTagCount = (renderedXml.match(/<w:t/g) || []).length
+  console.log('[DEBUG] Number of <w:t> text tags in rendered XML:', textTagCount)
+
+  const blob = renderedZip.generate({ 
     type: 'blob', 
     mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
   })
