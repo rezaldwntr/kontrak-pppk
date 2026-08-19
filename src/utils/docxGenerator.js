@@ -1,4 +1,3 @@
-import Docxtemplater from 'docxtemplater'
 import PizZip from 'pizzip'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
@@ -171,103 +170,79 @@ async function loadTemplate(templateKey) {
 }
 
 /**
- * Generate satu file .docx dari item pegawai dan template
+ * Escape karakter XML khusus agar aman disimpan sebagai nilai tag
+ */
+function escapeXml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
+/**
+ * Bersihkan XML tags yang mungkin disisipkan Word DI DALAM {{TAG}}.
+ * Word kadang memecah satu tag menjadi beberapa XML run, contoh:
+ *   <w:t>{{NAMA</w:t></w:r><w:r><w:t>_PEGAWAI}}</w:t>
+ * Fungsi ini menghapus semua XML element yang ada di antara {{ dan }}
+ * secara iteratif sampai tidak ada lagi XML di dalam placeholder.
+ */
+function consolidateSplitTags(xml) {
+  let prev = ''
+  let result = xml
+  // Iterasi sampai tidak ada perubahan (semua XML tag dalam {{ }} sudah dibersihkan)
+  while (prev !== result) {
+    prev = result
+    // Hapus XML element yang muncul di antara {{ dan }} (sebelum closing }})
+    result = result.replace(/(\{\{[^{}]*?)<[^>]+>([^{}]*?\}\})/g, '$1$2')
+    // Hapus XML element yang muncul di antara {{ dan }} (sebelum isi tag, tidak perlu closing)
+    result = result.replace(/(\{\{[^{}]*?)<[^>]+>/g, '$1')
+  }
+  return result
+}
+
+/**
+ * Generate satu file .docx dari item pegawai dan template.
+ * Menggunakan PizZip + string replacement langsung (tanpa Docxtemplater)
+ * agar struktur dokumen Word tidak dirusak oleh XML parser.
  */
 async function generateDocx(item, templateBase64, pihakPertama) {
-  console.log('[DEBUG] generateDocx START')
-  console.log('[DEBUG] templateBase64 type:', typeof templateBase64)
-  console.log('[DEBUG] templateBase64 length:', templateBase64?.length)
-  console.log('[DEBUG] templateBase64 prefix:', templateBase64?.substring(0, 80))
-
-  // Decode base64 → binary bytes
+  // Decode base64 → binary
   const base64Data = templateBase64.includes(',') ? templateBase64.split(',')[1] : templateBase64
-  console.log('[DEBUG] base64Data length after split:', base64Data?.length)
-  console.log('[DEBUG] base64Data preview:', base64Data?.substring(0, 30))
-
-  let binaryStr
-  try {
-    binaryStr = atob(base64Data)
-    console.log('[DEBUG] atob() success, binary length:', binaryStr.length)
-  } catch (e) {
-    console.error('[DEBUG] atob() FAILED:', e.message)
-    throw new Error('Gagal mendekode base64 template: ' + e.message)
-  }
-
+  const binaryStr = atob(base64Data)
   const bytes = new Uint8Array(binaryStr.length)
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i)
-  }
-  console.log('[DEBUG] Uint8Array created, first 4 bytes (PK header check):', bytes[0], bytes[1], bytes[2], bytes[3])
-  // PK header: 80, 75, 3, 4 (valid ZIP/DOCX)
-  const isValidZip = bytes[0] === 80 && bytes[1] === 75
-  console.log('[DEBUG] Is valid ZIP/DOCX header:', isValidZip)
+  for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i)
 
-  let zip
-  try {
-    zip = new PizZip(bytes)
-    console.log('[DEBUG] PizZip loaded OK. Files in zip:', Object.keys(zip.files).join(', '))
-  } catch (e) {
-    console.error('[DEBUG] PizZip FAILED:', e.message)
-    throw new Error('Gagal membaca file ZIP template: ' + e.message)
+  // Baca ZIP (DOCX adalah file ZIP)
+  const zip = new PizZip(bytes)
+
+  if (!zip.files['word/document.xml']) {
+    throw new Error('Template tidak valid: word/document.xml tidak ditemukan di dalam file .docx.')
   }
 
-  // Cek apakah document.xml ada dan tidak kosong
-  const docXml = zip.files['word/document.xml']
-  if (docXml) {
-    const xmlContent = docXml.asText()
-    console.log('[DEBUG] word/document.xml length:', xmlContent.length)
-    console.log('[DEBUG] word/document.xml preview:', xmlContent.substring(0, 300))
-  } else {
-    console.error('[DEBUG] word/document.xml NOT FOUND in zip!')
-    throw new Error('Template tidak valid: word/document.xml tidak ditemukan.')
-  }
+  // Ambil XML mentah — TIDAK dimodifikasi strukturnya
+  let xml = zip.files['word/document.xml'].asText()
 
-  let doc
-  try {
-    doc = new Docxtemplater(zip, {
-      linebreaks: true,
-      nullGetter: () => '',
-      delimiters: { start: '{{', end: '}}' }
-    })
-    console.log('[DEBUG] Docxtemplater instantiated OK')
-  } catch (e) {
-    console.error('[DEBUG] Docxtemplater init FAILED:', e)
-    throw new Error('Gagal inisialisasi Docxtemplater: ' + e.message)
-  }
+  // Bersihkan XML tags yang mungkin memecah {{TAG}} lintas XML run
+  xml = consolidateSplitTags(xml)
 
+  // Ganti setiap tag dengan data pegawai
   const tagData = buildTagData(item, pihakPertama)
-  console.log('[DEBUG] tagData keys:', Object.keys(tagData).join(', '))
-  console.log('[DEBUG] tagData sample:', JSON.stringify({ NAMA_PEGAWAI: tagData.NAMA_PEGAWAI, NIP_BARU: tagData.NIP_BARU }))
-
-  try {
-    doc.render(tagData)
-    console.log('[DEBUG] doc.render() SUCCESS')
-  } catch (e) {
-    console.error('[DEBUG] doc.render() FAILED:', e)
-    if (e.properties && e.properties.errors) {
-      const errDetails = e.properties.errors.map(err => 
-        `Tag: ${err.properties?.id || '?'} - ${err.message}`
-      ).join('; ')
-      throw new Error(`Gagal me-render template. Detail: ${errDetails}`)
-    }
-    throw e
+  for (const [key, value] of Object.entries(tagData)) {
+    const safeValue = escapeXml(value)
+    // Gunakan split+join agar semua kemunculan tag diganti (replaceAll tidak tersedia di semua env)
+    xml = xml.split(`{{${key}}}`).join(safeValue)
   }
 
-  // Cek XML setelah render — apakah konten hilang?
-  const renderedZip = doc.getZip()
-  const renderedXml = renderedZip.files['word/document.xml']?.asText() || ''
-  console.log('[DEBUG] POST-RENDER word/document.xml length:', renderedXml.length)
-  console.log('[DEBUG] POST-RENDER preview (first 500 chars):', renderedXml.substring(0, 500))
-  // Cek apakah ada teks tersisa (indikator sederhana: <w:t> tags)
-  const textTagCount = (renderedXml.match(/<w:t/g) || []).length
-  console.log('[DEBUG] Number of <w:t> text tags in rendered XML:', textTagCount)
+  // Tulis XML yang sudah diganti kembali ke ZIP
+  zip.file('word/document.xml', xml)
 
-  const blob = renderedZip.generate({ 
-    type: 'blob', 
-    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+  // Generate output blob
+  return zip.generate({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   })
-  console.log('[DEBUG] Blob generated, size:', blob.size, 'bytes')
-  return blob
 }
 
 /**
