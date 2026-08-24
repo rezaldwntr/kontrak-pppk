@@ -146,34 +146,67 @@
               </tr>
             </thead>
             <tbody v-pre>
-              <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Lengkap Bupati / Pj. Bupati aktif</td></tr>
-              <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Status Jabatan (Bupati / Pj. Bupati)</td></tr>
-              <tr><td><code>{{NO_KONTRAK_BARU}}</code></td><td>Nomor Perjanjian Kontrak Baru</td></tr>
-              <tr><td><code>{{NO_SK_BARU}}</code></td><td>Nomor SK Perpanjangan Baru</td></tr>
-              <tr><td><code>{{TGL_SK_BARU}}</code></td><td>Tanggal penetapan SK Baru</td></tr>
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  📌 Pihak Pertama
+                </td>
+              </tr>
+              <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Bupati / Pj. Bupati — otomatis <strong>HURUF BESAR</strong></td></tr>
+              <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Jabatan Pihak Pertama (Bupati / Pj. Bupati)</td></tr>
+
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  📋 Data Kontrak
+                </td>
+              </tr>
+              <tr><td><code>{{NO_KONTRAK_BARU}}</code></td><td>Nomor Perjanjian Kontrak Aktif</td></tr>
+
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  👤 Data Pegawai
+                </td>
+              </tr>
               <tr><td><code>{{NAMA_PEGAWAI}}</code></td><td>Nama Lengkap PPPK (beserta gelar)</td></tr>
               <tr><td><code>{{NIP_BARU}}</code></td><td>NIP Baru PPPK</td></tr>
-              <tr><td><code>{{NIK_PEGAWAI}}</code></td><td>NIK (KTP) Pegawai</td></tr>
               <tr><td><code>{{ALAMAT}}</code></td><td>Alamat tempat tinggal pegawai</td></tr>
               <tr><td><code>{{JABATAN}}</code></td><td>Nama Jabatan Kerja PPPK</td></tr>
-              <tr><td><code>{{UNOR_NAMA}}</code></td><td>Nama Unit Kerja / UNOR pegawai</td></tr>
-              <tr><td><code>{{UNIT_KERJA}}</code></td><td>Nama Unit Kerja / UNOR pegawai (alternatif)</td></tr>
-              <tr><td><code>{{KELOMPOK_PEGAWAI}}</code></td><td>Kelompok Kerja (Tenaga Guru / Tenaga Kesehatan / Tenaga Teknis)</td></tr>
-              <tr><td><code>{{FUNGSI_PEGAWAI}}</code></td><td>Fungsi PPPK (contoh: PPPK Fungsional Guru)</td></tr>
-              <tr><td><code>{{SASARAN_PELAYANAN}}</code></td><td>Sasaran Penerima Pelayanan (contoh: Anak Didik, Pasien, Masyarakat)</td></tr>
+              <tr><td><code>{{UNOR_NAMA}}</code></td><td>Nama Unit Organisasi / OPD (sumber: kolom UNOR NAMA)</td></tr>
+              <tr><td><code>{{UNIT_KERJA}}</code></td><td>Nama Unit Kerja Operasional (sumber: kolom UNIT KERJA)</td></tr>
+              <tr><td><code>{{KELOMPOK_PEGAWAI}}</code></td><td>Kelompok Kerja — otomatis: Tenaga Guru / Tenaga Kesehatan / Tenaga Teknis</td></tr>
+              <tr><td><code>{{FUNGSI_PEGAWAI}}</code></td><td>Fungsi PPPK — otomatis (contoh: PPPK Fungsional Guru)</td></tr>
+              <tr><td><code>{{SASARAN_PELAYANAN}}</code></td><td>Sasaran Pelayanan — otomatis (contoh: Anak Didik, Pasien, Masyarakat)</td></tr>
               <tr><td><code>{{GOLONGAN}}</code></td><td>Golongan PPPK (Akhir)</td></tr>
-              <tr><td><code>{{TEMPAT_TGL_LAHIR}}</code></td><td>Tempat, Tanggal Lahir (Format: Tempat, Tanggal)</td></tr>
-              <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan, Tahun : Tahun Lulus</td></tr>
-              <tr><td><code>{{TMT_AWAL_BARU}}</code></td><td>TMT Kontrak Baru (Mulai)</td></tr>
-              <tr><td><code>{{TMT_AKHIR_BARU}}</code></td><td>Tanggal Selesai Kontrak Baru</td></tr>
-              <tr><td><code>{{GAJI_BARU}}</code></td><td>Nominal Gaji Pokok Baru (Format Rupiah)</td></tr>
-              <tr><td><code>{{GAJI_BARU_ANGKA}}</code></td><td>Nominal Gaji Pokok Baru (Angka Saja)</td></tr>
-              <tr><td><code>{{GAJI_TERBILANG}}</code></td><td>Nominal Gaji Pokok Baru (Terbilang Rupiah)</td></tr>
-              <tr><td><code>{{KONTRAK_HARI}}</code></td><td>Hari Mulai Kontrak Baru (contoh: Senin)</td></tr>
-              <tr><td><code>{{KONTRAK_TANGGAL_TERBILANG}}</code></td><td>Tanggal Mulai Kontrak Baru (Terbilang, contoh: Dua Puluh Lima)</td></tr>
-              <tr><td><code>{{KONTRAK_BULAN}}</code></td><td>Bulan Mulai Kontrak Baru (contoh: Juni)</td></tr>
-              <tr><td><code>{{KONTRAK_TAHUN_TERBILANG}}</code></td><td>Tahun Mulai Kontrak Baru (Terbilang, contoh: Dua Ribu Dua Puluh Enam)</td></tr>
+              <tr><td><code>{{TEMPAT_TGL_LAHIR}}</code></td><td>Tempat dan Tanggal Lahir (Format: Kota, DD Bulan YYYY)</td></tr>
+              <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan dan Tahun Lulus (Format: Nama Pendidikan Tahun YYYY)</td></tr>
+
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  📅 TMT Kontrak Aktif
+                </td>
+              </tr>
+              <tr><td><code>{{TMT_AWAL_AKTIF}}</code></td><td>Tanggal Mulai Kontrak Aktif (Format: DD Bulan YYYY)</td></tr>
+              <tr><td><code>{{TMT_AKHIR_AKTIF}}</code></td><td>Tanggal Selesai Kontrak Aktif (Format: DD Bulan YYYY)</td></tr>
+
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  💰 Gaji Pokok
+                </td>
+              </tr>
+              <tr><td><code>{{GAJI_BARU}}</code></td><td>Gaji Pokok — format Rupiah lengkap (contoh: Rp 3.200.000)</td></tr>
+              <tr><td><code>{{GAJI_BARU_ANGKA}}</code></td><td>Gaji Pokok — angka saja tanpa Rp (contoh: 3.200.000)</td></tr>
+              <tr><td><code>{{GAJI_TERBILANG}}</code></td><td>Gaji Pokok dalam kata-kata (contoh: Tiga Juta Dua Ratus Ribu Rupiah)</td></tr>
+
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  🗓️ Tanggal Penandatanganan Kontrak — diisi manual saat unduh, otomatis HURUF BESAR
+                </td>
+              </tr>
+              <tr><td><code>{{KONTRAK_HARI}}</code></td><td>Hari penandatanganan kontrak (contoh: SENIN)</td></tr>
+              <tr><td><code>{{KONTRAK_TANGGAL_TERBILANG}}</code></td><td>Tanggal penandatanganan — terbilang huruf besar (contoh: DUA PULUH LIMA)</td></tr>
+              <tr><td><code>{{KONTRAK_BULAN}}</code></td><td>Bulan penandatanganan kontrak (contoh: AGUSTUS)</td></tr>
+              <tr><td><code>{{KONTRAK_TAHUN_TERBILANG}}</code></td><td>Tahun penandatanganan — terbilang huruf besar (contoh: DUA RIBU DUA PULUH ENAM)</td></tr>
             </tbody>
+
           </table>
         </div>
       </div>
