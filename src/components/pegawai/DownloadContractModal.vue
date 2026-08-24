@@ -55,7 +55,7 @@
             </label>
           </div>
           <div v-if="downloadMode === 'pisah'" style="margin-top: 8px; font-size: 0.82rem; color: #2563eb; background: rgba(37,99,235,0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(37,99,235,0.2);">
-            <i class="fa-solid fa-circle-info"></i> Pastikan template sudah diisi dengan tag <strong>{{#perjanjian}}</strong> dan <strong>{{#tandatangan}}</strong>.
+            <i class="fa-solid fa-circle-info"></i> Pastikan template sudah diisi dengan tag <strong v-pre>{{#perjanjian}}</strong> dan <strong v-pre>{{#tandatangan}}</strong>.
           </div>
         </div>
 

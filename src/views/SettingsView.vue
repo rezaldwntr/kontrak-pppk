@@ -210,8 +210,8 @@
                   ✂️ Pemisahan Halaman (Khusus Mode Unduh "Pisah")
                 </td>
               </tr>
-              <tr><td><code>{{#perjanjian}}</code><br><span style="color:#888; font-size:10px">... isi perjanjian ...</span><br><code>{{/perjanjian}}</code></td><td>Bungkus <strong>Halaman Isi Perjanjian</strong> dengan tag ini. Letakkan tag pembuka dan penutup di baris/paragraf tersendiri.</td></tr>
-              <tr><td><code>{{#tandatangan}}</code><br><span style="color:#888; font-size:10px">... isi tanda tangan ...</span><br><code>{{/tandatangan}}</code></td><td>Bungkus <strong>Halaman Tanda Tangan</strong> dengan tag ini. Letakkan tag pembuka dan penutup di baris/paragraf tersendiri.</td></tr>
+              <tr><td><code v-pre>{{#perjanjian}}</code><br><span style="color:#888; font-size:10px">... isi perjanjian ...</span><br><code v-pre>{{/perjanjian}}</code></td><td>Bungkus <strong>Halaman Isi Perjanjian</strong> dengan tag ini. Letakkan tag pembuka dan penutup di baris/paragraf tersendiri.</td></tr>
+              <tr><td><code v-pre>{{#tandatangan}}</code><br><span style="color:#888; font-size:10px">... isi tanda tangan ...</span><br><code v-pre>{{/tandatangan}}</code></td><td>Bungkus <strong>Halaman Tanda Tangan</strong> dengan tag ini. Letakkan tag pembuka dan penutup di baris/paragraf tersendiri.</td></tr>
             </tbody>
 
           </table>
