@@ -162,7 +162,6 @@ function buildTagData(item, pihakPertama, tanggalKontrak = null) {
 
     // Gaji
     GAJI_BARU: formatRupiahFull(gajiAngka),
-    GAJI_BARU_ANGKA: gajiAngka ? gajiAngka.toLocaleString('id-ID') : '',
     GAJI_TERBILANG: gajiAngka ? terbilang(gajiAngka) + ' Rupiah' : '',
 
     // Tanggal penandatanganan kontrak (dari input user) — HURUF BESAR

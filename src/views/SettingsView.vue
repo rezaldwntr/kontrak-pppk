@@ -193,7 +193,6 @@
                 </td>
               </tr>
               <tr><td><code>{{GAJI_BARU}}</code></td><td>Gaji Pokok — format Rupiah lengkap (contoh: Rp 3.200.000)</td></tr>
-              <tr><td><code>{{GAJI_BARU_ANGKA}}</code></td><td>Gaji Pokok — angka saja tanpa Rp (contoh: 3.200.000)</td></tr>
               <tr><td><code>{{GAJI_TERBILANG}}</code></td><td>Gaji Pokok dalam kata-kata (contoh: Tiga Juta Dua Ratus Ribu Rupiah)</td></tr>
 
               <tr style="background: rgba(59,130,246,0.05);">

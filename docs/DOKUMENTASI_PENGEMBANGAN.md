@@ -49,3 +49,34 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - Kolom **Awal Kontrak Aktif** dan **Akhir Kontrak Aktif** kini *dikunci (disabled)* agar tidak bisa diedit sembarangan, karena sistem sudah dijamin menghitung tanggal akhir kontrak secara otomatis (Reguler 5 tahun / Paruh Waktu 1 tahun, atau terpotong BUP) langsung dari TMT.
 - **Bug Modal Kosong**: Memperbaiki isu form kosong pada DetailModal setelah impor data dengan menambahkan `immediate: true` pada `watch`.
 - **Payload Size Error**: Penanganan isu batasan *payload size* saat deploy ke Vercel/Firebase.
+
+---
+
+## [v2.1.0-staging] - 2026-08-24
+
+### Diperbaiki — Fitur Generate Dokumen Word (Unduh Perjanjian Kerja)
+
+- **Input Manual Tanggal Penandatanganan Kontrak**: Sebelumnya, tag `{{KONTRAK_HARI}}`, `{{KONTRAK_TANGGAL_TERBILANG}}`, `{{KONTRAK_BULAN}}`, dan `{{KONTRAK_TAHUN_TERBILANG}}` diisi otomatis dari TMT Awal. Kini, modal "Unduh Perjanjian Kerja" (`DownloadContractModal.vue`) dilengkapi **date picker** untuk memilih tanggal penandatanganan kontrak secara manual oleh user. Nilai yang diisi ke dalam dokumen mengikuti pilihan user, bukan TMT. Jika tanggal tidak dipilih, field di dokumen akan kosong dengan peringatan kuning di UI.
+
+- **Format Huruf Besar (UPPERCASE)**:
+  - `{{NAMA_BUPATI}}` kini selalu di-*uppercase* secara otomatis dari sisi JavaScript.
+  - `{{KONTRAK_HARI}}`, `{{KONTRAK_TANGGAL_TERBILANG}}`, `{{KONTRAK_BULAN}}`, `{{KONTRAK_TAHUN_TERBILANG}}` kini di-*uppercase* secara otomatis.
+
+- **Rename Tag TMT**: Tag `{{TMT_AWAL_BARU}}` diubah menjadi `{{TMT_AWAL_AKTIF}}` dan `{{TMT_AKHIR_BARU}}` menjadi `{{TMT_AKHIR_AKTIF}}` untuk memperjelas bahwa yang dimaksud adalah TMT *kontrak yang sedang aktif*.
+  > ⚠️ **Perlu update template Word**: Ganti `{{TMT_AWAL_BARU}}` → `{{TMT_AWAL_AKTIF}}` dan `{{TMT_AKHIR_BARU}}` → `{{TMT_AKHIR_AKTIF}}` di file template `.docx`.
+
+- **Perbaikan Mapping Field yang Tidak Muncul**:
+  - `{{TEMPAT_TGL_LAHIR}}`: Ditambahkan *fallback* nama kolom (`KOTA LAHIR`, `TEMPAT_LAHIR`) agar nama tempat lahir tidak lagi kosong. Perbaikan juga dilakukan pada cara `filter(Boolean)` agar hanya join jika nilainya ada.
+  - `{{PENDIDIKAN_LULUS}}`: Ditambahkan *fallback* nama kolom (`TINGKAT PENDIDIKAN NAMA`, `PENDIDIKAN NAMA`, `JENJANG PENDIDIKAN`, `THN LULUS`) untuk menangkap berbagai format data impor.
+  - `{{TMT_AKHIR_AKTIF}}` (sebelumnya `TMT_AKHIR_BARU`): Dipastikan dipetakan dari `item['AKHIR KONTRAK AKTIF']` yang sudah terisi oleh kalkulasi otomatis.
+  - `{{GOLONGAN}}`: Ditambahkan *fallback* kolom `GOL AKHIR NAMA`, `GOL AKHIR` di samping `GOLONGAN AKHIR` dan `GOLONGAN`.
+  - `{{GAJI_BARU}}`, `{{GAJI_BARU_ANGKA}}`, `{{GAJI_TERBILANG}}`: Ditambahkan *fallback* kolom `GAJI POKOK SAAT INI (RP)`, `GAJI POKOK`, `GAJI` agar tidak selalu bergantung pada nama kolom tunggal.
+
+- **Penghapusan Tag yang Tidak Diperlukan**: Tag `{{NO_SK_BARU}}`, `{{TGL_SK_BARU}}`, `{{NIK_PEGAWAI}}`, dan `{{GAJI_BARU_ANGKA}}` dihapus dari `buildTagData` di `docxGenerator.js` dan tabel referensi Pengaturan karena sudah tidak relevan / redundan (cukup menggunakan `{{GAJI_BARU}}` untuk format Rupiah lengkap).
+  > ⚠️ Hapus juga tag-tag tersebut dari template Word jika masih ada.
+
+- **Klarifikasi Tag Ambigu**:
+  - `{{UNOR_NAMA}}` kini dipetakan ke kolom unit organisasi/OPD (`UNOR NAMA`, `NAMA UNOR`, `OPD`, `UNIT ORGANISASI`).
+  - `{{UNIT_KERJA}}` kini dipetakan ke kolom unit kerja operasional (`UNIT KERJA`, `NAMA UNIT KERJA`), berbeda sumber dari `UNOR_NAMA`.
+  - `{{GAJI_BARU}}` = format Rupiah lengkap (misal: `Rp 3.200.000`).
+
