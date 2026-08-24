@@ -43,7 +43,7 @@
         <div v-if="items.length > 1" class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Format Output (Batch)</label>
           <div style="display: flex; gap: 12px;">
-            <label class="paper-option" :class="{ active: exportFormat === 'merged', disabled: documentPart === 'pisah' }" @click="if(documentPart !== 'pisah') exportFormat = 'merged'">
+            <label class="paper-option" :class="{ active: exportFormat === 'merged', disabled: documentPart === 'pisah' }" @click="documentPart !== 'pisah' && (exportFormat = 'merged')">
               <i class="fa-solid fa-file-word"></i>
               <span>1 File Gabungan</span>
               <small class="text-muted" style="font-size:11px">Semua pegawai dalam 1 docx</small>
