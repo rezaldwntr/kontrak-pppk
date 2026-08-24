@@ -3,6 +3,8 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { db } from '../services/firebase'
 import { doc, getDoc } from 'firebase/firestore'
+import { calculateContractPeriod, parseDate } from './pppkLogic'
+import { calculateGajiFromItem } from './gajiTable'
 
 // ===== Helper Functions =====
 
@@ -42,19 +44,14 @@ function terbilang(n) {
 const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
-function parseDate(str) {
-  if (!str) return null
-  // Handle various formats: YYYY-MM-DD, DD/MM/YYYY, etc.
-  const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]))
-  const dmy = str.match(/^(\d{2})[/\-](\d{2})[/\-](\d{4})/)
-  if (dmy) return new Date(parseInt(dmy[3]), parseInt(dmy[2]) - 1, parseInt(dmy[1]))
-  return null
-}
-
 function formatIndo(str) {
+  if (!str) return ''
+  if (str instanceof Date) {
+    if (isNaN(str.getTime())) return ''
+    return `${str.getDate()} ${BULAN[str.getMonth()]} ${str.getFullYear()}`
+  }
   const d = parseDate(str)
-  if (!d) return str || '-'
+  if (!d || isNaN(d.getTime())) return ''
   return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`
 }
 
@@ -106,28 +103,53 @@ function getNamaLengkap(item) {
  * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak yang dipilih user
  */
 function buildTagData(item, pihakPertama, tanggalKontrak = null) {
-  // TMT Aktif: gunakan "AWAL KONTRAK AKTIF" sebagai sumber utama
-  const tmtAwal = item['AWAL KONTRAK AKTIF'] || item['TMT CPNS'] || ''
-  const tmtAkhir = item['AKHIR KONTRAK AKTIF'] || ''
+  // TMT Aktif: gunakan "AWAL KONTRAK AKTIF" sebagai sumber utama, fallback ke TMT CPNS
+  const tmtAwal = item['AWAL KONTRAK AKTIF'] || item['TMT CPNS'] || item['TMT KONTRAK BARU'] || ''
+  const tmtAwalFormatted = formatIndo(tmtAwal)
 
-  // Gaji: coba berbagai kemungkinan nama kolom
-  const gajiRaw = item['GAJI POKOK SAAT INI'] || item['GAJI POKOK SAAT INI (RP)'] || item['GAJI POKOK'] || item['GAJI'] || ''
-  const gajiAngka = stripRupiah(gajiRaw)
+  // Akhir Kontrak Aktif: jika belum ada di data, kalkulasi otomatis via calculateContractPeriod
+  let tmtAkhirFormatted = formatIndo(item['AKHIR KONTRAK AKTIF'] || '')
+  if (!tmtAkhirFormatted) {
+    const period = calculateContractPeriod(item)
+    if (period && period.endDateStr && period.endDateStr !== '-' && period.endDateStr !== 'Format Tanggal Invalid') {
+      tmtAkhirFormatted = period.endDateStr
+    } else if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
+      tmtAkhirFormatted = formatIndo(period.rawDate)
+    }
+  }
+
+  // Gaji: cari di data tersimpan, jika tidak ada/0, kalkulasi otomatis dari golongan & masa kerja (Perpres 11/2024)
+  const gajiRaw = item['GAJI POKOK SAAT INI'] || item['GAJI POKOK SAAT INI (RP)'] || item['GAJI POKOK'] || item['GAJI'] || item['GAJI_POKOK'] || ''
+  let gajiAngka = stripRupiah(gajiRaw)
+  if (!gajiAngka || gajiAngka === 0) {
+    const gajiCalc = calculateGajiFromItem(item)
+    if (gajiCalc && gajiCalc.gaji) {
+      gajiAngka = gajiCalc.gaji
+    }
+  }
 
   // Golongan: coba berbagai kemungkinan nama kolom
-  const golongan = item['GOL AKHIR NAMA'] || item['GOLONGAN AKHIR'] || item['GOLONGAN'] || item['GOL AKHIR'] || ''
+  const golongan = item['GOLONGAN'] || item['GOL AKHIR NAMA'] || item['GOL RUANG'] || item['GOLONGAN AKHIR'] || item['GOL AKHIR ID'] || item['GOL AWAL NAMA'] || ''
 
-  // Tempat & Tanggal Lahir: coba berbagai kemungkinan nama kolom
-  const tempatLahir = item['TEMPAT LAHIR'] || item['KOTA LAHIR'] || item['TEMPAT_LAHIR'] || ''
+  // Tempat & Tanggal Lahir: fallback mencakup TEMPAT LAHIR NAMA dari data BKN/SIASN
+  const tempatLahir = (item['TEMPAT LAHIR NAMA'] || item['TEMPAT LAHIR'] || item['TEMPAT_LAHIR_NAMA'] || item['TEMPAT_LAHIR'] || item['KOTA LAHIR'] || '').trim()
   const tglLahir = item['TANGGAL LAHIR'] || item['TGL LAHIR'] || item['TANGGAL_LAHIR'] || ''
+  const tglLahirFormatted = formatIndo(tglLahir)
+  const tempatTglLahir = [tempatLahir, tglLahirFormatted].filter(Boolean).join(', ')
 
-  // Pendidikan: coba berbagai kemungkinan nama kolom
-  const pendidikan = item['TINGKAT PENDIDIKAN NAMA'] || item['PENDIDIKAN NAMA'] || item['PENDIDIKAN'] || item['JENJANG PENDIDIKAN'] || ''
-  const tahunLulus = item['TAHUN LULUS'] || item['THN LULUS'] || ''
+  // Pendidikan: fallback mencakup PENDIDIKAN TERAKHIR, PENDIDIKAN NAMA, dsb. Format: [Pendidikan], Tahun : [Tahun]
+  const pendidikan = (item['PENDIDIKAN TERAKHIR'] || item['PENDIDIKAN NAMA'] || item['PENDIDIKAN'] || item['TINGKAT PENDIDIKAN NAMA'] || item['TINGKAT PENDIDIKAN'] || item['JENJANG PENDIDIKAN'] || '').trim()
+  const tahunLulus = String(item['TAHUN LULUS'] || item['THN LULUS'] || item['TAHUN_LULUS'] || '').trim()
+  let pendidikanLulus = pendidikan
+  if (pendidikan && tahunLulus) {
+    pendidikanLulus = `${pendidikan}, Tahun : ${tahunLulus}`
+  } else if (!pendidikan && tahunLulus) {
+    pendidikanLulus = `Tahun : ${tahunLulus}`
+  }
 
   // Unit Kerja vs UNOR: beda sumber agar tidak identik
   const unorNama = item['UNOR NAMA'] || item['NAMA UNOR'] || item['OPD'] || item['UNIT ORGANISASI'] || ''
-  const unitKerja = item['UNIT KERJA'] || item['NAMA UNIT KERJA'] || unorNama
+  const unitKerja = item['UNIT KERJA'] || item['NAMA UNIT KERJA'] || item['LOKASI KERJA NAMA'] || item['LOKASI KERJA'] || unorNama
 
   // Tanggal penandatanganan kontrak dari input user
   const tglKontrak = tanggalKontrak instanceof Date && !isNaN(tanggalKontrak.getTime())
@@ -140,25 +162,25 @@ function buildTagData(item, pihakPertama, tanggalKontrak = null) {
     JABATAN_BUPATI: pihakPertama?.jabatan || 'Bupati',
 
     // Data Kontrak
-    NO_KONTRAK_BARU: item['NOMOR KONTRAK AKTIF'] || '',
+    NO_KONTRAK_BARU: item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || '',
 
     // Data Pegawai
     NAMA_PEGAWAI: getNamaLengkap(item),
-    NIP_BARU: String(item['NIP BARU'] || '').replace(/^'/, ''),
-    ALAMAT: item['ALAMAT'] || '',
-    JABATAN: item['JABATAN NAMA'] || '',
+    NIP_BARU: String(item['NIP BARU'] || item['NIP'] || '').replace(/^'/, ''),
+    ALAMAT: item['ALAMAT LENGKAP'] || item['ALAMAT'] || '',
+    JABATAN: item['JABATAN NAMA'] || item['JABATAN'] || '',
     UNOR_NAMA: unorNama,
     UNIT_KERJA: unitKerja,
     KELOMPOK_PEGAWAI: getKelompokPegawai(item),
     FUNGSI_PEGAWAI: getFungsiPegawai(item),
     SASARAN_PELAYANAN: getSasaranPelayanan(item),
     GOLONGAN: golongan,
-    TEMPAT_TGL_LAHIR: [tempatLahir, tglLahir ? formatIndo(tglLahir) : ''].filter(Boolean).join(', '),
-    PENDIDIKAN_LULUS: [pendidikan, tahunLulus ? 'Tahun ' + tahunLulus : ''].filter(Boolean).join(' '),
+    TEMPAT_TGL_LAHIR: tempatTglLahir,
+    PENDIDIKAN_LULUS: pendidikanLulus,
 
-    // TMT Aktif (sudah rename dari _BARU ke _AKTIF)
-    TMT_AWAL_AKTIF: formatIndo(tmtAwal),
-    TMT_AKHIR_AKTIF: formatIndo(tmtAkhir),
+    // TMT Aktif
+    TMT_AWAL_AKTIF: tmtAwalFormatted,
+    TMT_AKHIR_AKTIF: tmtAkhirFormatted,
 
     // Gaji
     GAJI_BARU: formatRupiahFull(gajiAngka),

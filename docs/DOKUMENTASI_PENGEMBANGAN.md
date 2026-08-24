@@ -66,11 +66,11 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   > ⚠️ **Perlu update template Word**: Ganti `{{TMT_AWAL_BARU}}` → `{{TMT_AWAL_AKTIF}}` dan `{{TMT_AKHIR_BARU}}` → `{{TMT_AKHIR_AKTIF}}` di file template `.docx`.
 
 - **Perbaikan Mapping Field yang Tidak Muncul**:
-  - `{{TEMPAT_TGL_LAHIR}}`: Ditambahkan *fallback* nama kolom (`KOTA LAHIR`, `TEMPAT_LAHIR`) agar nama tempat lahir tidak lagi kosong. Perbaikan juga dilakukan pada cara `filter(Boolean)` agar hanya join jika nilainya ada.
-  - `{{PENDIDIKAN_LULUS}}`: Ditambahkan *fallback* nama kolom (`TINGKAT PENDIDIKAN NAMA`, `PENDIDIKAN NAMA`, `JENJANG PENDIDIKAN`, `THN LULUS`) untuk menangkap berbagai format data impor.
-  - `{{TMT_AKHIR_AKTIF}}` (sebelumnya `TMT_AKHIR_BARU`): Dipastikan dipetakan dari `item['AKHIR KONTRAK AKTIF']` yang sudah terisi oleh kalkulasi otomatis.
-  - `{{GOLONGAN}}`: Ditambahkan *fallback* kolom `GOL AKHIR NAMA`, `GOL AKHIR` di samping `GOLONGAN AKHIR` dan `GOLONGAN`.
-  - `{{GAJI_BARU}}`, `{{GAJI_BARU_ANGKA}}`, `{{GAJI_TERBILANG}}`: Ditambahkan *fallback* kolom `GAJI POKOK SAAT INI (RP)`, `GAJI POKOK`, `GAJI` agar tidak selalu bergantung pada nama kolom tunggal.
+  - `{{TEMPAT_TGL_LAHIR}}`: Menambahkan dukungan untuk field `TEMPAT LAHIR NAMA` (nama standar dari export data BKN/SIASN) di samping `TEMPAT LAHIR`, `TEMPAT_LAHIR`, dan `KOTA LAHIR`.
+  - `{{PENDIDIKAN_LULUS}}`: Memperbaiki format menjadi `[Pendidikan Terakhir], Tahun : [Tahun Lulus]` serta memperluas fallback pencarian nama pendidikan (`PENDIDIKAN TERAKHIR`, `PENDIDIKAN NAMA`, `PENDIDIKAN`, `TINGKAT PENDIDIKAN NAMA`).
+  - `{{TMT_AKHIR_AKTIF}}`: Menghubungkan kalkulasi otomatis tanggal akhir kontrak dengan `calculateContractPeriod(item)` jika kolom `AKHIR KONTRAK AKTIF` belum tersimpan di data mentah, sehingga tidak lagi menghasilkan `-`.
+  - `{{GOLONGAN}}`: Ditambahkan *fallback* kolom `GOL AKHIR NAMA`, `GOL RUANG`, `GOL AKHIR ID`, `GOL AWAL NAMA` di samping `GOLONGAN AKHIR` dan `GOLONGAN`.
+  - `{{GAJI_BARU}}` & `{{GAJI_TERBILANG}}`: Jika nilai gaji pokok belum disimpan secara manual di database, sistem kini secara cerdas menghitung otomatis nominal gaji pokok berdasarkan Golongan dan Masa Kerja (MKG) sesuai tabel Perpres No. 11 Tahun 2024 via `calculateGajiFromItem(item)`. Dengan demikian, nominal tidak akan lagi `Rp 0` dan terbilang tidak akan kosong.
 
 - **Penghapusan Tag yang Tidak Diperlukan**: Tag `{{NO_SK_BARU}}`, `{{TGL_SK_BARU}}`, `{{NIK_PEGAWAI}}`, dan `{{GAJI_BARU_ANGKA}}` dihapus dari `buildTagData` di `docxGenerator.js` dan tabel referensi Pengaturan karena sudah tidak relevan / redundan (cukup menggunakan `{{GAJI_BARU}}` untuk format Rupiah lengkap).
   > ⚠️ Hapus juga tag-tag tersebut dari template Word jika masih ada.

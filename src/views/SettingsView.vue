@@ -177,7 +177,7 @@
               <tr><td><code>{{SASARAN_PELAYANAN}}</code></td><td>Sasaran Pelayanan — otomatis (contoh: Anak Didik, Pasien, Masyarakat)</td></tr>
               <tr><td><code>{{GOLONGAN}}</code></td><td>Golongan PPPK (Akhir)</td></tr>
               <tr><td><code>{{TEMPAT_TGL_LAHIR}}</code></td><td>Tempat dan Tanggal Lahir (Format: Kota, DD Bulan YYYY)</td></tr>
-              <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan dan Tahun Lulus (Format: Nama Pendidikan Tahun YYYY)</td></tr>
+              <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan Terakhir dan Tahun Lulus (Format: Nama Pendidikan, Tahun : YYYY)</td></tr>
 
               <tr style="background: rgba(59,130,246,0.05);">
                 <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
