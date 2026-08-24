@@ -5,12 +5,12 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 ## [v2.2.0-staging] - 2026-08-24
 
 ### Ditambahkan
-- **Fitur Pisah Halaman Perjanjian dan Tanda Tangan**: Menambahkan kemampuan untuk memisahkan hasil unduhan dokumen kontrak menjadi dua file Word terpisah (halaman isi perjanjian dan halaman tanda tangan) yang dibungkus dalam file ZIP.
-  - Pengguna dapat membungkus template Word menggunakan tag `{{#perjanjian}}...` dan `{{#tandatangan}}...`.
-  - Opsi **Mode Unduhan** (Gabungan vs Pisah) ditambahkan ke dalam UI `DownloadContractModal.vue`.
-  - Jika pengguna memilih mode 'Pisah' namun template belum dilengkapi tag section, sistem akan memberikan notifikasi error informatif sebelum proses generate dokumen dimulai, mencegah file terdownload secara tidak sengaja dalam format yang salah.
-  - Untuk proses *batch download* dalam mode Pisah, struktur output di dalam file ZIP dibuat mendatar (flat), sehingga mempermudah proses pencetakan oleh pengguna.
-
+- **Fitur Pisah & Gabung Halaman Kontrak**: Menambahkan kemampuan *advanced* untuk mengontrol hasil unduhan dokumen:
+  - **1 File Word Gabungan**: Pengguna sekarang bisa mengunduh kontrak banyak pegawai sekaligus yang secara otomatis digabung ke dalam **satu dokumen Word (.docx) panjang**, di mana masing-masing kontrak pegawai dipisahkan oleh halaman baru (*Page Break*). Sistem juga secara cerdas akan membuat file ZIP berisi beberapa dokumen gabungan jika terdeteksi penggunaan *template* yang berbeda (misal: Reguler vs Paruh Waktu) dalam satu *batch* unduhan, demi menjaga struktur dokumen tetap aman.
+  - **Filter Bagian Dokumen**: Pengguna dapat memilih untuk hanya mengunduh **Halaman Isi Perjanjian** saja atau **Halaman Tanda Tangan** saja dari kontrak.
+  - **Mode Pisah 2 File**: Mengunduh bagian isi perjanjian dan halaman tanda tangan menjadi 2 file terpisah di dalam 1 file ZIP.
+  - **Prasyarat Mode Khusus**: Pengguna harus membungkus template Word menggunakan tag khusus `{{#perjanjian}}...` dan `{{#tandatangan}}...` agar fitur Filter dan Mode Pisah 2 File dapat bekerja. Sistem dilengkapi penahan (error notification) untuk mencegah unduhan rusak jika tag tidak ditemukan.
+  
 ### Diperbarui
 - **Tabel Referensi Tag Pengaturan**: Menambahkan seksi khusus *"Pemisahan Halaman (Khusus Mode Unduh Pisah)"* pada menu Pengaturan agar pengguna mendapat panduan tentang penggunaan tag `{{#perjanjian}}` dan `{{#tandatangan}}` di dalam dokumen.
 

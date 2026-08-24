@@ -39,23 +39,48 @@
           </div>
         </div>
 
-        <!-- Mode Unduhan -->
-        <div class="form-group" style="margin-bottom: 18px;">
-          <label style="font-weight: bold; margin-bottom: 10px; display: block;">Mode Unduhan</label>
+        <!-- Mode Ekspor (Hanya untuk lebih dari 1 pegawai) -->
+        <div v-if="items.length > 1" class="form-group" style="margin-bottom: 18px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: block;">Format Output (Batch)</label>
           <div style="display: flex; gap: 12px;">
-            <label class="paper-option" :class="{ active: downloadMode === 'gabungan' }" @click="downloadMode = 'gabungan'">
-              <i class="fa-solid fa-file-lines"></i>
-              <span>Gabungan (Default)</span>
-              <small class="text-muted">1 file Word utuh</small>
+            <label class="paper-option" :class="{ active: exportFormat === 'merged', disabled: documentPart === 'pisah' }" @click="if(documentPart !== 'pisah') exportFormat = 'merged'">
+              <i class="fa-solid fa-file-word"></i>
+              <span>1 File Gabungan</span>
+              <small class="text-muted" style="font-size:11px">Semua pegawai dalam 1 docx</small>
             </label>
-            <label class="paper-option" :class="{ active: downloadMode === 'pisah' }" @click="downloadMode = 'pisah'">
-              <i class="fa-solid fa-folder-tree"></i>
-              <span>Pisah (2 Bagian)</span>
-              <small class="text-muted">Isi & TTD terpisah (ZIP)</small>
+            <label class="paper-option" :class="{ active: exportFormat === 'zip' }" @click="exportFormat = 'zip'">
+              <i class="fa-solid fa-file-zipper"></i>
+              <span>File Terpisah (ZIP)</span>
+              <small class="text-muted" style="font-size:11px">Tiap pegawai 1 docx terpisah</small>
             </label>
           </div>
-          <div v-if="downloadMode === 'pisah'" style="margin-top: 8px; font-size: 0.82rem; color: #2563eb; background: rgba(37,99,235,0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(37,99,235,0.2);">
-            <i class="fa-solid fa-circle-info"></i> Pastikan template sudah diisi dengan tag <strong v-pre>{{#perjanjian}}</strong> dan <strong v-pre>{{#tandatangan}}</strong>.
+        </div>
+
+        <!-- Bagian Dokumen yang Diunduh -->
+        <div class="form-group" style="margin-bottom: 18px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: block;">Bagian Dokumen (Isi)</label>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <label class="paper-option small-opt" :class="{ active: documentPart === 'full' }" @click="documentPart = 'full'">
+              <span>Kontrak Utuh</span>
+              <small class="text-muted">Semua Halaman</small>
+            </label>
+            <label class="paper-option small-opt" :class="{ active: documentPart === 'perjanjian' }" @click="documentPart = 'perjanjian'">
+              <span>Isi Perjanjian</span>
+              <small class="text-muted">Hanya teks kontrak</small>
+            </label>
+            <label class="paper-option small-opt" :class="{ active: documentPart === 'tandatangan' }" @click="documentPart = 'tandatangan'">
+              <span>Tanda Tangan</span>
+              <small class="text-muted">Hanya hlmn penutup</small>
+            </label>
+            <label class="paper-option small-opt" :class="{ active: documentPart === 'pisah' }" @click="documentPart = 'pisah'">
+              <span>Pisah 2 File</span>
+              <small class="text-muted">Isi & TTD terpisah</small>
+            </label>
+          </div>
+
+          <div v-if="documentPart !== 'full'" style="margin-top: 8px; font-size: 0.82rem; color: #2563eb; background: rgba(37,99,235,0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(37,99,235,0.2);">
+            <i class="fa-solid fa-circle-info"></i> Pastikan template sudah diisi tag <strong v-pre>{{#perjanjian}}</strong> & <strong v-pre>{{#tandatangan}}</strong>.
           </div>
         </div>
 
@@ -102,7 +127,7 @@
         <button class="btn btn-primary" @click="handleDownload" :disabled="isGenerating" style="background-color: #2563eb;">
           <i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i>
           <i v-else class="fa-solid fa-download"></i>
-          {{ items.length > 1 || downloadMode === 'pisah' ? 'Unduh ZIP' : 'Unduh Dokumen' }}
+          {{ exportFormat === 'zip' || documentPart === 'pisah' ? 'Unduh ZIP' : 'Unduh Dokumen' }}
         </button>
       </div>
     </div>
@@ -121,7 +146,9 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success'])
 
 const selectedPaper = ref('f4')
-const downloadMode = ref('gabungan')
+const exportFormat = ref('merged') // 'merged' | 'zip'
+const documentPart = ref('full') // 'full' | 'perjanjian' | 'tandatangan' | 'pisah'
+
 const isGenerating = ref(false)
 const errorMsg = ref('')
 const progress = ref(0)
@@ -129,12 +156,22 @@ const tanggalKontrakStr = ref('') // format YYYY-MM-DD dari input type="date"
 
 const progressPct = computed(() => props.items.length > 0 ? Math.round((progress.value / props.items.length) * 100) : 0)
 
+watch(documentPart, (newVal) => {
+  if (newVal === 'pisah') {
+    exportFormat.value = 'zip'
+  }
+})
+
 watch(() => props.isOpen, (v) => {
   if (v) {
     errorMsg.value = ''
     progress.value = 0
     isGenerating.value = false
-    // Jangan reset tanggalKontrakStr agar user tidak perlu isi ulang setiap kali buka modal
+    if (props.items.length === 1 && exportFormat.value === 'merged') {
+      exportFormat.value = 'zip'
+    } else if (props.items.length > 1 && documentPart.value !== 'pisah') {
+      exportFormat.value = 'merged'
+    }
   }
 })
 
@@ -167,11 +204,11 @@ const handleDownload = async () => {
 
   try {
     if (props.items.length === 1) {
-      await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak, downloadMode.value)
+      await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak, documentPart.value)
     } else {
       await downloadBatchContracts(props.items, selectedPaper.value, (done, total) => {
         progress.value = done
-      }, tanggalKontrak, downloadMode.value)
+      }, tanggalKontrak, exportFormat.value, documentPart.value)
     }
     emit('success')
     emit('close')
@@ -219,5 +256,22 @@ const handleDownload = async () => {
 .paper-option:hover:not(.active) {
   border-color: var(--primary-color);
   background: rgba(var(--primary-color-rgb), 0.04);
+}
+.paper-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+.paper-option.small-opt {
+  padding: 10px;
+}
+.paper-option.small-opt i {
+  display: none;
+}
+.paper-option.small-opt span {
+  font-size: 0.9rem;
+}
+.paper-option.small-opt small {
+  font-size: 0.75rem;
 }
 </style>
