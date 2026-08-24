@@ -256,13 +256,134 @@ function consolidateSplitTags(xml) {
 }
 
 /**
+ * Pisahkan XML dokumen menjadi tiga bagian berdasarkan marker section:
+ *   {{#perjanjian}} ... {{/perjanjian}}
+ *   {{#tandatangan}} ... {{/tandatangan}}
+ *
+ * Marker harus ditempatkan sebagai paragraf tersendiri di template Word.
+ * Jika marker tidak ditemukan → return { hasSections: false }.
+ *
+ * @param {string} xml - seluruh konten word/document.xml setelah tag replacement
+ * @returns {{ hasSections: boolean, fullXml: string, perjanjianXml: string, tandatanganXml: string }}
+ */
+function splitSections(xml) {
+  const MARKERS = ['{{#perjanjian}}', '{{/perjanjian}}', '{{#tandatangan}}', '{{/tandatangan}}']
+  const hasAny = MARKERS.some(m => xml.includes(m))
+  if (!hasAny) return { hasSections: false }
+
+  // Extract body boundaries
+  const BODY_OPEN = '<w:body>'
+  const BODY_CLOSE = '</w:body>'
+  const bodyOpenEnd = xml.indexOf(BODY_OPEN)
+  const bodyCloseStart = xml.lastIndexOf(BODY_CLOSE)
+  if (bodyOpenEnd === -1 || bodyCloseStart === -1) return { hasSections: false }
+
+  const preBody  = xml.substring(0, bodyOpenEnd + BODY_OPEN.length)  // incl. <w:body>
+  const bodyContent = xml.substring(bodyOpenEnd + BODY_OPEN.length, bodyCloseStart)
+  const postBody = xml.substring(bodyCloseStart)  // starts with </w:body>
+
+  // Extract the last <w:sectPr> in the document (page margins/paper size)
+  const sectPrStart = bodyContent.lastIndexOf('<w:sectPr')
+  const sectPrEndTag = bodyContent.indexOf('</w:sectPr>', sectPrStart)
+  const sectPr = (sectPrStart !== -1 && sectPrEndTag !== -1)
+    ? bodyContent.substring(sectPrStart, sectPrEndTag + '</w:sectPr>'.length)
+    : ''
+
+  /**
+   * Find the paragraph element that contains the given marker text.
+   * Returns { pStart, pEnd } positions within bodyContent, or null if not found.
+   * Uses 'lastIndexOf <w:p' before marker to find the enclosing paragraph.
+   */
+  function findMarkerParagraph(marker) {
+    const markerIdx = bodyContent.indexOf(marker)
+    if (markerIdx === -1) return null
+
+    const before = bodyContent.substring(0, markerIdx)
+
+    // Find last <w:p (strict: followed by '>', ' ', newline, or tab — not <w:pPr, <w:pStyle, etc.)
+    let pStart = -1
+    let searchPos = 0
+    while (searchPos < before.length) {
+      const cand = before.indexOf('<w:p', searchPos)
+      if (cand === -1) break
+      const nextChar = before[cand + 4]
+      if (nextChar === '>' || nextChar === ' ' || nextChar === '\n' || nextChar === '\r' || nextChar === '\t') {
+        pStart = cand
+      }
+      searchPos = cand + 1
+    }
+
+    if (pStart === -1) return null
+
+    const closeIdx = bodyContent.indexOf('</w:p>', markerIdx)
+    if (closeIdx === -1) return null
+
+    return { pStart, pEnd: closeIdx + '</w:p>'.length }
+  }
+
+  const openPer  = findMarkerParagraph('{{#perjanjian}}')
+  const closePer = findMarkerParagraph('{{/perjanjian}}')
+  const openTtd  = findMarkerParagraph('{{#tandatangan}}')
+  const closeTtd = findMarkerParagraph('{{/tandatangan}}')
+
+  if (!openPer || !closePer || !openTtd || !closeTtd) return { hasSections: false }
+
+  // Sanity check: must be in correct order
+  if (!(openPer.pStart < closePer.pEnd &&
+        closePer.pEnd <= openTtd.pStart &&
+        openTtd.pStart < closeTtd.pEnd)) {
+    return { hasSections: false }
+  }
+
+  // Extract raw XML content of each section (without marker paragraphs)
+  const perjanjianContent   = bodyContent.substring(openPer.pEnd,  closePer.pStart)
+  const tandatanganContent  = bodyContent.substring(openTtd.pEnd,  closeTtd.pStart)
+
+  // Full body without any of the four marker paragraphs (all content preserved)
+  const fullBody =
+    bodyContent.substring(0, openPer.pStart) +             // before {{#perjanjian}}
+    perjanjianContent +                                      // isi perjanjian
+    bodyContent.substring(closePer.pEnd, openTtd.pStart) + // between sections
+    tandatanganContent +                                     // isi tanda tangan
+    bodyContent.substring(closeTtd.pEnd)                    // after {{/tandatangan}}
+
+  /**
+   * Build a complete XML document string from a section body content.
+   * Strips any inner sectPr from the section to avoid duplication, then
+   * appends the original document's sectPr for correct page settings.
+   */
+  function buildSectionXml(sectionContent) {
+    // Remove any stray inner sectPr from extracted section
+    let clean = sectionContent
+    const innerSectPrStart = clean.lastIndexOf('<w:sectPr')
+    if (innerSectPrStart !== -1) {
+      const innerSectPrEnd = clean.indexOf('</w:sectPr>', innerSectPrStart)
+      if (innerSectPrEnd !== -1) {
+        clean = clean.substring(0, innerSectPrStart) +
+                clean.substring(innerSectPrEnd + '</w:sectPr>'.length)
+      }
+    }
+    return preBody + clean + sectPr + postBody
+  }
+
+  return {
+    hasSections:     true,
+    fullXml:         preBody + fullBody + postBody,
+    perjanjianXml:   buildSectionXml(perjanjianContent),
+    tandatanganXml:  buildSectionXml(tandatanganContent)
+  }
+}
+
+
+/**
  * Generate satu file .docx dari item pegawai dan template.
- * Menggunakan PizZip + string replacement langsung (tanpa Docxtemplater)
- * agar struktur dokumen Word tidak dirusak oleh XML parser.
- * @param {object} item - data pegawai
- * @param {string} templateBase64 - template docx dalam format base64
- * @param {object|null} pihakPertama - data pihak pertama (Bupati/Walikota)
- * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak dari input user
+ * Menggunakan PizZip + string replacement langsung (tanpa Docxtemplater).
+ *
+ * Return value: objek { hasSections, fullBlob, perjanjianBlob, tandatanganBlob }
+ *   - fullBlob         : seluruh dokumen dengan marker dihapus
+ *   - perjanjianBlob   : hanya bagian {{#perjanjian}}...{{/perjanjian}} (null jika tidak ada)
+ *   - tandatanganBlob  : hanya bagian {{#tandatangan}}...{{/tandatangan}} (null jika tidak ada)
+ *   - hasSections      : true jika template memiliki keempat tag section
  */
 async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak = null) {
   // Decode base64 → binary
@@ -271,35 +392,58 @@ async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak =
   const bytes = new Uint8Array(binaryStr.length)
   for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i)
 
-  // Baca ZIP (DOCX adalah file ZIP)
-  const zip = new PizZip(bytes)
-
-  if (!zip.files['word/document.xml']) {
+  const zipTemplate = new PizZip(bytes)
+  if (!zipTemplate.files['word/document.xml']) {
     throw new Error('Template tidak valid: word/document.xml tidak ditemukan di dalam file .docx.')
   }
 
-  // Ambil XML mentah — TIDAK dimodifikasi strukturnya
-  let xml = zip.files['word/document.xml'].asText()
-
-  // Bersihkan XML tags yang mungkin memecah {{TAG}} lintas XML run
+  // Ambil & bersihkan XML
+  let xml = zipTemplate.files['word/document.xml'].asText()
   xml = consolidateSplitTags(xml)
 
   // Ganti setiap tag dengan data pegawai
   const tagData = buildTagData(item, pihakPertama, tanggalKontrak)
   for (const [key, value] of Object.entries(tagData)) {
-    const safeValue = escapeXml(value)
-    // Gunakan split+join agar semua kemunculan tag diganti (replaceAll tidak tersedia di semua env)
-    xml = xml.split(`{{${key}}}`).join(safeValue)
+    xml = xml.split(`{{${key}}}`).join(escapeXml(value))
   }
 
-  // Tulis XML yang sudah diganti kembali ke ZIP
-  zip.file('word/document.xml', xml)
+  /**
+   * Helper: buat docx Blob dari konten XML yang diberikan.
+   * Menggunakan `bytes` asli agar styles, images, fonts, rels tetap terjaga.
+   */
+  function makeBlob(xmlContent) {
+    const z = new PizZip(bytes)
+    z.file('word/document.xml', xmlContent)
+    return z.generate({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    })
+  }
 
-  // Generate output blob
-  return zip.generate({
-    type: 'blob',
-    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  })
+  // Pisahkan bagian perjanjian & tanda tangan (jika ada marker section)
+  const sections = splitSections(xml)
+
+  if (!sections.hasSections) {
+    // Template lama tanpa marker — hapus stray markers dan return single blob
+    const cleanXml = xml
+      .split('{{#perjanjian}}').join('')
+      .split('{{/perjanjian}}').join('')
+      .split('{{#tandatangan}}').join('')
+      .split('{{/tandatangan}}').join('')
+    return {
+      hasSections:     false,
+      fullBlob:        makeBlob(cleanXml),
+      perjanjianBlob:  null,
+      tandatanganBlob: null
+    }
+  }
+
+  return {
+    hasSections:     true,
+    fullBlob:        makeBlob(sections.fullXml),
+    perjanjianBlob:  makeBlob(sections.perjanjianXml),
+    tandatanganBlob: makeBlob(sections.tandatanganXml)
+  }
 }
 
 /**
@@ -312,72 +456,111 @@ function getTemplateKey(item, paperSize = 'f4') {
 }
 
 /**
- * Download satu file .docx untuk pegawai
- * @param {object} item - data pegawai
- * @param {string} paperSize - 'f4' atau 'a4'
+ * Download satu .docx (atau .zip jika mode pisah) untuk satu pegawai.
+ * @param {object}    item           - data pegawai
+ * @param {string}    paperSize      - 'f4' atau 'a4'
  * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak dari input user
+ * @param {string}    mode           - 'gabungan' (default) | 'pisah'
+ * @returns {{ hasSections: boolean }}
  */
-export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null) {
+export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null, mode = 'gabungan') {
   const templateKey = getTemplateKey(item, paperSize)
   const [templateBase64, pihakPertama] = await Promise.all([
     loadTemplate(templateKey),
     loadPihakPertama()
   ])
-  
-  const blob = await generateDocx(item, templateBase64, pihakPertama, tanggalKontrak)
-  const namaFile = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}.docx`
+
+  const result = await generateDocx(item, templateBase64, pihakPertama, tanggalKontrak)
+
+  if (mode === 'pisah' && !result.hasSections) {
+    throw new Error('Template belum memiliki tag section ({{#perjanjian}} dan {{#tandatangan}}). Silakan perbarui template di menu Pengaturan terlebih dahulu untuk menggunakan mode Pisah.')
+  }
+
+  // Nama dasar file (tanpa ekstensi)
+  const baseName = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}`
     .replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
-  saveAs(blob, namaFile)
+
+  if (mode === 'pisah') {
+    // Buat ZIP kecil berisi dua file terpisah
+    const pisahZip = new JSZip()
+    pisahZip.file(`${baseName}_perjanjian.docx`,  result.perjanjianBlob)
+    pisahZip.file(`${baseName}_tandatangan.docx`, result.tandatanganBlob)
+    const zipBlob = await pisahZip.generateAsync({ type: 'blob' })
+    saveAs(zipBlob, `${baseName}.zip`)
+  } else {
+    // Gabungan
+    saveAs(result.fullBlob, `${baseName}.docx`)
+  }
+
+  return { hasSections: result.hasSections }
 }
 
 /**
- * Download batch sebagai ZIP
- * @param {Array} items - array data pegawai
- * @param {string} paperSize - 'f4' atau 'a4'
+ * Download batch sebagai ZIP.
+ * @param {Array}     items          - array data pegawai
+ * @param {string}    paperSize      - 'f4' atau 'a4'
  * @param {Function|null} onProgress - callback (done, total)
  * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak dari input user
+ * @param {string}    mode           - 'gabungan' (default) | 'pisah'
+ * @returns {{ hasSections: boolean }}
  */
-export async function downloadBatchContracts(items, paperSize = 'f4', onProgress = null, tanggalKontrak = null) {
+export async function downloadBatchContracts(items, paperSize = 'f4', onProgress = null, tanggalKontrak = null, mode = 'gabungan') {
   const pihakPertama = await loadPihakPertama()
-  
-  // Load semua template yang diperlukan (PPPK & Paruh Waktu)
+
+  // Load semua template yang diperlukan (cache per key)
   const templateCache = {}
   const uniqueKeys = [...new Set(items.map(item => getTemplateKey(item, paperSize)))]
   for (const key of uniqueKeys) {
     try {
       templateCache[key] = await loadTemplate(key)
     } catch (e) {
-      // skip if not uploaded
       console.warn(`Template ${key} not found:`, e.message)
     }
   }
-  
-  // Generate ZIP
+
   const zip = new JSZip()
-  
+  let anySections = false
+
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
     if (onProgress) onProgress(i + 1, items.length)
-    
+
     const key = getTemplateKey(item, paperSize)
     if (!templateCache[key]) {
       console.warn(`Skipping ${item['NAMA']}: template not found`)
       continue
     }
-    
+
     try {
-      const blob = await generateDocx(item, templateCache[key], pihakPertama, tanggalKontrak)
-      const namaFile = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}.docx`
+      const result = await generateDocx(item, templateCache[key], pihakPertama, tanggalKontrak)
+      
+      if (mode === 'pisah' && !result.hasSections) {
+        throw new Error('Template belum memiliki tag section ({{#perjanjian}} dan {{#tandatangan}}). Silakan perbarui template di menu Pengaturan terlebih dahulu untuk menggunakan mode Pisah.')
+      }
+
+      const baseName = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}`
         .replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
-      zip.file(namaFile, blob)
+
+      if (mode === 'pisah') {
+        anySections = true
+        // Flat ZIP
+        zip.file(`${baseName}_perjanjian.docx`,  result.perjanjianBlob)
+        zip.file(`${baseName}_tandatangan.docx`, result.tandatanganBlob)
+      } else {
+        // Gabungan per pegawai (satu file .docx dalam ZIP)
+        zip.file(`${baseName}.docx`, result.fullBlob)
+      }
     } catch (e) {
       console.error(`Error generating doc for ${item['NAMA']}:`, e)
+      throw e // Bubble up the error so UI stops and displays it
     }
   }
-  
+
   const zipBlob = await zip.generateAsync({ type: 'blob' })
   const now = new Date()
   const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`
   saveAs(zipBlob, `kontrak_perjanjian_${dateStr}.zip`)
+
+  return { hasSections: anySections }
 }
 

@@ -39,6 +39,26 @@
           </div>
         </div>
 
+        <!-- Mode Unduhan -->
+        <div class="form-group" style="margin-bottom: 18px;">
+          <label style="font-weight: bold; margin-bottom: 10px; display: block;">Mode Unduhan</label>
+          <div style="display: flex; gap: 12px;">
+            <label class="paper-option" :class="{ active: downloadMode === 'gabungan' }" @click="downloadMode = 'gabungan'">
+              <i class="fa-solid fa-file-lines"></i>
+              <span>Gabungan (Default)</span>
+              <small class="text-muted">1 file Word utuh</small>
+            </label>
+            <label class="paper-option" :class="{ active: downloadMode === 'pisah' }" @click="downloadMode = 'pisah'">
+              <i class="fa-solid fa-folder-tree"></i>
+              <span>Pisah (2 Bagian)</span>
+              <small class="text-muted">Isi & TTD terpisah (ZIP)</small>
+            </label>
+          </div>
+          <div v-if="downloadMode === 'pisah'" style="margin-top: 8px; font-size: 0.82rem; color: #2563eb; background: rgba(37,99,235,0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(37,99,235,0.2);">
+            <i class="fa-solid fa-circle-info"></i> Pastikan template sudah diisi dengan tag <strong>{{#perjanjian}}</strong> dan <strong>{{#tandatangan}}</strong>.
+          </div>
+        </div>
+
         <!-- Tanggal Penandatanganan Kontrak -->
         <div class="form-group" style="margin-bottom: 0;">
           <label style="font-weight: bold; margin-bottom: 8px; display: block;">
@@ -82,7 +102,7 @@
         <button class="btn btn-primary" @click="handleDownload" :disabled="isGenerating" style="background-color: #2563eb;">
           <i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i>
           <i v-else class="fa-solid fa-download"></i>
-          {{ items.length > 1 ? 'Unduh ZIP' : 'Unduh Dokumen' }}
+          {{ items.length > 1 || downloadMode === 'pisah' ? 'Unduh ZIP' : 'Unduh Dokumen' }}
         </button>
       </div>
     </div>
@@ -101,6 +121,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'success'])
 
 const selectedPaper = ref('f4')
+const downloadMode = ref('gabungan')
 const isGenerating = ref(false)
 const errorMsg = ref('')
 const progress = ref(0)
@@ -146,11 +167,11 @@ const handleDownload = async () => {
 
   try {
     if (props.items.length === 1) {
-      await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak)
+      await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak, downloadMode.value)
     } else {
       await downloadBatchContracts(props.items, selectedPaper.value, (done, total) => {
         progress.value = done
-      }, tanggalKontrak)
+      }, tanggalKontrak, downloadMode.value)
     }
     emit('success')
     emit('close')

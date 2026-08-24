@@ -204,6 +204,14 @@
               <tr><td><code>{{KONTRAK_TANGGAL_TERBILANG}}</code></td><td>Tanggal penandatanganan — terbilang huruf besar (contoh: DUA PULUH LIMA)</td></tr>
               <tr><td><code>{{KONTRAK_BULAN}}</code></td><td>Bulan penandatanganan kontrak (contoh: AGUSTUS)</td></tr>
               <tr><td><code>{{KONTRAK_TAHUN_TERBILANG}}</code></td><td>Tahun penandatanganan — terbilang huruf besar (contoh: DUA RIBU DUA PULUH ENAM)</td></tr>
+              
+              <tr style="background: rgba(59,130,246,0.05);">
+                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+                  ✂️ Pemisahan Halaman (Khusus Mode Unduh "Pisah")
+                </td>
+              </tr>
+              <tr><td><code>{{#perjanjian}}</code><br><span style="color:#888; font-size:10px">... isi perjanjian ...</span><br><code>{{/perjanjian}}</code></td><td>Bungkus <strong>Halaman Isi Perjanjian</strong> dengan tag ini. Letakkan tag pembuka dan penutup di baris/paragraf tersendiri.</td></tr>
+              <tr><td><code>{{#tandatangan}}</code><br><span style="color:#888; font-size:10px">... isi tanda tangan ...</span><br><code>{{/tandatangan}}</code></td><td>Bungkus <strong>Halaman Tanda Tangan</strong> dengan tag ini. Letakkan tag pembuka dan penutup di baris/paragraf tersendiri.</td></tr>
             </tbody>
 
           </table>
