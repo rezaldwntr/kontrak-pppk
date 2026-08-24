@@ -2,6 +2,18 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v2.2.0-staging] - 2026-08-24
+
+### Ditambahkan
+- **Fitur Pisah Halaman Perjanjian dan Tanda Tangan**: Menambahkan kemampuan untuk memisahkan hasil unduhan dokumen kontrak menjadi dua file Word terpisah (halaman isi perjanjian dan halaman tanda tangan) yang dibungkus dalam file ZIP.
+  - Pengguna dapat membungkus template Word menggunakan tag `{{#perjanjian}}...` dan `{{#tandatangan}}...`.
+  - Opsi **Mode Unduhan** (Gabungan vs Pisah) ditambahkan ke dalam UI `DownloadContractModal.vue`.
+  - Jika pengguna memilih mode 'Pisah' namun template belum dilengkapi tag section, sistem akan memberikan notifikasi error informatif sebelum proses generate dokumen dimulai, mencegah file terdownload secara tidak sengaja dalam format yang salah.
+  - Untuk proses *batch download* dalam mode Pisah, struktur output di dalam file ZIP dibuat mendatar (flat), sehingga mempermudah proses pencetakan oleh pengguna.
+
+### Diperbarui
+- **Tabel Referensi Tag Pengaturan**: Menambahkan seksi khusus *"Pemisahan Halaman (Khusus Mode Unduh Pisah)"* pada menu Pengaturan agar pengguna mendapat panduan tentang penggunaan tag `{{#perjanjian}}` dan `{{#tandatangan}}` di dalam dokumen.
+
 ## [v2.0.0-staging] - 2026-07-16
 
 ### Ditambahkan
@@ -52,6 +64,18 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 ---
 
+## [v2.2.0-staging] - 2026-08-24
+
+### Ditambahkan
+- **Fitur Pisah Halaman Perjanjian dan Tanda Tangan**: Menambahkan kemampuan untuk memisahkan hasil unduhan dokumen kontrak menjadi dua file Word terpisah (halaman isi perjanjian dan halaman tanda tangan) yang dibungkus dalam file ZIP.
+  - Pengguna dapat membungkus template Word menggunakan tag \{{#perjanjian}}...\ dan \{{#tandatangan}}...\.
+  - Opsi **Mode Unduhan** (Gabungan vs Pisah) ditambahkan ke dalam UI \DownloadContractModal.vue\.
+  - Jika pengguna memilih mode 'Pisah' namun template belum dilengkapi tag section, sistem akan memberikan notifikasi error informatif sebelum proses generate dokumen dimulai, mencegah file terdownload secara tidak sengaja dalam format yang salah.
+  - Untuk proses *batch download* dalam mode Pisah, struktur output di dalam file ZIP dibuat mendatar (flat), sehingga mempermudah proses pencetakan oleh pengguna.
+
+### Diperbarui
+- **Tabel Referensi Tag Pengaturan**: Menambahkan seksi khusus *"Pemisahan Halaman (Khusus Mode Unduh Pisah)"* pada menu Pengaturan agar pengguna mendapat panduan tentang penggunaan tag \{{#perjanjian}}\ dan \{{#tandatangan}}\ di dalam dokumen.
+
 ## [v2.1.0-staging] - 2026-08-24
 
 ### Diperbaiki — Fitur Generate Dokumen Word (Unduh Perjanjian Kerja)
@@ -79,4 +103,5 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - `{{UNOR_NAMA}}` kini dipetakan ke kolom unit organisasi/OPD (`UNOR NAMA`, `NAMA UNOR`, `OPD`, `UNIT ORGANISASI`).
   - `{{UNIT_KERJA}}` kini dipetakan ke kolom unit kerja operasional (`UNIT KERJA`, `NAMA UNIT KERJA`), berbeda sumber dari `UNOR_NAMA`.
   - `{{GAJI_BARU}}` = format Rupiah lengkap (misal: `Rp 3.200.000`).
+
 
