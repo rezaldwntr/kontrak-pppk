@@ -23,7 +23,7 @@
         </div>
 
         <!-- Pilih ukuran kertas -->
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Ukuran Kertas</label>
           <div style="display: flex; gap: 12px;">
             <label class="paper-option" :class="{ active: selectedPaper === 'f4' }" @click="selectedPaper = 'f4'">
@@ -36,6 +36,29 @@
               <span>A4</span>
               <small class="text-muted">29.7 × 21 cm</small>
             </label>
+          </div>
+        </div>
+
+        <!-- Tanggal Penandatanganan Kontrak -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-weight: bold; margin-bottom: 8px; display: block;">
+            <i class="fa-solid fa-calendar-day" style="color: #2563eb; margin-right: 6px;"></i>
+            Tanggal Penandatanganan Kontrak
+          </label>
+          <input
+            type="date"
+            v-model="tanggalKontrakStr"
+            class="form-control"
+            style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); font-size: 0.95rem; background: var(--bg-primary, #fff); color: var(--text-primary);"
+          />
+          <div v-if="tanggalKontrakStr" style="margin-top: 6px; font-size: 0.82rem; color: var(--text-muted);">
+            <i class="fa-solid fa-circle-info"></i>
+            Akan mengisi: <strong>{{KONTRAK_HARI}}</strong>, <strong>{{KONTRAK_TANGGAL_TERBILANG}}</strong>
+            <strong>{{KONTRAK_BULAN}}</strong> <strong>{{KONTRAK_TAHUN_TERBILANG}}</strong> di dokumen
+          </div>
+          <div v-else style="margin-top: 6px; font-size: 0.82rem; color: #f59e0b;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Tanggal belum dipilih — kolom tanggal kontrak di dokumen akan kosong
           </div>
         </div>
 
@@ -66,6 +89,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { downloadSingleContract, downloadBatchContracts } from '../../utils/docxGenerator'
@@ -80,6 +104,7 @@ const selectedPaper = ref('f4')
 const isGenerating = ref(false)
 const errorMsg = ref('')
 const progress = ref(0)
+const tanggalKontrakStr = ref('') // format YYYY-MM-DD dari input type="date"
 
 const progressPct = computed(() => props.items.length > 0 ? Math.round((progress.value / props.items.length) * 100) : 0)
 
@@ -88,6 +113,7 @@ watch(() => props.isOpen, (v) => {
     errorMsg.value = ''
     progress.value = 0
     isGenerating.value = false
+    // Jangan reset tanggalKontrakStr agar user tidak perlu isi ulang setiap kali buka modal
   }
 })
 
@@ -101,17 +127,30 @@ function getNamaLengkap(item) {
   return full
 }
 
+/**
+ * Konversi string YYYY-MM-DD dari input date menjadi Date object lokal
+ */
+function parseDateInput(str) {
+  if (!str) return null
+  const [y, m, d] = str.split('-').map(Number)
+  if (!y || !m || !d) return null
+  return new Date(y, m - 1, d)
+}
+
 const handleDownload = async () => {
   isGenerating.value = true
   errorMsg.value = ''
   progress.value = 0
+
+  const tanggalKontrak = parseDateInput(tanggalKontrakStr.value)
+
   try {
     if (props.items.length === 1) {
-      await downloadSingleContract(props.items[0], selectedPaper.value)
+      await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak)
     } else {
       await downloadBatchContracts(props.items, selectedPaper.value, (done, total) => {
         progress.value = done
-      })
+      }, tanggalKontrak)
     }
     emit('success')
     emit('close')
@@ -123,6 +162,7 @@ const handleDownload = async () => {
   }
 }
 </script>
+
 
 <style scoped>
 .paper-option {

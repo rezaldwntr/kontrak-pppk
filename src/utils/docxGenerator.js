@@ -100,44 +100,76 @@ function getNamaLengkap(item) {
 }
 
 /**
- * Buat objek tag dari data pegawai + data pihak pertama
+ * Buat objek tag dari data pegawai + data pihak pertama + tanggal penandatanganan kontrak
+ * @param {object} item - data pegawai
+ * @param {object|null} pihakPertama - data pihak pertama (Bupati/Walikota)
+ * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak yang dipilih user
  */
-function buildTagData(item, pihakPertama) {
+function buildTagData(item, pihakPertama, tanggalKontrak = null) {
+  // TMT Aktif: gunakan "AWAL KONTRAK AKTIF" sebagai sumber utama
   const tmtAwal = item['AWAL KONTRAK AKTIF'] || item['TMT CPNS'] || ''
-  const tmtDate = parseDate(tmtAwal)
-  
-  const gajiAngka = stripRupiah(item['GAJI POKOK SAAT INI'])
-  
-  const skDate = parseDate(item['TANGGAL SK PERPANJANGAN'] || '')
-  
+  const tmtAkhir = item['AKHIR KONTRAK AKTIF'] || ''
+
+  // Gaji: coba berbagai kemungkinan nama kolom
+  const gajiRaw = item['GAJI POKOK SAAT INI'] || item['GAJI POKOK SAAT INI (RP)'] || item['GAJI POKOK'] || item['GAJI'] || ''
+  const gajiAngka = stripRupiah(gajiRaw)
+
+  // Golongan: coba berbagai kemungkinan nama kolom
+  const golongan = item['GOL AKHIR NAMA'] || item['GOLONGAN AKHIR'] || item['GOLONGAN'] || item['GOL AKHIR'] || ''
+
+  // Tempat & Tanggal Lahir: coba berbagai kemungkinan nama kolom
+  const tempatLahir = item['TEMPAT LAHIR'] || item['KOTA LAHIR'] || item['TEMPAT_LAHIR'] || ''
+  const tglLahir = item['TANGGAL LAHIR'] || item['TGL LAHIR'] || item['TANGGAL_LAHIR'] || ''
+
+  // Pendidikan: coba berbagai kemungkinan nama kolom
+  const pendidikan = item['TINGKAT PENDIDIKAN NAMA'] || item['PENDIDIKAN NAMA'] || item['PENDIDIKAN'] || item['JENJANG PENDIDIKAN'] || ''
+  const tahunLulus = item['TAHUN LULUS'] || item['THN LULUS'] || ''
+
+  // Unit Kerja vs UNOR: beda sumber agar tidak identik
+  const unorNama = item['UNOR NAMA'] || item['NAMA UNOR'] || item['OPD'] || item['UNIT ORGANISASI'] || ''
+  const unitKerja = item['UNIT KERJA'] || item['NAMA UNIT KERJA'] || unorNama
+
+  // Tanggal penandatanganan kontrak dari input user
+  const tglKontrak = tanggalKontrak instanceof Date && !isNaN(tanggalKontrak.getTime())
+    ? tanggalKontrak
+    : null
+
   return {
-    NAMA_BUPATI: pihakPertama?.nama || '',
+    // Pihak Pertama
+    NAMA_BUPATI: (pihakPertama?.nama || '').toUpperCase(),
     JABATAN_BUPATI: pihakPertama?.jabatan || 'Bupati',
+
+    // Data Kontrak
     NO_KONTRAK_BARU: item['NOMOR KONTRAK AKTIF'] || '',
-    NO_SK_BARU: item['NOMOR SK PERPANJANGAN'] || '',
-    TGL_SK_BARU: skDate ? formatIndo(item['TANGGAL SK PERPANJANGAN']) : (item['TANGGAL SK PERPANJANGAN'] || ''),
+
+    // Data Pegawai
     NAMA_PEGAWAI: getNamaLengkap(item),
     NIP_BARU: String(item['NIP BARU'] || '').replace(/^'/, ''),
-    NIK_PEGAWAI: item['NIK'] || item['NIK PEGAWAI'] || '',
     ALAMAT: item['ALAMAT'] || '',
     JABATAN: item['JABATAN NAMA'] || '',
-    UNOR_NAMA: item['UNOR NAMA'] || item['UNIT KERJA'] || '',
-    UNIT_KERJA: item['UNIT KERJA'] || item['UNOR NAMA'] || '',
+    UNOR_NAMA: unorNama,
+    UNIT_KERJA: unitKerja,
     KELOMPOK_PEGAWAI: getKelompokPegawai(item),
     FUNGSI_PEGAWAI: getFungsiPegawai(item),
     SASARAN_PELAYANAN: getSasaranPelayanan(item),
-    GOLONGAN: item['GOLONGAN AKHIR'] || item['GOLONGAN'] || '',
-    TEMPAT_TGL_LAHIR: [item['TEMPAT LAHIR'], formatIndo(item['TANGGAL LAHIR'])].filter(Boolean).join(', '),
-    PENDIDIKAN_LULUS: [item['PENDIDIKAN'], item['TAHUN LULUS'] ? 'Tahun : ' + item['TAHUN LULUS'] : ''].filter(Boolean).join(', '),
-    TMT_AWAL_BARU: formatIndo(tmtAwal),
-    TMT_AKHIR_BARU: formatIndo(item['AKHIR KONTRAK AKTIF'] || ''),
+    GOLONGAN: golongan,
+    TEMPAT_TGL_LAHIR: [tempatLahir, tglLahir ? formatIndo(tglLahir) : ''].filter(Boolean).join(', '),
+    PENDIDIKAN_LULUS: [pendidikan, tahunLulus ? 'Tahun ' + tahunLulus : ''].filter(Boolean).join(' '),
+
+    // TMT Aktif (sudah rename dari _BARU ke _AKTIF)
+    TMT_AWAL_AKTIF: formatIndo(tmtAwal),
+    TMT_AKHIR_AKTIF: formatIndo(tmtAkhir),
+
+    // Gaji
     GAJI_BARU: formatRupiahFull(gajiAngka),
     GAJI_BARU_ANGKA: gajiAngka ? gajiAngka.toLocaleString('id-ID') : '',
     GAJI_TERBILANG: gajiAngka ? terbilang(gajiAngka) + ' Rupiah' : '',
-    KONTRAK_HARI: tmtDate ? HARI[tmtDate.getDay()] : '',
-    KONTRAK_TANGGAL_TERBILANG: tmtDate ? terbilang(tmtDate.getDate()) : '',
-    KONTRAK_BULAN: tmtDate ? BULAN[tmtDate.getMonth()] : '',
-    KONTRAK_TAHUN_TERBILANG: tmtDate ? terbilang(tmtDate.getFullYear()) : '',
+
+    // Tanggal penandatanganan kontrak (dari input user) — HURUF BESAR
+    KONTRAK_HARI: tglKontrak ? HARI[tglKontrak.getDay()].toUpperCase() : '',
+    KONTRAK_TANGGAL_TERBILANG: tglKontrak ? terbilang(tglKontrak.getDate()).toUpperCase() : '',
+    KONTRAK_BULAN: tglKontrak ? BULAN[tglKontrak.getMonth()].toUpperCase() : '',
+    KONTRAK_TAHUN_TERBILANG: tglKontrak ? terbilang(tglKontrak.getFullYear()).toUpperCase() : '',
   }
 }
 
@@ -206,8 +238,12 @@ function consolidateSplitTags(xml) {
  * Generate satu file .docx dari item pegawai dan template.
  * Menggunakan PizZip + string replacement langsung (tanpa Docxtemplater)
  * agar struktur dokumen Word tidak dirusak oleh XML parser.
+ * @param {object} item - data pegawai
+ * @param {string} templateBase64 - template docx dalam format base64
+ * @param {object|null} pihakPertama - data pihak pertama (Bupati/Walikota)
+ * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak dari input user
  */
-async function generateDocx(item, templateBase64, pihakPertama) {
+async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak = null) {
   // Decode base64 → binary
   const base64Data = templateBase64.includes(',') ? templateBase64.split(',')[1] : templateBase64
   const binaryStr = atob(base64Data)
@@ -228,7 +264,7 @@ async function generateDocx(item, templateBase64, pihakPertama) {
   xml = consolidateSplitTags(xml)
 
   // Ganti setiap tag dengan data pegawai
-  const tagData = buildTagData(item, pihakPertama)
+  const tagData = buildTagData(item, pihakPertama, tanggalKontrak)
   for (const [key, value] of Object.entries(tagData)) {
     const safeValue = escapeXml(value)
     // Gunakan split+join agar semua kemunculan tag diganti (replaceAll tidak tersedia di semua env)
@@ -256,15 +292,18 @@ function getTemplateKey(item, paperSize = 'f4') {
 
 /**
  * Download satu file .docx untuk pegawai
+ * @param {object} item - data pegawai
+ * @param {string} paperSize - 'f4' atau 'a4'
+ * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak dari input user
  */
-export async function downloadSingleContract(item, paperSize = 'f4') {
+export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null) {
   const templateKey = getTemplateKey(item, paperSize)
   const [templateBase64, pihakPertama] = await Promise.all([
     loadTemplate(templateKey),
     loadPihakPertama()
   ])
   
-  const blob = await generateDocx(item, templateBase64, pihakPertama)
+  const blob = await generateDocx(item, templateBase64, pihakPertama, tanggalKontrak)
   const namaFile = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}.docx`
     .replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
   saveAs(blob, namaFile)
@@ -272,8 +311,12 @@ export async function downloadSingleContract(item, paperSize = 'f4') {
 
 /**
  * Download batch sebagai ZIP
+ * @param {Array} items - array data pegawai
+ * @param {string} paperSize - 'f4' atau 'a4'
+ * @param {Function|null} onProgress - callback (done, total)
+ * @param {Date|null} tanggalKontrak - tanggal penandatanganan kontrak dari input user
  */
-export async function downloadBatchContracts(items, paperSize = 'f4', onProgress = null) {
+export async function downloadBatchContracts(items, paperSize = 'f4', onProgress = null, tanggalKontrak = null) {
   const pihakPertama = await loadPihakPertama()
   
   // Load semua template yang diperlukan (PPPK & Paruh Waktu)
@@ -302,7 +345,7 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
     }
     
     try {
-      const blob = await generateDocx(item, templateCache[key], pihakPertama)
+      const blob = await generateDocx(item, templateCache[key], pihakPertama, tanggalKontrak)
       const namaFile = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}.docx`
         .replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
       zip.file(namaFile, blob)
@@ -316,3 +359,4 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
   const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`
   saveAs(zipBlob, `kontrak_perjanjian_${dateStr}.zip`)
 }
+
