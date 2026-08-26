@@ -263,13 +263,20 @@ function consolidateSplitTags(xml) {
  * @returns {object} Struktur XML yang siap direplace dan digabung.
  */
 function extractDocumentParts(xml) {
+  // Normalisasi marker agar tidak case-sensitive dan mentoleransi spasi (misal: {{ #Perjanjian }})
+  let normalizedXml = xml
+    .replace(/\{\{\s*#\s*perjanjian\s*\}\}/gi, '{{#perjanjian}}')
+    .replace(/\{\{\s*\/\s*perjanjian\s*\}\}/gi, '{{/perjanjian}}')
+    .replace(/\{\{\s*#\s*tandatangan\s*\}\}/gi, '{{#tandatangan}}')
+    .replace(/\{\{\s*\/\s*tandatangan\s*\}\}/gi, '{{/tandatangan}}')
+
   const MARKERS = ['{{#perjanjian}}', '{{/perjanjian}}', '{{#tandatangan}}', '{{/tandatangan}}']
-  const hasAny = MARKERS.some(m => xml.includes(m))
+  const hasAny = MARKERS.some(m => normalizedXml.includes(m))
   
   const BODY_OPEN = '<w:body>'
   const BODY_CLOSE = '</w:body>'
-  const bodyOpenEnd = xml.indexOf(BODY_OPEN)
-  const bodyCloseStart = xml.lastIndexOf(BODY_CLOSE)
+  const bodyOpenEnd = normalizedXml.indexOf(BODY_OPEN)
+  const bodyCloseStart = normalizedXml.lastIndexOf(BODY_CLOSE)
   
   if (bodyOpenEnd === -1 || bodyCloseStart === -1) {
     return { hasSections: false, isValid: false }
@@ -326,8 +333,16 @@ function extractDocumentParts(xml) {
   const openTtd  = findMarkerParagraph('{{#tandatangan}}')
   const closeTtd = findMarkerParagraph('{{/tandatangan}}')
 
-  if (!openPer || !closePer || !openTtd || !closeTtd || 
-      !(openPer.pStart < closePer.pEnd && closePer.pEnd <= openTtd.pStart && openTtd.pStart < closeTtd.pEnd)) {
+  let failReason = null
+  if (!openPer) failReason = 'Tag {{#perjanjian}} tidak ditemukan'
+  else if (!closePer) failReason = 'Tag penutup {{/perjanjian}} tidak ditemukan'
+  else if (!openTtd) failReason = 'Tag {{#tandatangan}} tidak ditemukan'
+  else if (!closeTtd) failReason = 'Tag penutup {{/tandatangan}} tidak ditemukan'
+  else if (!(openPer.pStart < closePer.pEnd && closePer.pEnd <= openTtd.pStart && openTtd.pStart < closeTtd.pEnd)) {
+    failReason = 'Urutan tag salah. Pastikan urutannya: {{#perjanjian}} ... {{/perjanjian}} lalu {{#tandatangan}} ... {{/tandatangan}}'
+  }
+
+  if (failReason) {
     // Fallback jika tag tidak lengkap / tidak urut
     const cleanBody = bodyContent
       .split('{{#perjanjian}}').join('')
@@ -336,7 +351,8 @@ function extractDocumentParts(xml) {
       .split('{{/tandatangan}}').join('')
     return {
       isValid: true, hasSections: false, preBody, postBody, sectPr,
-      fullBody: cleanBody, perjanjianBody: null, tandatanganBody: null
+      fullBody: cleanBody, perjanjianBody: null, tandatanganBody: null,
+      failReason
     }
   }
 
@@ -424,7 +440,8 @@ async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak =
       hasSections: false,
       fullBlob: makeBlob(parts.preBody + parts.fullBody + parts.sectPr + parts.postBody),
       perjanjianBlob: null,
-      tandatanganBlob: null
+      tandatanganBlob: null,
+      failReason: parts.failReason
     }
   }
 
@@ -432,7 +449,8 @@ async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak =
     hasSections: true,
     fullBlob: makeBlob(parts.preBody + parts.fullBody + parts.sectPr + parts.postBody),
     perjanjianBlob: makeBlob(parts.preBody + parts.perjanjianBody + parts.sectPr + parts.postBody),
-    tandatanganBlob: makeBlob(parts.preBody + parts.tandatanganBody + parts.sectPr + parts.postBody)
+    tandatanganBlob: makeBlob(parts.preBody + parts.tandatanganBody + parts.sectPr + parts.postBody),
+    failReason: null
   }
 }
 
@@ -463,7 +481,7 @@ export async function downloadSingleContract(item, paperSize = 'f4', tanggalKont
   const result = await generateDocx(item, templateBase64, pihakPertama, tanggalKontrak)
 
   if (documentPart !== 'full' && !result.hasSections) {
-    throw new Error('Template belum memiliki tag section ({{#perjanjian}} dan {{#tandatangan}}). Silakan perbarui template di menu Pengaturan terlebih dahulu.')
+    throw new Error(`Template belum memiliki tag section lengkap: ${result.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template di menu Pengaturan.`)
   }
 
   const baseName = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}`
@@ -501,7 +519,7 @@ async function generateMergedDocx(items, templateBase64, pihakPertama, tanggalKo
   const parts = extractDocumentParts(xml)
   
   if (documentPart !== 'full' && !parts.hasSections) {
-    throw new Error('Template belum memiliki tag section ({{#perjanjian}} dan {{#tandatangan}}). Silakan perbarui template.')
+    throw new Error(`Template belum memiliki tag section lengkap: ${parts.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template.`)
   }
 
   let baseContent = parts.fullBody
@@ -606,7 +624,7 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
       const result = await generateDocx(item, templateCache[key], pihakPertama, tanggalKontrak)
       
       if (documentPart !== 'full' && !result.hasSections) {
-        throw new Error('Template belum memiliki tag section ({{#perjanjian}} dan {{#tandatangan}}). Silakan perbarui template di menu Pengaturan.')
+        throw new Error(`Template belum memiliki tag section lengkap: ${result.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template.`)
       }
 
       const baseName = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}`
