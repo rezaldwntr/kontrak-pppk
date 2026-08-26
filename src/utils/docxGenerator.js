@@ -492,12 +492,20 @@ export async function downloadSingleContract(item, paperSize = 'f4', tanggalKont
     pisahZip.file(`${baseName}_perjanjian.docx`,  result.perjanjianBlob)
     pisahZip.file(`${baseName}_tandatangan.docx`, result.tandatanganBlob)
     const zipBlob = await pisahZip.generateAsync({ type: 'blob' })
-    saveAs(zipBlob, `${baseName}.zip`)
+    saveAs(zipBlob, `${baseName}_pisah.zip`)
   } else {
     let blobToSave = result.fullBlob
-    if (documentPart === 'perjanjian') blobToSave = result.perjanjianBlob
-    if (documentPart === 'tandatangan') blobToSave = result.tandatanganBlob
-    saveAs(blobToSave, `${baseName}.docx`)
+    let nameSuffix = ''
+    if (documentPart === 'perjanjian') {
+      blobToSave = result.perjanjianBlob
+      nameSuffix = '_perjanjian'
+    } else if (documentPart === 'tandatangan') {
+      blobToSave = result.tandatanganBlob
+      nameSuffix = '_tandatangan'
+    } else {
+      nameSuffix = '_utuh'
+    }
+    saveAs(blobToSave, `${baseName}${nameSuffix}.docx`)
   }
 
   return { hasSections: result.hasSections }
@@ -574,6 +582,10 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
   const now = new Date()
   const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`
 
+  let partSuffix = '_utuh'
+  if (documentPart === 'perjanjian') partSuffix = '_perjanjian'
+  if (documentPart === 'tandatangan') partSuffix = '_tandatangan'
+
   if (exportFormat === 'merged') {
     // Generate 1 word file per template key (biasanya cuma 1 key)
     const zip = new JSZip()
@@ -588,13 +600,13 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
         
         if (uniqueKeys.length === 1) {
           // Hanya 1 template, langsung save docx (bukan zip)
-          saveAs(mergedBlob, `kontrak_gabungan_${dateStr}.docx`)
+          saveAs(mergedBlob, `kontrak_gabungan${partSuffix}_${dateStr}.docx`)
           if (onProgress) onProgress(items.length, items.length)
           return { hasSections: true }
         } else {
           // Ada beberapa jenis template (reguler vs paruh waktu), masukkan ke zip
           const suffix = key.includes('paruh') ? 'paruh_waktu' : 'reguler'
-          zip.file(`kontrak_gabungan_${suffix}.docx`, mergedBlob)
+          zip.file(`kontrak_gabungan_${suffix}${partSuffix}.docx`, mergedBlob)
         }
       } catch (e) {
         throw e
@@ -604,7 +616,7 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
     
     if (uniqueKeys.length > 1) {
       const zipBlob = await zip.generateAsync({ type: 'blob' })
-      saveAs(zipBlob, `kontrak_gabungan_${dateStr}.zip`)
+      saveAs(zipBlob, `kontrak_gabungan${partSuffix}_${dateStr}.zip`)
     }
     return { hasSections: true }
   }
@@ -636,9 +648,17 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
         zip.file(`${baseName}_tandatangan.docx`, result.tandatanganBlob)
       } else {
         let blobToSave = result.fullBlob
-        if (documentPart === 'perjanjian') blobToSave = result.perjanjianBlob
-        if (documentPart === 'tandatangan') blobToSave = result.tandatanganBlob
-        zip.file(`${baseName}.docx`, blobToSave)
+        let nameSuffix = ''
+        if (documentPart === 'perjanjian') {
+          blobToSave = result.perjanjianBlob
+          nameSuffix = '_perjanjian'
+        } else if (documentPart === 'tandatangan') {
+          blobToSave = result.tandatanganBlob
+          nameSuffix = '_tandatangan'
+        } else {
+          nameSuffix = '_utuh'
+        }
+        zip.file(`${baseName}${nameSuffix}.docx`, blobToSave)
       }
     } catch (e) {
       console.error(`Error generating doc for ${item['NAMA']}:`, e)
@@ -647,7 +667,7 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
   }
 
   const zipBlob = await zip.generateAsync({ type: 'blob' })
-  saveAs(zipBlob, `kontrak_perjanjian_${dateStr}.zip`)
+  saveAs(zipBlob, `kontrak_batch${partSuffix}_${dateStr}.zip`)
 
   return { hasSections: anySections }
 }
