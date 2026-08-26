@@ -62,18 +62,22 @@
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <label class="paper-option small-opt" :class="{ active: documentPart === 'full' }" @click="documentPart = 'full'">
+              <i class="fa-solid fa-file-contract"></i>
               <span>Kontrak Utuh</span>
               <small class="text-muted">Semua Halaman</small>
             </label>
             <label class="paper-option small-opt" :class="{ active: documentPart === 'perjanjian' }" @click="documentPart = 'perjanjian'">
+              <i class="fa-solid fa-file-lines"></i>
               <span>Isi Perjanjian</span>
               <small class="text-muted">Hanya teks kontrak</small>
             </label>
             <label class="paper-option small-opt" :class="{ active: documentPart === 'tandatangan' }" @click="documentPart = 'tandatangan'">
+              <i class="fa-solid fa-signature"></i>
               <span>Tanda Tangan</span>
               <small class="text-muted">Hanya hlmn penutup</small>
             </label>
             <label class="paper-option small-opt" :class="{ active: documentPart === 'pisah' }" @click="documentPart = 'pisah'">
+              <i class="fa-solid fa-file-export"></i>
               <span>Pisah 2 File</span>
               <small class="text-muted">Isi & TTD terpisah</small>
             </label>
@@ -263,15 +267,17 @@ const handleDownload = async () => {
   filter: grayscale(1);
 }
 .paper-option.small-opt {
-  padding: 10px;
+  padding: 10px 8px;
+  gap: 4px;
 }
 .paper-option.small-opt i {
-  display: none;
+  font-size: 1.25rem;
+  margin-bottom: 2px;
 }
 .paper-option.small-opt span {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 .paper-option.small-opt small {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 </style>
