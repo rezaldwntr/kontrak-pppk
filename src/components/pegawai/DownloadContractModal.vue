@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="modal-backdrop open" style="z-index: 2000;">
-    <div class="modal-container" style="max-width: 520px;">
+    <div class="modal-container responsive-modal">
       <div class="modal-header">
         <h3><i class="fa-solid fa-file-word" style="color: #2563eb;"></i> Unduh Perjanjian Kerja</h3>
         <button class="close-btn" @click="emit('close')"><i class="fa-solid fa-xmark"></i></button>
@@ -314,7 +314,21 @@ const handleDownload = async () => {
   gap: 12px;
 }
 
+.responsive-modal {
+  width: 95%;
+  max-width: 700px;
+}
+
+@media (max-width: 600px) {
+  .responsive-modal {
+    max-width: 520px;
+  }
+}
+
 @media (max-width: 480px) {
+  .responsive-modal {
+    max-width: 100%;
+  }
   .options-container {
     flex-direction: column;
   }
