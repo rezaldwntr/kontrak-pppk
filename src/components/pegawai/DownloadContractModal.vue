@@ -315,11 +315,11 @@ const handleDownload = async () => {
 }
 
 .responsive-modal {
-  width: 95%;
-  max-width: 760px;
+  width: clamp(520px, 60vw, 850px);
+  max-width: 95vw;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   .grid-options {
     grid-template-columns: 1fr 1fr;
   }
@@ -327,7 +327,7 @@ const handleDownload = async () => {
 
 @media (max-width: 600px) {
   .responsive-modal {
-    max-width: 520px;
+    width: 95vw;
   }
 }
 
