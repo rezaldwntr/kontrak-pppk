@@ -280,15 +280,15 @@ const handleDownload = async () => {
   filter: grayscale(1);
 }
 .paper-option.small-opt {
-  flex-direction: row;
-  text-align: left;
-  padding: 12px 14px;
-  gap: 12px;
-  align-items: flex-start;
+  flex-direction: column;
+  text-align: center;
+  padding: 12px 10px;
+  gap: 6px;
+  align-items: center;
 }
 .paper-option.small-opt i {
   font-size: 1.35rem;
-  margin-top: 3px;
+  margin-top: 0;
 }
 .paper-option.small-opt .opt-text {
   display: flex;
@@ -296,10 +296,10 @@ const handleDownload = async () => {
   gap: 2px;
 }
 .paper-option.small-opt span {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 .paper-option.small-opt small {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 .options-container {
@@ -310,13 +310,19 @@ const handleDownload = async () => {
 
 .grid-options {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
 .responsive-modal {
   width: 95%;
-  max-width: 700px;
+  max-width: 760px;
+}
+
+@media (max-width: 700px) {
+  .grid-options {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 600px) {
