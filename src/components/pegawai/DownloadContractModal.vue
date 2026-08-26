@@ -25,7 +25,7 @@
         <!-- Pilih ukuran kertas -->
         <div class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Ukuran Kertas</label>
-          <div style="display: flex; gap: 12px;">
+          <div class="options-container">
             <label class="paper-option" :class="{ active: selectedPaper === 'f4' }" @click="selectedPaper = 'f4'">
               <i class="fa-solid fa-file-alt"></i>
               <span>F4 / Legal</span>
@@ -42,7 +42,7 @@
         <!-- Mode Ekspor (Hanya untuk lebih dari 1 pegawai) -->
         <div v-if="items.length > 1" class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Format Output (Batch)</label>
-          <div style="display: flex; gap: 12px;">
+          <div class="options-container">
             <label class="paper-option" :class="{ active: exportFormat === 'merged', disabled: documentPart === 'pisah' }" @click="documentPart !== 'pisah' && (exportFormat = 'merged')">
               <i class="fa-solid fa-file-word"></i>
               <span>1 File Gabungan</span>
@@ -60,7 +60,7 @@
         <div class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Bagian Dokumen (Isi)</label>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="grid-options">
             <label class="paper-option small-opt" :class="{ active: documentPart === 'full' }" @click="documentPart = 'full'">
               <i class="fa-solid fa-file-contract"></i>
               <div class="opt-text">
@@ -300,5 +300,26 @@ const handleDownload = async () => {
 }
 .paper-option.small-opt small {
   font-size: 0.75rem;
+}
+
+.options-container {
+  display: flex;
+  gap: 12px;
+  flex-direction: row;
+}
+
+.grid-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .options-container {
+    flex-direction: column;
+  }
+  .grid-options {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
