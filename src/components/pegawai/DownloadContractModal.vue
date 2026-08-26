@@ -60,26 +60,34 @@
         <div class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Bagian Dokumen (Isi)</label>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
             <label class="paper-option small-opt" :class="{ active: documentPart === 'full' }" @click="documentPart = 'full'">
               <i class="fa-solid fa-file-contract"></i>
-              <span>Kontrak Utuh</span>
-              <small class="text-muted">Semua Halaman</small>
+              <div class="opt-text">
+                <span>Kontrak Utuh</span>
+                <small class="text-muted">Semua Halaman</small>
+              </div>
             </label>
             <label class="paper-option small-opt" :class="{ active: documentPart === 'perjanjian' }" @click="documentPart = 'perjanjian'">
               <i class="fa-solid fa-file-lines"></i>
-              <span>Isi Perjanjian</span>
-              <small class="text-muted">Hanya teks kontrak</small>
+              <div class="opt-text">
+                <span>Isi Perjanjian</span>
+                <small class="text-muted">Hanya teks kontrak</small>
+              </div>
             </label>
             <label class="paper-option small-opt" :class="{ active: documentPart === 'tandatangan' }" @click="documentPart = 'tandatangan'">
               <i class="fa-solid fa-signature"></i>
-              <span>Tanda Tangan</span>
-              <small class="text-muted">Hanya hlmn penutup</small>
+              <div class="opt-text">
+                <span>Tanda Tangan</span>
+                <small class="text-muted">Hanya hlmn penutup</small>
+              </div>
             </label>
             <label class="paper-option small-opt" :class="{ active: documentPart === 'pisah' }" @click="documentPart = 'pisah'">
               <i class="fa-solid fa-file-export"></i>
-              <span>Pisah 2 File</span>
-              <small class="text-muted">Isi & TTD terpisah</small>
+              <div class="opt-text">
+                <span>Pisah 2 File</span>
+                <small class="text-muted">Isi & TTD terpisah</small>
+              </div>
             </label>
           </div>
 
@@ -229,17 +237,18 @@ const handleDownload = async () => {
 <style scoped>
 .paper-option {
   flex: 1;
-  border: 2px solid var(--border-color);
-  border-radius: 10px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
   padding: 14px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   user-select: none;
+  background: var(--bg-primary, #ffffff);
 }
 .paper-option i {
   font-size: 1.6rem;
@@ -252,14 +261,18 @@ const handleDownload = async () => {
 }
 .paper-option.active {
   border-color: #2563eb;
-  background: rgba(37, 99, 235, 0.07);
+  background: rgba(37, 99, 235, 0.04);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  transform: translateY(-1px);
 }
 .paper-option.active i {
   color: #2563eb;
 }
-.paper-option:hover:not(.active) {
+.paper-option:hover:not(.active):not(.disabled) {
   border-color: var(--primary-color);
-  background: rgba(var(--primary-color-rgb), 0.04);
+  background: rgba(var(--primary-color-rgb), 0.02);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
 }
 .paper-option.disabled {
   opacity: 0.5;
@@ -267,17 +280,25 @@ const handleDownload = async () => {
   filter: grayscale(1);
 }
 .paper-option.small-opt {
-  padding: 10px 8px;
-  gap: 4px;
+  flex-direction: row;
+  text-align: left;
+  padding: 12px 14px;
+  gap: 12px;
+  align-items: flex-start;
 }
 .paper-option.small-opt i {
-  font-size: 1.25rem;
-  margin-bottom: 2px;
+  font-size: 1.35rem;
+  margin-top: 3px;
+}
+.paper-option.small-opt .opt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .paper-option.small-opt span {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
 }
 .paper-option.small-opt small {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 </style>
