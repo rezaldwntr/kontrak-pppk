@@ -18,9 +18,13 @@
     <!-- Tab: Aktif, Akan Pensiun, Sudah Pensiun -->
     <div v-if="activeTab !== 'tidak-diperpanjang'" class="card" style="padding: 1.5rem;">
       <PegawaiTable
+        :key="activeTab"
         :allowBatchDelete="true"
         :allowBatchDownload="true"
         :customData="filteredData"
+        :hideStatusPppkFilter="['aktif', 'akan-pensiun', 'sudah-pensiun'].includes(activeTab)"
+        :hideStatusKontrakFilter="['akan-pensiun', 'sudah-pensiun'].includes(activeTab)"
+        :hidePerpanjanganFilter="['akan-pensiun', 'sudah-pensiun'].includes(activeTab)"
         @view="handleView"
         @edit="handleEdit"
         @print="handlePrint"

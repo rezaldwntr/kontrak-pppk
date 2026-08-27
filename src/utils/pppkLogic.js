@@ -135,12 +135,12 @@ export const getPegawaiCategory = (item) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (statusText === "Kontrak Masih Berlaku" || statusText === "Kontrak Hampir Habis") {
-        return "aktif";
-    }
     if (isBup) {
         // BUP: cek apakah tanggal pensiun sudah lewat atau belum
         return rawDate && rawDate.getTime() >= today.getTime() ? "akan-pensiun" : "sudah-pensiun";
+    }
+    if (statusText === "Kontrak Masih Berlaku" || statusText === "Kontrak Hampir Habis") {
+        return "aktif";
     }
     if (statusText === "Kontrak Habis") {
         return "tidak-diperpanjang";

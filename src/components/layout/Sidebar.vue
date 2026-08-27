@@ -15,38 +15,10 @@
         <i class="fa-solid fa-chart-pie"></i>
         <span>Dashboard</span>
       </router-link>
-
-      <!-- Data PPPK Accordion -->
-      <div v-if="authStore.user" class="menu-group">
-        <div
-          class="menu-item menu-group-header"
-          :class="{ active: isPegawaiRoute }"
-          @click="togglePegawaiMenu"
-        >
-          <i class="fa-solid fa-users"></i>
-          <span>Data PPPK</span>
-          <i class="fa-solid chevron-icon" :class="pegawaiMenuOpen ? 'fa-chevron-down' : 'fa-chevron-right'" style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;"></i>
-        </div>
-        <div v-if="pegawaiMenuOpen" class="sub-menu">
-          <router-link to="/data-pegawai/aktif" class="menu-item sub-menu-item" active-class="active">
-            <i class="fa-solid fa-users"></i>
-            <span>PPPK Aktif</span>
-          </router-link>
-          <router-link to="/data-pegawai/akan-pensiun" class="menu-item sub-menu-item" active-class="active">
-            <i class="fa-solid fa-hourglass-half"></i>
-            <span>Akan Pensiun (BUP)</span>
-          </router-link>
-          <router-link to="/data-pegawai/sudah-pensiun" class="menu-item sub-menu-item" active-class="active">
-            <i class="fa-solid fa-medal"></i>
-            <span>Sudah Pensiun</span>
-          </router-link>
-          <router-link to="/data-pegawai/tidak-diperpanjang" class="menu-item sub-menu-item" active-class="active">
-            <i class="fa-solid fa-user-xmark"></i>
-            <span>Tidak Diperpanjang</span>
-          </router-link>
-        </div>
-      </div>
-
+      <router-link to="/data-pegawai" class="menu-item" active-class="active" v-if="authStore.user">
+        <i class="fa-solid fa-users"></i>
+        <span>Data PPPK</span>
+      </router-link>
       <router-link to="/perpanjangan" class="menu-item" active-class="active" v-if="authStore.user">
         <i class="fa-solid fa-file-signature"></i>
         <span>Perpanjangan Kontrak</span>
@@ -85,33 +57,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const router = useRouter()
-const route = useRoute()
 const isDarkTheme = ref(true)
-
-// Accordion state
-const pegawaiMenuOpen = ref(false)
-const isPegawaiRoute = computed(() => route.path.startsWith('/data-pegawai'))
-
-// Auto-expand saat berada di rute data-pegawai
-watch(isPegawaiRoute, (val) => {
-  if (val) pegawaiMenuOpen.value = true
-}, { immediate: true })
-
-const togglePegawaiMenu = () => {
-  pegawaiMenuOpen.value = !pegawaiMenuOpen.value
-  if (pegawaiMenuOpen.value) {
-    // Navigasi ke sub-rute default jika baru dibuka
-    if (!isPegawaiRoute.value) {
-      router.push('/data-pegawai/aktif')
-    }
-  }
-}
 
 onMounted(() => {
   isDarkTheme.value = document.body.getAttribute('data-theme') !== 'light'
@@ -132,22 +84,4 @@ const handleLogout = async () => {
 
 <style scoped>
 /* Inherits from styles.css */
-.menu-group-header {
-  cursor: pointer;
-  user-select: none;
-}
-.sub-menu {
-  padding-left: 12px;
-  border-left: 2px solid var(--border-color);
-  margin-left: 16px;
-  margin-bottom: 4px;
-}
-.sub-menu-item {
-  font-size: 0.88rem;
-  padding: 7px 12px;
-  opacity: 0.85;
-}
-.sub-menu-item.active {
-  opacity: 1;
-}
 </style>

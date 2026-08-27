@@ -28,21 +28,21 @@
                         <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
-                <div class="filter-group">
+                <div class="filter-group" v-if="!hideStatusKontrakFilter">
                     <label>Status Kontrak</label>
                     <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
                         <option value="all" v-if="statusOptions.length !== 1">Semua Status</option>
                         <option v-for="opt in statusOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
-                <div class="filter-group" v-if="!onlyNeedExtension">
+                <div class="filter-group" v-if="!onlyNeedExtension && !hideStatusPppkFilter">
                     <label>Status PPPK</label>
                     <select v-model="statusPppkFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
                         <option value="all" v-if="statusPppkOptions.length !== 1">Semua Status PPPK</option>
                         <option v-for="opt in statusPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
                 </div>
-                <div class="filter-group" v-if="!onlyNeedExtension">
+                <div class="filter-group" v-if="!onlyNeedExtension && !hidePerpanjanganFilter">
                     <label>Perpanjangan Kontrak</label>
                     <select v-model="perpanjanganFilter" @change="handleSearch" class="form-control" style="min-width: 220px;">
                         <option value="all">Semua Perpanjangan</option>
@@ -155,7 +155,10 @@ const props = defineProps({
   allowBatchDelete: { type: Boolean, default: false },
   allowBatchDownload: { type: Boolean, default: false },
   onlyNeedExtension: { type: Boolean, default: false },
-  customData: { type: Array, default: null }
+  customData: { type: Array, default: null },
+  hideStatusPppkFilter: { type: Boolean, default: false },
+  hideStatusKontrakFilter: { type: Boolean, default: false },
+  hidePerpanjanganFilter: { type: Boolean, default: false }
 })
 
 const authStore = useAuthStore()
