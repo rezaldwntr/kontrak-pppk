@@ -11,6 +11,10 @@ const routes = [
   },
   {
     path: '/data-pegawai',
+    redirect: '/data-pegawai/aktif',
+  },
+  {
+    path: '/data-pegawai/:kategori',
     name: 'pegawai',
     component: () => import('../views/PegawaiView.vue'),
     meta: { requiresAuth: true, title: 'Data Pegawai PPPK', subtitle: 'Manajemen profil lengkap kepegawaian, filter data, dan status keaktifan' }

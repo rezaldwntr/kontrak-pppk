@@ -121,3 +121,30 @@ export const getStatusPppk = (item) => {
     
     return manualStatus || "Aktif";
 };
+
+/**
+ * Mengembalikan kategori tab untuk seorang pegawai:
+ * - 'aktif'             : kontrak masih berlaku / hampir habis
+ * - 'akan-pensiun'      : terkena BUP tapi tanggal BUP belum terlewat
+ * - 'sudah-pensiun'     : terkena BUP dan tanggal BUP sudah terlewat
+ * - 'tidak-diperpanjang': kontrak habis (bukan karena BUP)
+ */
+export const getPegawaiCategory = (item) => {
+    const result = calculateContractPeriod(item);
+    const { statusText, isBup, rawDate } = result;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (statusText === "Kontrak Masih Berlaku" || statusText === "Kontrak Hampir Habis") {
+        return "aktif";
+    }
+    if (isBup) {
+        // BUP: cek apakah tanggal pensiun sudah lewat atau belum
+        return rawDate && rawDate.getTime() >= today.getTime() ? "akan-pensiun" : "sudah-pensiun";
+    }
+    if (statusText === "Kontrak Habis") {
+        return "tidak-diperpanjang";
+    }
+    // Fallback: anggap aktif
+    return "aktif";
+};

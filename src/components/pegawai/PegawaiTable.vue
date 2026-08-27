@@ -154,7 +154,8 @@ const props = defineProps({
   allowBatchExtend: { type: Boolean, default: false },
   allowBatchDelete: { type: Boolean, default: false },
   allowBatchDownload: { type: Boolean, default: false },
-  onlyNeedExtension: { type: Boolean, default: false }
+  onlyNeedExtension: { type: Boolean, default: false },
+  customData: { type: Array, default: null }
 })
 
 const authStore = useAuthStore()
@@ -196,7 +197,7 @@ const handleUnorIndukChange = () => {
 
 // Get full item objects from selectedIds
 const getSelectedItems = () => {
-  return pegawaiStore.pppkData.filter(item => selectedIds.value.includes(item['PNS ID']))
+  return baseData.value.filter(item => selectedIds.value.includes(item['PNS ID']))
 }
 
 // getStatusPppk is imported from pppkLogic.js
@@ -209,7 +210,7 @@ const getStatusPppkClass = (status) => {
 
 const filteredData = computed(() => {
   const query = searchQuery.value.toLowerCase()
-  return pegawaiStore.pppkData.filter(item => {
+  return baseData.value.filter(item => {
     let matchQuery = true
     if (query !== '') {
       matchQuery = Object.values(item).some(val => 
@@ -297,13 +298,15 @@ const formatIndoDate = (dateStr) => {
 }
 
 const baseData = computed(() => {
+  // Jika ada customData (mode tab terfilter dari parent), gunakan itu
+  const source = props.customData !== null ? props.customData : pegawaiStore.pppkData
   if (props.onlyNeedExtension) {
-    return pegawaiStore.pppkData.filter(item => {
+    return source.filter(item => {
       const contractStatus = calculateContractPeriod(item).statusText;
       return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus);
     });
   }
-  return pegawaiStore.pppkData;
+  return source;
 });
 
 const jenisPppkOptions = computed(() => {
