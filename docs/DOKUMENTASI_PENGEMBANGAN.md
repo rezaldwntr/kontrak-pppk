@@ -16,6 +16,20 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - Modal unduhan responsif dengan lebar dinamis menggunakan CSS `clamp()`.
 - Opsi "Bagian Dokumen (Isi)" tampil 4 kolom horizontal di desktop, 1 kolom di HP.
 - Tag section `{{#perjanjian}}` dan `{{#tandatangan}}` dengan pesan error informatif saat tag tidak lengkap.
+
+## [v3.1.0-staging] - 2026-08-27
+
+### Ditambahkan
+- **Sub-Menu Data PPPK**: Halaman Data PPPK kini terbagi menjadi 4 sub-kategori otomatis berdasarkan status kepegawaian:
+  - **PPPK Aktif**: Pegawai dengan kontrak masih berlaku atau hampir habis.
+  - **Akan Pensiun (BUP)**: Pegawai yang terkena Batas Usia Pensiun namun tanggal BUP-nya belum terlewat.
+  - **Sudah Pensiun**: Pegawai dengan BUP yang sudah terlewat.
+  - **Tidak Diperpanjang**: Pegawai dengan kontrak habis (bukan karena BUP).
+- **Accordion Sidebar**: Menu "Data PPPK" di sidebar kini memiliki sub-menu accordion yang dapat dibuka/tutup, menampilkan 4 pilihan kategori di bawahnya. Accordion otomatis terbuka saat pengguna berada di halaman data-pegawai.
+- **Tab-Bar di Halaman**: Navigasi antar kategori juga tersedia sebagai tab horizontal di atas tabel, dengan badge jumlah data per kategori.
+- **Keterangan Inline "Tidak Diperpanjang"**: Pada tab "Tidak Diperpanjang", admin dapat mengisi alasan kenapa kontrak tidak diperpanjang langsung dari tabel (klik ikon pensil), tanpa perlu masuk ke halaman detail. Alasan tersimpan ke field `ALASAN_TIDAK_DIPERPANJANG` di Firestore.
+- **Fungsi `getPegawaiCategory()`**: Menambahkan fungsi baru di `pppkLogic.js` yang mengkategorikan setiap pegawai ke salah satu dari 4 kategori berdasarkan hasil kalkulasi kontrak dan BUP.
+- **Prop `customData` di PegawaiTable**: Komponen PegawaiTable kini mendukung prop `customData` untuk menerima data yang sudah tersaring dari parent, sehingga filter tabel berjalan hanya di atas subset data yang relevan.
 ## [v2.2.0-staging] - 2026-08-24
 
 ### Ditambahkan
@@ -92,6 +106,20 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - Modal unduhan responsif dengan lebar dinamis menggunakan CSS `clamp()`.
 - Opsi "Bagian Dokumen (Isi)" tampil 4 kolom horizontal di desktop, 1 kolom di HP.
 - Tag section `{{#perjanjian}}` dan `{{#tandatangan}}` dengan pesan error informatif saat tag tidak lengkap.
+
+## [v3.1.0-staging] - 2026-08-27
+
+### Ditambahkan
+- **Sub-Menu Data PPPK**: Halaman Data PPPK kini terbagi menjadi 4 sub-kategori otomatis berdasarkan status kepegawaian:
+  - **PPPK Aktif**: Pegawai dengan kontrak masih berlaku atau hampir habis.
+  - **Akan Pensiun (BUP)**: Pegawai yang terkena Batas Usia Pensiun namun tanggal BUP-nya belum terlewat.
+  - **Sudah Pensiun**: Pegawai dengan BUP yang sudah terlewat.
+  - **Tidak Diperpanjang**: Pegawai dengan kontrak habis (bukan karena BUP).
+- **Accordion Sidebar**: Menu "Data PPPK" di sidebar kini memiliki sub-menu accordion yang dapat dibuka/tutup, menampilkan 4 pilihan kategori di bawahnya. Accordion otomatis terbuka saat pengguna berada di halaman data-pegawai.
+- **Tab-Bar di Halaman**: Navigasi antar kategori juga tersedia sebagai tab horizontal di atas tabel, dengan badge jumlah data per kategori.
+- **Keterangan Inline "Tidak Diperpanjang"**: Pada tab "Tidak Diperpanjang", admin dapat mengisi alasan kenapa kontrak tidak diperpanjang langsung dari tabel (klik ikon pensil), tanpa perlu masuk ke halaman detail. Alasan tersimpan ke field `ALASAN_TIDAK_DIPERPANJANG` di Firestore.
+- **Fungsi `getPegawaiCategory()`**: Menambahkan fungsi baru di `pppkLogic.js` yang mengkategorikan setiap pegawai ke salah satu dari 4 kategori berdasarkan hasil kalkulasi kontrak dan BUP.
+- **Prop `customData` di PegawaiTable**: Komponen PegawaiTable kini mendukung prop `customData` untuk menerima data yang sudah tersaring dari parent, sehingga filter tabel berjalan hanya di atas subset data yang relevan.
 ## [v2.2.0-staging] - 2026-08-24
 
 ### Ditambahkan
@@ -131,6 +159,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - `{{UNOR_NAMA}}` kini dipetakan ke kolom unit organisasi/OPD (`UNOR NAMA`, `NAMA UNOR`, `OPD`, `UNIT ORGANISASI`).
   - `{{UNIT_KERJA}}` kini dipetakan ke kolom unit kerja operasional (`UNIT KERJA`, `NAMA UNIT KERJA`), berbeda sumber dari `UNOR_NAMA`.
   - `{{GAJI_BARU}}` = format Rupiah lengkap (misal: `Rp 3.200.000`).
+
 
 
 
