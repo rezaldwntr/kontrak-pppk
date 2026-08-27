@@ -1,7 +1,21 @@
-# Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
+﻿# Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+
+## [v3.0.0] - 2026-08-27 RILIS KE PRODUCTION
+
+### Deployment
+- **Naik ke Production**: Branch `staging` berhasil dipindahkan ke `main`. Versi baru kini aktif di URL production Vercel.
+- **Arsip Versi Lama**: Versi production lama disimpan permanen di branch `archive/v1-production` di GitHub. Dapat di-restore kapanpun.
+- **Strategi 2 Firebase**: Tetap dipertahankan 2 proyek Firebase terpisah (Production dan Staging) agar eksperimen di preview tidak mempengaruhi data nyata.
+
+### Ditambahkan
+- **Script Sinkronisasi Firebase** (`scripts/sync-firebase.js`): Salin data Firestore dari Production ke Staging kapanpun dibutuhkan. Cara pakai: isi `.env.sync` lalu jalankan `node scripts/sync-firebase.js`.
+- Unduhan dokumen dengan penamaan file otomatis berdasarkan bagian yang dipilih (`_utuh`, `_perjanjian`, `_tandatangan`).
+- Modal unduhan responsif dengan lebar dinamis menggunakan CSS `clamp()`.
+- Opsi "Bagian Dokumen (Isi)" tampil 4 kolom horizontal di desktop, 1 kolom di HP.
+- Tag section `{{#perjanjian}}` dan `{{#tandatangan}}` dengan pesan error informatif saat tag tidak lengkap.
 ## [v2.2.0-staging] - 2026-08-24
 
 ### Ditambahkan
@@ -53,7 +67,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **UI Spacing**: Memperbaiki jarak (*margin*) yang terlalu sempit antara deretan Tab dan kolom isian di bawahnya pada `DetailModal.vue`.
 - **Sinkronisasi UI Detail Data**: Menambal celah (*bug*) di mana tabel utama sudah menampilkan status PPPK yang benar (misal: "Tidak Diperpanjang"), namun saat modal "Detail Data" dibuka, pilihan pada *dropdown* masih menampilkan "Aktif" (karena data mentah dari database belum ditimpa logika otomatis). Kini, ketika modal dibuka, formulir akan otomatis menyinkronkan status tersebut sesuai perhitungan terkini sebelum ditampilkan ke pengguna.
 - **Keselarasan Data Global (Dashboard & Ekspor)**: Melakukan refaktor arsitektur dengan memusatkan logika `calculateContractPeriod` dan `getStatusPppk` ke dalam berkas utilitas tunggal (`pppkLogic.js`). Hal ini memastikan bahwa data statistik di halaman Dashboard dan data yang diekspor ke Excel akan *100% selaras* dengan status perhitungan *real-time* yang tampil pada Tabel Pegawai, menghindari perbedaan angka akibat logika perhitungan yang terpisah.
-- **Optimasi Performa INP (Interaction to Next Paint)**: Mengatasi peringatan *INP Issue* (jeda UI panjang/mampet) saat menyimpan atau menghapus data. Sebelumnya, proses serialisasi JSON dan kompresi `LZString` untuk ribuan data dilakukan secara sinkron langsung setelah tombol diklik, menyebabkan antarmuka "membeku" (*freeze*) selama ±800ms. Solusi yang diterapkan adalah menyisipkan jeda *thread* (`setTimeout`) agar sistem sempat menutup modal dan menampilkan animasi "*Loading...*" ke layar pengguna sebelum memulai pekerjaan komputasi berat di belakang layar.
+- **Optimasi Performa INP (Interaction to Next Paint)**: Mengatasi peringatan *INP Issue* (jeda UI panjang/mampet) saat menyimpan atau menghapus data. Sebelumnya, proses serialisasi JSON dan kompresi `LZString` untuk ribuan data dilakukan secara sinkron langsung setelah tombol diklik, menyebabkan antarmuka "membeku" (*freeze*) selama Â±800ms. Solusi yang diterapkan adalah menyisipkan jeda *thread* (`setTimeout`) agar sistem sempat menutup modal dan menampilkan animasi "*Loading...*" ke layar pengguna sebelum memulai pekerjaan komputasi berat di belakang layar.
 - **Filter "Perpanjangan Kontrak" Dinamis**: Menambahkan fitur filter baru pada tabel Pegawai. Pilihan *dropdown* ini dibangkitkan secara otomatis dengan memindai seluruh data pegawai dan mengelompokkannya berdasarkan Tanggal TMT Perpanjangan yang baru. Jika dalam satu tahun terdapat lebih dari satu tanggal TMT yang berbeda, sistem akan mengurutkannya secara kronologis dan otomatis membubuhi label **Tahap 1**, **Tahap 2**, dst.
 - **Konsistensi Data Grafik Dasbor**: Mengatasi masalah perbedaan jumlah orang pada grafik *Jadwal Perpanjangan* di *Dashboard* dengan filter data tabel. Perbedaan angka tersebut (misal: Dasbor 738 vs Tabel 734) terjadi karena sebelumnya grafik di *Dashboard* masih menghitung pegawai yang akan pensiun (BUP) atau meninggal di tahun tersebut. Kini, algoritma di grafik *Dashboard* telah disempurnakan agar selaras 100% dengan tabel: mengabaikan BUP/Meninggal, dan menghitung berdasarkan Tahun TMT Perpanjangan yang baru.
 - **Otomatisasi & Proteksi Kolom Detail Data**:
@@ -64,6 +78,20 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 ---
 
+
+## [v3.0.0] - 2026-08-27 RILIS KE PRODUCTION
+
+### Deployment
+- **Naik ke Production**: Branch `staging` berhasil dipindahkan ke `main`. Versi baru kini aktif di URL production Vercel.
+- **Arsip Versi Lama**: Versi production lama disimpan permanen di branch `archive/v1-production` di GitHub. Dapat di-restore kapanpun.
+- **Strategi 2 Firebase**: Tetap dipertahankan 2 proyek Firebase terpisah (Production dan Staging) agar eksperimen di preview tidak mempengaruhi data nyata.
+
+### Ditambahkan
+- **Script Sinkronisasi Firebase** (`scripts/sync-firebase.js`): Salin data Firestore dari Production ke Staging kapanpun dibutuhkan. Cara pakai: isi `.env.sync` lalu jalankan `node scripts/sync-firebase.js`.
+- Unduhan dokumen dengan penamaan file otomatis berdasarkan bagian yang dipilih (`_utuh`, `_perjanjian`, `_tandatangan`).
+- Modal unduhan responsif dengan lebar dinamis menggunakan CSS `clamp()`.
+- Opsi "Bagian Dokumen (Isi)" tampil 4 kolom horizontal di desktop, 1 kolom di HP.
+- Tag section `{{#perjanjian}}` dan `{{#tandatangan}}` dengan pesan error informatif saat tag tidak lengkap.
 ## [v2.2.0-staging] - 2026-08-24
 
 ### Ditambahkan
@@ -78,7 +106,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 ## [v2.1.0-staging] - 2026-08-24
 
-### Diperbaiki — Fitur Generate Dokumen Word (Unduh Perjanjian Kerja)
+### Diperbaiki â€” Fitur Generate Dokumen Word (Unduh Perjanjian Kerja)
 
 - **Input Manual Tanggal Penandatanganan Kontrak**: Sebelumnya, tag `{{KONTRAK_HARI}}`, `{{KONTRAK_TANGGAL_TERBILANG}}`, `{{KONTRAK_BULAN}}`, dan `{{KONTRAK_TAHUN_TERBILANG}}` diisi otomatis dari TMT Awal. Kini, modal "Unduh Perjanjian Kerja" (`DownloadContractModal.vue`) dilengkapi **date picker** untuk memilih tanggal penandatanganan kontrak secara manual oleh user. Nilai yang diisi ke dalam dokumen mengikuti pilihan user, bukan TMT. Jika tanggal tidak dipilih, field di dokumen akan kosong dengan peringatan kuning di UI.
 
@@ -87,7 +115,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - `{{KONTRAK_HARI}}`, `{{KONTRAK_TANGGAL_TERBILANG}}`, `{{KONTRAK_BULAN}}`, `{{KONTRAK_TAHUN_TERBILANG}}` kini di-*uppercase* secara otomatis.
 
 - **Rename Tag TMT**: Tag `{{TMT_AWAL_BARU}}` diubah menjadi `{{TMT_AWAL_AKTIF}}` dan `{{TMT_AKHIR_BARU}}` menjadi `{{TMT_AKHIR_AKTIF}}` untuk memperjelas bahwa yang dimaksud adalah TMT *kontrak yang sedang aktif*.
-  > ⚠️ **Perlu update template Word**: Ganti `{{TMT_AWAL_BARU}}` → `{{TMT_AWAL_AKTIF}}` dan `{{TMT_AKHIR_BARU}}` → `{{TMT_AKHIR_AKTIF}}` di file template `.docx`.
+  > âš ï¸ **Perlu update template Word**: Ganti `{{TMT_AWAL_BARU}}` â†’ `{{TMT_AWAL_AKTIF}}` dan `{{TMT_AKHIR_BARU}}` â†’ `{{TMT_AKHIR_AKTIF}}` di file template `.docx`.
 
 - **Perbaikan Mapping Field yang Tidak Muncul**:
   - `{{TEMPAT_TGL_LAHIR}}`: Menambahkan dukungan untuk field `TEMPAT LAHIR NAMA` (nama standar dari export data BKN/SIASN) di samping `TEMPAT LAHIR`, `TEMPAT_LAHIR`, dan `KOTA LAHIR`.
@@ -97,11 +125,12 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - `{{GAJI_BARU}}` & `{{GAJI_TERBILANG}}`: Jika nilai gaji pokok belum disimpan secara manual di database, sistem kini secara cerdas menghitung otomatis nominal gaji pokok berdasarkan Golongan dan Masa Kerja (MKG) sesuai tabel Perpres No. 11 Tahun 2024 via `calculateGajiFromItem(item)`. Dengan demikian, nominal tidak akan lagi `Rp 0` dan terbilang tidak akan kosong.
 
 - **Penghapusan Tag yang Tidak Diperlukan**: Tag `{{NO_SK_BARU}}`, `{{TGL_SK_BARU}}`, `{{NIK_PEGAWAI}}`, dan `{{GAJI_BARU_ANGKA}}` dihapus dari `buildTagData` di `docxGenerator.js` dan tabel referensi Pengaturan karena sudah tidak relevan / redundan (cukup menggunakan `{{GAJI_BARU}}` untuk format Rupiah lengkap).
-  > ⚠️ Hapus juga tag-tag tersebut dari template Word jika masih ada.
+  > âš ï¸ Hapus juga tag-tag tersebut dari template Word jika masih ada.
 
 - **Klarifikasi Tag Ambigu**:
   - `{{UNOR_NAMA}}` kini dipetakan ke kolom unit organisasi/OPD (`UNOR NAMA`, `NAMA UNOR`, `OPD`, `UNIT ORGANISASI`).
   - `{{UNIT_KERJA}}` kini dipetakan ke kolom unit kerja operasional (`UNIT KERJA`, `NAMA UNIT KERJA`), berbeda sumber dari `UNOR_NAMA`.
   - `{{GAJI_BARU}}` = format Rupiah lengkap (misal: `Rp 3.200.000`).
+
 
 
