@@ -309,8 +309,14 @@ function extractDocumentParts(xml) {
   }
 
   function findMarkerParagraph(marker) {
-    const markerIdx = bodyContent.indexOf(marker)
-    if (markerIdx === -1) return null
+    const regexStr = marker.split('').map(char => {
+      if (['{', '}', '/', '#'].includes(char)) return '\\' + char;
+      return char;
+    }).join('(?:<[^>]+>)*');
+    const regex = new RegExp(regexStr);
+    const match = bodyContent.match(regex);
+    if (!match) return null;
+    const markerIdx = match.index;
     const before = bodyContent.substring(0, markerIdx)
     let pStart = -1, searchPos = 0
     while (searchPos < before.length) {
