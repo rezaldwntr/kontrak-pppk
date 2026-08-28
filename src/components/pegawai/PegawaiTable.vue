@@ -114,7 +114,7 @@
                         </td>
                         <td v-if="!isBupTab">{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
                         <td v-if="!isBupTab">{{ calculateContractPeriod(item).endDateStr }}</td>
-                        <td v-if="isBupTab">{{ calculateContractPeriod(item).endDateStr }}</td>
+                        <td v-if="isBupTab">{{ getTmtPensiunStr(calculateContractPeriod(item).rawDate) }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>{{ cleanUnorName(item["UNOR NAMA"]) }}</td>
                         <td>
@@ -293,6 +293,16 @@ const formatIndoDate = (dateStr) => {
     const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][startDate.getMonth()];
     const d = startDate.getDate();
     return `${d} ${mStr} ${y}`;
+}
+
+const getTmtPensiunStr = (rawDate) => {
+  if (!rawDate || isNaN(rawDate.getTime())) return '-';
+  const tmtPensiun = new Date(rawDate);
+  tmtPensiun.setDate(tmtPensiun.getDate() + 1);
+  const y = tmtPensiun.getFullYear();
+  const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][tmtPensiun.getMonth()];
+  const d = tmtPensiun.getDate();
+  return `${d} ${mStr} ${y}`;
 }
 
 const baseData = computed(() => {
