@@ -190,13 +190,25 @@ const tabCounts = computed(() => {
 })
 
 const filteredData = computed(() => {
-  return pegawaiStore.pppkData.filter(item => {
+  let data = pegawaiStore.pppkData.filter(item => {
     const cat = getPegawaiCategory(item)
     if (activeTab.value === 'aktif') {
       return cat === 'aktif' || cat === 'akan-pensiun'
     }
     return cat === activeTab.value
   })
+
+  if (activeTab.value === 'akan-pensiun') {
+    data.sort((a, b) => {
+      const pA = calculateContractPeriod(a)
+      const pB = calculateContractPeriod(b)
+      const tA = pA.rawDate ? pA.rawDate.getTime() : Infinity
+      const tB = pB.rawDate ? pB.rawDate.getTime() : Infinity
+      return tA - tB
+    })
+  }
+
+  return data
 })
 
 onMounted(() => {
