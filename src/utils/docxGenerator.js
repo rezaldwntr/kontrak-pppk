@@ -566,7 +566,15 @@ async function generateMergedDocx(items, templateBase64, pihakPertama, tanggalKo
         const match = numberingXml.match(regex)
         if (match) {
            const newId = parseInt(id) + (i * 10000)
-           addedNumNodes.push(`<w:num w:numId="${newId}">${match[1]}</w:num>`)
+           let inner = match[1]
+           if (!inner.includes('<w:startOverride')) {
+               let overrides = ''
+               for(let lvl=0; lvl<9; lvl++) {
+                   overrides += `<w:lvlOverride w:ilvl="${lvl}"><w:startOverride w:val="1"/></w:lvlOverride>`
+               }
+               inner += overrides
+           }
+           addedNumNodes.push(`<w:num w:numId="${newId}">${inner}</w:num>`)
         }
       })
     }
