@@ -22,6 +22,7 @@
         :allowBatchDelete="true"
         :allowBatchDownload="true"
         :customData="filteredData"
+        :isBupTab="['akan-pensiun', 'sudah-pensiun'].includes(activeTab)"
         :hideStatusPppkFilter="['aktif', 'akan-pensiun', 'sudah-pensiun'].includes(activeTab)"
         :hideStatusKontrakFilter="['akan-pensiun', 'sudah-pensiun'].includes(activeTab)"
         :hidePerpanjanganFilter="['akan-pensiun', 'sudah-pensiun'].includes(activeTab)"

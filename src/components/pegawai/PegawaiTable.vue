@@ -89,20 +89,21 @@
                         <th width="40"><input type="checkbox" v-model="selectAll"></th>
                         <th>NIP BARU / ID</th>
                         <th>NAMA LENGKAP</th>
-                        <th>TMT CPNS / MULAI</th>
-                        <th>AKHIR KONTRAK</th>
+                        <th v-if="!isBupTab">TMT CPNS / MULAI</th>
+                        <th v-if="!isBupTab">AKHIR KONTRAK</th>
+                        <th v-if="isBupTab">TMT PENSIUN</th>
                         <th>JABATAN</th>
                         <th>UNIT ORGANISASI</th>
                         <th width="120">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="pegawaiStore.isLoading">
-                        <td colspan="7" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
-                    </tr>
-                    <tr v-else-if="paginatedData.length === 0">
-                        <td colspan="7" class="text-center">Data tidak ditemukan.</td>
-                    </tr>
+                      <tr v-if="pegawaiStore.isLoading">
+                          <td :colspan="isBupTab ? 7 : 8" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
+                      </tr>
+                      <tr v-else-if="paginatedData.length === 0">
+                          <td :colspan="isBupTab ? 7 : 8" class="text-center">Data tidak ditemukan.</td>
+                      </tr>
                     <tr v-for="item in paginatedData" :key="item['PNS ID']">
                         <td>
                             <input type="checkbox" v-model="selectedIds" :value="item['PNS ID']">
@@ -111,8 +112,9 @@
                         <td>
                             <strong>{{ getNamaLengkap(item) }}</strong>
                         </td>
-                        <td>{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
-                        <td>{{ calculateContractPeriod(item).endDateStr }}</td>
+                        <td v-if="!isBupTab">{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
+                        <td v-if="!isBupTab">{{ calculateContractPeriod(item).endDateStr }}</td>
+                        <td v-if="isBupTab">{{ calculateContractPeriod(item).endDateStr }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
                         <td>{{ cleanUnorName(item["UNOR NAMA"]) }}</td>
                         <td>
@@ -150,7 +152,8 @@ const props = defineProps({
   customData: { type: Array, default: null },
   hideStatusPppkFilter: { type: Boolean, default: false },
   hideStatusKontrakFilter: { type: Boolean, default: false },
-  hidePerpanjanganFilter: { type: Boolean, default: false }
+  hidePerpanjanganFilter: { type: Boolean, default: false },
+  isBupTab: { type: Boolean, default: false }
 })
 
 const authStore = useAuthStore()
