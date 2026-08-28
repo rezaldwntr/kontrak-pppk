@@ -1,7 +1,22 @@
-﻿# Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
+# Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.2.0] - 2026-08-28 RILIS KE PRODUCTION
+
+### Deployment
+- **Naik ke Production**: Branch `staging` berhasil dipindahkan ke `main`. Versi baru mencakup pembaruan layout dan filter tabel PPPK.
+
+### Pembaruan Fitur & UI
+- **Penyederhanaan Navigasi**: Menghapus sistem Accordion di Sidebar untuk sub-menu PPPK dan mengandalkan sistem Tab Horizontal di dalam halaman agar UI lebih ringkas.
+- **Scroll pada Sidebar**: Memperbaiki isu penumpukan (overlap) antara menu dan footer di Sidebar dengan mengaktifkan internal scroll (`overflow-y: auto`).
+- **Filter Kategorikal Data PPPK**: 
+  - PPPK yang berstatus *Akan Pensiun (BUP)* kini dimunculkan secara serentak di dua tempat: Tab "Akan Pensiun (BUP)" dan Tab "PPPK Aktif".
+  - Filter tabel dikonfigurasi dinamis sesuai Tab yang dibuka (misal: menyembunyikan filter status untuk tab pensiun).
+- **Pengurutan Otomatis BUP**: Data pada tab *Akan Pensiun (BUP)* otomatis diurutkan dengan pegawai yang waktu pensiunnya paling dekat berada di urutan teratas.
+- **Kustomisasi Kolom Tabel**: 
+  - Kolom "Status Kontrak" dan "Status PPPK" dihapus dan diganti dengan kolom "Unit Organisasi".
+  - Untuk tab *Akan Pensiun* dan *Sudah Pensiun*, kolom "TMT CPNS" dan "Akhir Kontrak" diganti menjadi 1 kolom tunggal yaitu **TMT Pensiun** (yang dikalkulasi otomatis sebagai Batas Usia Pensiun + 1 hari).
 
 ## [v3.0.0] - 2026-08-27 RILIS KE PRODUCTION
 
