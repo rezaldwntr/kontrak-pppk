@@ -184,12 +184,19 @@ const tabCounts = computed(() => {
   pegawaiStore.pppkData.forEach(item => {
     const cat = getPegawaiCategory(item)
     if (counts[cat] !== undefined) counts[cat]++
+    if (cat === 'akan-pensiun') counts['aktif']++
   })
   return counts
 })
 
 const filteredData = computed(() => {
-  return pegawaiStore.pppkData.filter(item => getPegawaiCategory(item) === activeTab.value)
+  return pegawaiStore.pppkData.filter(item => {
+    const cat = getPegawaiCategory(item)
+    if (activeTab.value === 'aktif') {
+      return cat === 'aktif' || cat === 'akan-pensiun'
+    }
+    return cat === activeTab.value
+  })
 })
 
 onMounted(() => {
