@@ -92,17 +92,16 @@
                         <th>TMT CPNS / MULAI</th>
                         <th>AKHIR KONTRAK</th>
                         <th>JABATAN</th>
-                        <th>STATUS KONTRAK</th>
-                        <th>STATUS PPPK</th>
+                        <th>UNIT ORGANISASI</th>
                         <th width="120">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="pegawaiStore.isLoading">
-                        <td colspan="8" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
+                        <td colspan="7" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
                     </tr>
                     <tr v-else-if="paginatedData.length === 0">
-                        <td colspan="8" class="text-center">Data tidak ditemukan.</td>
+                        <td colspan="7" class="text-center">Data tidak ditemukan.</td>
                     </tr>
                     <tr v-for="item in paginatedData" :key="item['PNS ID']">
                         <td>
@@ -115,14 +114,7 @@
                         <td>{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
                         <td>{{ calculateContractPeriod(item).endDateStr }}</td>
                         <td>{{ item["JABATAN NAMA"] }}</td>
-                        <td>
-                            <span :class="['badge', getBadgeClass(calculateContractPeriod(item).statusText)]">
-                                {{ calculateContractPeriod(item).statusText }}
-                            </span>
-                        </td>
-                        <td>
-                            <span :class="['badge', getStatusPppkClass(getStatusPppk(item))]">{{ getStatusPppk(item) }}</span>
-                        </td>
+                        <td>{{ cleanUnorName(item["UNOR NAMA"]) }}</td>
                         <td>
                             <div class="action-buttons-cell" style="display: flex; gap: 4px;">
                                 <button class="btn btn-icon-only btn-sm" v-if="!allowBatchExtend" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
