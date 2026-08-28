@@ -540,20 +540,47 @@ async function generateMergedDocx(items, templateBase64, pihakPertama, tanggalKo
   if (documentPart === 'perjanjian') baseContent = parts.perjanjianBody
   if (documentPart === 'tandatangan') baseContent = parts.tandatanganBody
 
+  let numberingXml = zipTemplate.files['word/numbering.xml'] ? zipTemplate.files['word/numbering.xml'].asText() : null
   const PAGE_BREAK = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
   let mergedBodies = []
+  let addedNumNodes = []
 
-  for (const item of items) {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
     let content = baseContent
     const tagData = buildTagData(item, pihakPertama, tanggalKontrak)
     for (const [key, value] of Object.entries(tagData)) {
       content = content.split(`{{${key}}}`).join(escapeXml(value))
     }
+
+    if (i > 0 && numberingXml) {
+      let usedNums = new Set()
+      content = content.replace(/<w:numId[^>]*w:val="(\d+)"[^>]*\/>/g, (match, id) => {
+        usedNums.add(id)
+        const newId = parseInt(id) + (i * 10000)
+        return match.replace(`w:val="${id}"`, `w:val="${newId}"`)
+      })
+
+      usedNums.forEach(id => {
+        const regex = new RegExp(`<w:num[^>]*w:numId="${id}"[^>]*>([\\s\\S]*?)<\\/w:num>`)
+        const match = numberingXml.match(regex)
+        if (match) {
+           const newId = parseInt(id) + (i * 10000)
+           addedNumNodes.push(`<w:num w:numId="${newId}">${match[1]}</w:num>`)
+        }
+      })
+    }
+
     mergedBodies.push(content)
   }
 
   const finalXml = parts.preBody + mergedBodies.join(PAGE_BREAK) + parts.sectPr + parts.postBody
   zipTemplate.file('word/document.xml', finalXml)
+  
+  if (addedNumNodes.length > 0 && numberingXml) {
+    numberingXml = numberingXml.replace('</w:numbering>', addedNumNodes.join('') + '</w:numbering>')
+    zipTemplate.file('word/numbering.xml', numberingXml)
+  }
   
   return zipTemplate.generate({
     type: 'blob',
