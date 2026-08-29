@@ -1,11 +1,6 @@
 <template>
   <div>
     <div class="card" style="padding: 1.5rem;">
-      <div class="alert alert-warning" style="margin-bottom: 20px; font-size: 14px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; color: #d97706; border-radius: var(--border-radius);">
-        <i class="fa-solid fa-circle-info"></i> 
-        <strong>Petunjuk:</strong> Tabel di bawah secara otomatis hanya menampilkan pegawai yang membutuhkan perpanjangan. Centang kotak di sebelah kiri nama pegawai yang ingin diperpanjang, lalu klik tombol <strong>"Perpanjang Massal"</strong> yang muncul di atas tabel.
-      </div>
-
       <PegawaiTable 
         :allowBatchExtend="true"
         :allowBatchDownload="true"

@@ -50,8 +50,8 @@
                         <option v-for="opt in perpanjanganOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                     </select>
                 </div>
-                <div class="filter-group">
-                    <button class="btn btn-outline" @click="resetFilters" style="height: 38px; margin-bottom: 2px;" title="Reset Filter">
+                <div class="filter-group" style="flex: 0 0 auto;">
+                    <button class="btn btn-outline" @click="resetFilters" style="height: 40px; margin-bottom: 2px;" title="Reset Filter">
                         <i class="fa-solid fa-rotate-left"></i> Reset
                     </button>
                 </div>

@@ -5,10 +5,6 @@
         <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</div>
       </h3>
       
-      <div class="alert alert-info" style="margin-bottom: 20px; font-size: 13px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #2563eb; border-radius: var(--border-radius);">
-        <i class="fa-solid fa-circle-info"></i> Atur identitas Pihak Pertama (Bupati / Pj. Bupati) yang akan menandatangani dokumen kontrak.
-      </div>
-
       <div style="max-width: 600px;">
         <div class="form-group" style="margin-bottom: 15px;">
           <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Nama Lengkap Bupati / Pj. Bupati</label>
@@ -31,15 +27,11 @@
       </div>
     </div>
 
-    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
-      <h3 class="section-header">
-        <div><i class="fa-solid fa-file-word"></i> Template Perjanjian Kerja (DOCX)</div>
-      </h3>
+    <div class="card" style="padding: 1.5rem; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 25px; color: var(--text-primary); font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+          <div><i class="fa-solid fa-file-word"></i> Template Perjanjian Kerja (DOCX)</div>
+        </h3>
       
-      <div class="alert alert-info" style="margin-bottom: 20px; font-size: 13px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 12px; color: #2563eb; border-radius: var(--border-radius);">
-        <i class="fa-solid fa-circle-info"></i> Unggah file <strong>.docx</strong> yang berisi tag sesuai tabel referensi di bawah. Aplikasi akan mengganti tag secara otomatis dengan data masing-masing pegawai.
-      </div>
-
       <!-- PPPK Penuh Waktu -->
       <div style="margin-bottom: 10px;">
         <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
@@ -48,7 +40,7 @@
         <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
           <!-- Card 1 -->
           <div class="template-card">
-            <h4><i class="fa-regular fa-file-word" style="color: #2563eb;"></i> Template PPPK (Kertas F4)</h4>
+            <h4><i class="fa-regular fa-file-word" style="color: var(--primary-color);"></i> Template PPPK (Kertas F4)</h4>
             <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Penuh Waktu.</p>
             <div v-if="availableTemplates.template_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
               <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
@@ -64,7 +56,7 @@
           </div>
           <!-- Card 2 -->
           <div class="template-card">
-            <h4><i class="fa-regular fa-file-word" style="color: #2563eb;"></i> Template PPPK (Kertas A4)</h4>
+            <h4><i class="fa-regular fa-file-word" style="color: var(--primary-color);"></i> Template PPPK (Kertas A4)</h4>
             <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Penuh Waktu.</p>
             <div v-if="availableTemplates.template_a4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
               <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
@@ -146,23 +138,23 @@
               </tr>
             </thead>
             <tbody v-pre>
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   📌 Pihak Pertama
                 </td>
               </tr>
               <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Bupati / Pj. Bupati — otomatis <strong>HURUF BESAR</strong></td></tr>
               <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Jabatan Pihak Pertama (Bupati / Pj. Bupati)</td></tr>
 
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   📋 Data Kontrak
                 </td>
               </tr>
               <tr><td><code>{{NO_KONTRAK_BARU}}</code></td><td>Nomor Perjanjian Kontrak Aktif</td></tr>
 
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   👤 Data Pegawai
                 </td>
               </tr>
@@ -179,24 +171,24 @@
               <tr><td><code>{{TEMPAT_TGL_LAHIR}}</code></td><td>Tempat dan Tanggal Lahir (Format: Kota, DD Bulan YYYY)</td></tr>
               <tr><td><code>{{PENDIDIKAN_LULUS}}</code></td><td>Pendidikan Terakhir dan Tahun Lulus (Format: Nama Pendidikan, Tahun : YYYY)</td></tr>
 
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   📅 TMT Kontrak Aktif
                 </td>
               </tr>
               <tr><td><code>{{TMT_AWAL_AKTIF}}</code></td><td>Tanggal Mulai Kontrak Aktif (Format: DD Bulan YYYY)</td></tr>
               <tr><td><code>{{TMT_AKHIR_AKTIF}}</code></td><td>Tanggal Selesai Kontrak Aktif (Format: DD Bulan YYYY)</td></tr>
 
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   💰 Gaji Pokok
                 </td>
               </tr>
               <tr><td><code>{{GAJI_BARU}}</code></td><td>Gaji Pokok — format Rupiah lengkap (contoh: Rp 3.200.000)</td></tr>
               <tr><td><code>{{GAJI_TERBILANG}}</code></td><td>Gaji Pokok dalam kata-kata (contoh: Tiga Juta Dua Ratus Ribu Rupiah)</td></tr>
 
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   🗓️ Tanggal Penandatanganan Kontrak — diisi manual saat unduh, otomatis HURUF BESAR
                 </td>
               </tr>
@@ -205,8 +197,8 @@
               <tr><td><code>{{KONTRAK_BULAN}}</code></td><td>Bulan penandatanganan kontrak (contoh: AGUSTUS)</td></tr>
               <tr><td><code>{{KONTRAK_TAHUN_TERBILANG}}</code></td><td>Tahun penandatanganan — terbilang huruf besar (contoh: DUA RIBU DUA PULUH ENAM)</td></tr>
               
-              <tr style="background: rgba(59,130,246,0.05);">
-                <td colspan="2" style="font-weight: 700; color: #2563eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
+              <tr style="background: var(--primary-light);">
+                <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
                   ✂️ Pemisahan Halaman (Khusus Mode Unduh "Pisah")
                 </td>
               </tr>
