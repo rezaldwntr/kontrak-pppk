@@ -10,9 +10,16 @@
         </select>
       </div>
 
-      <button class="btn btn-success" @click="exportHistory" :disabled="filteredHistory.length === 0">
-        <i class="fa-solid fa-file-excel"></i> Ekspor Data
-      </button>
+      <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-primary); padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); flex: 1; max-width: 300px;">
+        <i class="fa-solid fa-search text-muted"></i>
+        <input v-model="searchQuery" type="text" placeholder="Cari nama / NIP..." class="form-control" style="width: 100%; border: none; background: transparent; outline: none;" />
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; flex: 1;">
+        <button class="btn btn-success" @click="exportHistory" :disabled="filteredHistory.length === 0">
+          <i class="fa-solid fa-file-excel"></i> Ekspor Data
+        </button>
+      </div>
     </div>
 
     <div v-if="selectedIds.length > 0" class="batch-action-bar" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
@@ -89,6 +96,7 @@ const authStore = useAuthStore()
 
 const selectedItems = ref([])
 const filterTmtBaru = ref('all')
+const searchQuery = ref('')
 
 const uniqueTmtBaru = computed(() => {
   const tmts = pegawaiStore.extensionHistory
@@ -98,10 +106,21 @@ const uniqueTmtBaru = computed(() => {
 })
 
 const filteredHistory = computed(() => {
-  if (filterTmtBaru.value === 'all') {
-    return pegawaiStore.extensionHistory
+  let result = pegawaiStore.extensionHistory
+
+  if (filterTmtBaru.value !== 'all') {
+    result = result.filter(h => h.tmtBaru === filterTmtBaru.value)
   }
-  return pegawaiStore.extensionHistory.filter(h => h.tmtBaru === filterTmtBaru.value)
+
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.trim().toLowerCase()
+    result = result.filter(h => 
+      (h.nama && h.nama.toLowerCase().includes(q)) || 
+      (h.nip && h.nip.toLowerCase().includes(q))
+    )
+  }
+
+  return result
 })
 
 // Hapus pilihan jika filter diubah
