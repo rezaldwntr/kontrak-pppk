@@ -139,7 +139,7 @@
         <button class="btn btn-primary" @click="handleDownload" :disabled="isGenerating" style="background-color: #2563eb;">
           <i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i>
           <i v-else class="fa-solid fa-download"></i>
-          {{ exportFormat === 'zip' || documentPart === 'pisah' ? 'Unduh ZIP' : 'Unduh Dokumen' }}
+          {{ (items.length > 1 && exportFormat === 'zip') || documentPart === 'pisah' ? 'Unduh ZIP' : 'Unduh Word' }}
         </button>
       </div>
     </div>
