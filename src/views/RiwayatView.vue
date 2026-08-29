@@ -6,7 +6,7 @@
         <label style="font-weight: 600; margin: 0; font-size: 0.95rem;">Filter TMT Baru:</label>
         <select v-model="filterTmtBaru" class="form-control" style="width: auto; min-width: 180px; padding: 6px 12px; border: none; background: var(--bg-secondary); outline: none; border-radius: 6px;">
           <option value="all">Semua TMT Baru</option>
-          <option v-for="tmt in uniqueTmtBaru" :key="tmt" :value="tmt">{{ tmt }}</option>
+          <option v-for="tmt in uniqueTmtBaru" :key="tmt" :value="tmt">{{ formatIndoDate(tmt) }}</option>
         </select>
       </div>
 
@@ -54,8 +54,8 @@
               <td>{{ formatDate(history.tglDiperpanjang) }}</td>
               <td><strong>{{ history.nama }}</strong></td>
               <td>{{ history.nip }}</td>
-              <td>{{ history.kontrakLama || '-' }}</td>
-              <td>{{ history.tmtBaru || '-' }}</td>
+              <td>{{ history.kontrakLama ? formatIndoDate(history.kontrakLama) : '-' }}</td>
+              <td>{{ history.tmtBaru ? formatIndoDate(history.tmtBaru) : '-' }}</td>
               <td v-if="authStore?.user">
                 <button class="btn btn-danger btn-sm" @click="confirmSingleCancel(history)" title="Batalkan Perpanjangan">
                   <i class="fa-solid fa-rotate-left"></i> Batal
@@ -141,8 +141,8 @@ const exportHistory = () => {
     'NAMA PEGAWAI': h.nama,
     'NIP BARU': h.nip,
     'TANGGAL DIPERPANJANG': formatDate(h.tglDiperpanjang),
-    'TMT LAMA': h.kontrakLama || '-',
-    'TMT BARU': h.tmtBaru || '-',
+    'TMT LAMA': h.kontrakLama ? formatIndoDate(h.kontrakLama) : '-',
+    'TMT BARU': h.tmtBaru ? formatIndoDate(h.tmtBaru) : '-',
     'KETERANGAN': h.keterangan || '-'
   }))
 
@@ -177,7 +177,7 @@ const handlePasswordSuccess = async () => {
 const processSingleCancel = async (history) => {
   const result = await customSwal.fire({
     title: 'Batalkan Perpanjangan?',
-    text: `TMT pegawai ${history.nama} akan dikembalikan ke ${history.kontrakLama || 'semula'}.`,
+    text: `TMT pegawai ${history.nama} akan dikembalikan ke ${history.kontrakLama ? formatIndoDate(history.kontrakLama) : 'semula'}.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: '<i class="fa-solid fa-rotate-left"></i> Ya, Batalkan',
@@ -231,6 +231,15 @@ const processBatchCancel = async (itemsToCancel) => {
       customSwal.fire({ icon: 'error', title: 'Gagal', text: e.message })
     }
   }
+}
+
+const formatIndoDate = (dateStr) => {
+  if (!dateStr || dateStr === '-') return '-'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('id-ID', {
+    day: '2-digit', month: 'long', year: 'numeric'
+  })
 }
 
 const formatDate = (isoString) => {
