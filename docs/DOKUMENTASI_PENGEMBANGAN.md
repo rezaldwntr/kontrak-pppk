@@ -2,6 +2,21 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.3.0] - 2026-08-30 RILIS KE PRODUCTION
+
+### Perbaikan Sistem Unduhan & Penggabungan Dokumen
+- **Bug Fix Penomoran**: Memperbaiki logika `generateMergedDocx` yang sebelumnya menyebabkan urutan angka di "1 File Gabungan" saling bersambung (contoh: 1,2,3 di orang pertama menjadi 4,5,6 di orang kedua). Sekarang ditambahkan injeksi `<w:lvlOverride>` dan `<w:startOverride w:val="1"/>` secara dinamis ke `numbering.xml` agar setiap pegawai memiliki urutan 1,2,3 masing-masing.
+- **Dinamika Tombol Unduh**: Tombol "Unduh ZIP" otomatis disesuaikan menjadi "Unduh Word" jika pengguna hanya mengunduh 1 dokumen utuh (`.docx`), untuk menghilangkan kebingungan pengguna.
+
+### Pembaruan UI & Kemudahan Pengguna (UX)
+- **Format Tanggal TMT**: Seluruh format tanggal lama seperti (2026-10-01) pada menu Riwayat Perpanjangan (Tabel, Filter Dropdown, Konfirmasi Pembatalan, maupun Ekspor Excel) telah diubah menjadi format Indonesia panjang yang mudah dibaca (misal: "01 Oktober 2026").
+- **Fitur Cari di Riwayat**: Menambahkan kolom pencarian pintar (berdasarkan Nama atau NIP Baru) di dalam halaman Riwayat Perpanjangan. Hasil *export* ke Excel akan langsung mengikuti penyaringan pencarian ini.
+- **Sidebar Dinamis (Collapse)**: Menambahkan tombol *toggle* kecil di panel samping untuk menyembunyikan label dan profil (collapse), memberikan sensasi area kerja (workspace) yang jauh lebih luas tanpa menghilangkan navigasi inti berbasis ikon. (Tombol ini disembunyikan pada perangkat *mobile* karena sudah menggunakan model *drawer*).
+- **Penyederhanaan Visual**:
+  - Mengubah ukuran tombol "Reset" agar tidak membentang selebar layar (*flex: 1* dinonaktifkan).
+  - Membersihkan halaman pengaturan dan proses perpanjangan dari berbagai *alert* petunjuk biru/oranye (*disclaimer* box) untuk tampilan yang lebih bersih.
+  - Menyelaraskan warna *font* tabel daftar tag referensi di halaman Pengaturan agar menggunakan warna *cyan/green* dari tema utama (SIKOn Dark Theme).
+
 ## [v3.2.0] - 2026-08-28 RILIS KE PRODUCTION
 
 ### Deployment
