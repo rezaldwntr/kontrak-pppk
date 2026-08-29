@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container">
-    <Sidebar />
+  <div class="app-container" :class="{ 'collapsed-sidebar': isSidebarCollapsed }">
+    <Sidebar :collapsed="isSidebarCollapsed" @toggle-collapse="isSidebarCollapsed = !isSidebarCollapsed" />
     
     <div class="main-content">
       <Header />
@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
 import Sidebar from './components/layout/Sidebar.vue'
@@ -23,6 +23,7 @@ import { customSwal } from './utils/swal'
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
+const isSidebarCollapsed = ref(false)
 
 const isAuthenticated = computed(() => !!authStore.user)
 
