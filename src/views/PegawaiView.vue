@@ -49,13 +49,13 @@
               <th>NIP BARU</th>
               <th>JENIS PPPK</th>
               <th>AKHIR KONTRAK</th>
-              <th>ALASAN TIDAK DIPERPANJANG</th>
+              <th>KETERANGAN DIBERHENTIKAN</th>
               <th>AKSI</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredData.length === 0">
-              <td colspan="6" class="text-center">Tidak ada pegawai yang tidak diperpanjang.</td>
+              <td colspan="6" class="text-center">Tidak ada pegawai yang diberhentikan.</td>
             </tr>
             <tr v-for="item in filteredData" :key="item['NIP BARU']">
               <td><strong>{{ item['NAMA'] }}</strong></td>
@@ -64,8 +64,8 @@
               <td>{{ calculateContractPeriod(item).endDateStr }}</td>
               <td>
                 <div v-if="editingKeteranganNip !== item['NIP BARU']" style="display:flex; align-items:center; gap:8px;">
-                  <span :style="{ color: item['ALASAN_TIDAK_DIPERPANJANG'] ? 'inherit' : 'var(--text-muted)', fontStyle: item['ALASAN_TIDAK_DIPERPANJANG'] ? 'normal' : 'italic' }">
-                    {{ item['ALASAN_TIDAK_DIPERPANJANG'] || 'Belum ada keterangan' }}
+                  <span :style="{ color: getKeteranganDiberhentikan(item) ? 'inherit' : 'var(--text-muted)', fontStyle: getKeteranganDiberhentikan(item) ? 'normal' : 'italic' }">
+                    {{ getKeteranganDiberhentikan(item) || 'Belum ada keterangan' }}
                   </span>
                   <button class="btn btn-outline btn-sm" @click="startEditKeterangan(item)" title="Edit Keterangan" style="padding: 2px 8px;">
                     <i class="fa-solid fa-pen"></i>
@@ -152,7 +152,7 @@ import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
 import { exportToExcel } from '../utils/exportImport'
 import { customSwal } from '../utils/swal'
-import { calculateContractPeriod, getStatusPppk, getPegawaiCategory } from '../utils/pppkLogic'
+import { calculateContractPeriod, getStatusPppk, getPegawaiCategory, getKeteranganDiberhentikan } from '../utils/pppkLogic'
 
 const pegawaiStore = usePegawaiStore()
 const route = useRoute()
@@ -220,7 +220,7 @@ onMounted(() => {
 
 const startEditKeterangan = async (item) => {
   editingKeteranganNip.value = item['NIP BARU']
-  keteranganInput.value = item['ALASAN_TIDAK_DIPERPANJANG'] || ''
+  keteranganInput.value = getKeteranganDiberhentikan(item) || ''
   await nextTick()
   if (keteranganInputRef.value) {
     const el = Array.isArray(keteranganInputRef.value) ? keteranganInputRef.value[0] : keteranganInputRef.value
@@ -234,7 +234,7 @@ const cancelEditKeterangan = () => {
 }
 
 const saveKeterangan = async (item) => {
-  const updatedItem = { ...item, 'ALASAN_TIDAK_DIPERPANJANG': keteranganInput.value.trim() }
+  const updatedItem = { ...item, 'KETERANGAN DIBERHENTIKAN': keteranganInput.value.trim() }
   try {
     await pegawaiStore.updatePegawai(updatedItem)
     editingKeteranganNip.value = null
