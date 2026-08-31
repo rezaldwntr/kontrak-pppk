@@ -397,11 +397,11 @@ const recalculateMkgAndGaji = () => {
   if (period && period.rawDate && !isNaN(period.rawDate.getTime())) {
     editForm.value['AKHIR KONTRAK AKTIF'] = formatDateToInput(period.rawDate)
     
-    if (!editForm.value['FORCE_AKTIF'] && editForm.value['STATUS KEAKTIFAN PPPK'] !== 'Meninggal') {
+    if (!editForm.value['FORCE_AKTIF'] && !['Diberhentikan', 'Meninggal', 'Mengundurkan Diri', 'Tidak Diperpanjang', 'Pensiun'].includes(editForm.value['STATUS KEAKTIFAN PPPK'])) {
       const today = new Date()
       const isExpired = period.rawDate.getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
       if (isExpired) {
-        editForm.value['STATUS KEAKTIFAN PPPK'] = period.isBup ? 'Pensiun' : 'Tidak Diperpanjang'
+        editForm.value['STATUS KEAKTIFAN PPPK'] = period.isBup ? 'Pensiun' : 'Diberhentikan'
       } else {
         editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif'
       }
