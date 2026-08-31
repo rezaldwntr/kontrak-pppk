@@ -2,6 +2,14 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.4.0] - 2026-08-31 RILIS KE PRODUCTION
+
+### Pembaruan Logika Kepegawaian & Perbaikan Bug
+- **Status Diberhentikan**: Menyesuaikan regulasi status keaktifan PPPK terbaru. Status "Tidak Diperpanjang" dan "Meninggal" digabung ke dalam satu status utama yaitu **Diberhentikan**.
+- **Keterangan Tambahan Diberhentikan**: Jika pegawai bersatus Diberhentikan, pengguna kini dapat memilih keterangan spesifik (Meninggal, Kontrak Tidak Diperpanjang, Mengundurkan Diri) di dalam form Edit (Detail Modal).
+- **Tab Menu Pegawai**: Tab "Tidak Diperpanjang" pada menu Data PPPK otomatis disesuaikan namanya menjadi "Diberhentikan".
+- **Bug Fix Anomali Jenis Kelamin**: Memperbaiki anomali di mana pegawai laki-laki tampil sebagai perempuan akibat ketidakcocokan *string* data. Sistem kini sangat akurat karena otomatis mengurai (parsing) Jenis Kelamin secara langsung dari digit ke-15 pada **NIP BARU** saat data diimpor, atau saat modal edit dibuka.
+
 ## [v3.3.0] - 2026-08-30 RILIS KE PRODUCTION
 
 ### Perbaikan Sistem Unduhan & Penggabungan Dokumen

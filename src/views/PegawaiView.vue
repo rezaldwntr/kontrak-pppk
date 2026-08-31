@@ -16,7 +16,7 @@
     </div>
 
     <!-- Tab: Aktif, Akan Pensiun, Sudah Pensiun -->
-    <div v-if="activeTab !== 'tidak-diperpanjang'" class="card" style="padding: 1.5rem;">
+    <div v-if="activeTab !== 'diberhentikan'" class="card" style="padding: 1.5rem;">
       <PegawaiTable
         :key="activeTab"
         :allowBatchDelete="true"
@@ -175,13 +175,13 @@ const tabs = [
   { key: 'aktif', label: 'PPPK Aktif', icon: 'fa-solid fa-users' },
   { key: 'akan-pensiun', label: 'Akan Pensiun (BUP)', icon: 'fa-solid fa-hourglass-half' },
   { key: 'sudah-pensiun', label: 'Sudah Pensiun', icon: 'fa-solid fa-medal' },
-  { key: 'tidak-diperpanjang', label: 'Tidak Diperpanjang', icon: 'fa-solid fa-user-xmark' },
+  { key: 'diberhentikan', label: 'Diberhentikan', icon: 'fa-solid fa-user-xmark' },
 ]
 
 const activeTab = computed(() => route.params.kategori || 'aktif')
 
 const tabCounts = computed(() => {
-  const counts = { 'aktif': 0, 'akan-pensiun': 0, 'sudah-pensiun': 0, 'tidak-diperpanjang': 0 }
+  const counts = { 'aktif': 0, 'akan-pensiun': 0, 'sudah-pensiun': 0, 'diberhentikan': 0 }
   pegawaiStore.pppkData.forEach(item => {
     const cat = getPegawaiCategory(item)
     if (counts[cat] !== undefined) counts[cat]++

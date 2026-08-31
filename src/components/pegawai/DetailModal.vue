@@ -114,12 +114,19 @@
               <label>Status Keaktifan PPPK</label>
               <select v-model="editForm['STATUS KEAKTIFAN PPPK']" class="form-control">
                 <option value="Aktif">Aktif</option>
-                <option value="Tidak Diperpanjang">Tidak Diperpanjang</option>
-                <option value="Meninggal">Meninggal</option>
+                <option value="Diberhentikan">Diberhentikan</option>
                 <option value="Pensiun">Pensiun</option>
               </select>
+              <div v-if="editForm['STATUS KEAKTIFAN PPPK'] === 'Diberhentikan'" style="margin-top: 10px;">
+                <label>Keterangan Diberhentikan</label>
+                <select v-model="editForm['KETERANGAN DIBERHENTIKAN']" class="form-control">
+                  <option value="Kontrak Tidak Diperpanjang">Kontrak Tidak Diperpanjang</option>
+                  <option value="Meninggal">Meninggal</option>
+                  <option value="Mengundurkan Diri">Mengundurkan Diri</option>
+                </select>
+              </div>
               <div v-if="editForm['STATUS KEAKTIFAN PPPK'] === 'Aktif' && isContractExpired" style="margin-top: 8px; font-size: 0.85rem; color: #ff9800; background: rgba(255,152,0,0.1); padding: 8px; border-radius: 4px; border: 1px solid rgba(255,152,0,0.3);">
-                <i class="fa-solid fa-triangle-exclamation"></i> Peringatan: Masa kontrak telah habis. Pegawai ini harus segera di non-aktifkan (Pensiun/Tidak Diperpanjang) atau perbarui data kontrak barunya.
+                <i class="fa-solid fa-triangle-exclamation"></i> Peringatan: Masa kontrak telah habis. Pegawai ini harus segera di non-aktifkan (Pensiun/Diberhentikan) atau perbarui data kontrak barunya.
               </div>
             </div>
             <div class="form-group">
@@ -253,6 +260,34 @@ watch(() => props.isOpen, (newVal) => {
   if (newVal && props.item) {
     editForm.value = JSON.parse(JSON.stringify(props.item)) // Deep copy
     
+    // Map legacy manual status
+    const legacyStatus = editForm.value['STATUS KEAKTIFAN PPPK'];
+    if (['Meninggal', 'Mengundurkan Diri', 'Tidak Diperpanjang'].includes(legacyStatus)) {
+        editForm.value['STATUS KEAKTIFAN PPPK'] = 'Diberhentikan';
+        if (!editForm.value['KETERANGAN DIBERHENTIKAN']) {
+            editForm.value['KETERANGAN DIBERHENTIKAN'] = legacyStatus === 'Tidak Diperpanjang' ? 'Kontrak Tidak Diperpanjang' : legacyStatus;
+        }
+    }
+
+    // Auto-correct JENIS KELAMIN using NIP (15th digit: 1=Laki, 2=Perempuan)
+    const nip = String(editForm.value['NIP BARU'] || '').replace(/\D/g, '');
+    if (nip.length === 18) {
+      const jkChar = nip.charAt(14);
+      if (jkChar === '1') {
+          editForm.value['JENIS KELAMIN'] = 'L';
+      } else if (jkChar === '2') {
+          editForm.value['JENIS KELAMIN'] = 'P';
+      }
+    } else {
+      // Fallback normalization if NIP is invalid
+      let jk = editForm.value['JENIS KELAMIN'];
+      if (jk) {
+        jk = String(jk).toUpperCase();
+        if (jk.startsWith('L') || jk === 'PRIA' || jk === '1') editForm.value['JENIS KELAMIN'] = 'L';
+        else if (jk.startsWith('P') || jk === 'WANITA' || jk === '2' || jk === 'PEREMPUAN') editForm.value['JENIS KELAMIN'] = 'P';
+      }
+    }
+
     // Format TMT CPNS & TANGGAL LAHIR if raw format is DD/MM/YYYY or ISO
     const tmtDate = parseDate(editForm.value['TMT CPNS'])
     if (tmtDate) {

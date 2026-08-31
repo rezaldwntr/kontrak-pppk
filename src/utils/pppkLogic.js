@@ -103,23 +103,36 @@ export const calculateContractPeriod = (item) => {
 };
 
 export const getStatusPppk = (item) => {
-    // 1. Dapatkan status hitungan otomatis dari tanggal
+    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+    if (manualStatus === "Diberhentikan" || manualStatus === "Meninggal" || manualStatus === "Mengundurkan Diri" || manualStatus === "Tidak Diperpanjang") {
+        return "Diberhentikan";
+    }
+
     const contractStatus = calculateContractPeriod(item).statusText;
     
-    // 2. Jika secara tanggal kontrak sudah benar-benar habis, maka PASTI Tidak Diperpanjang / Pensiun
     if (contractStatus === "Kontrak Habis (BUP)") return "Pensiun";
-    if (contractStatus === "Kontrak Habis") return "Tidak Diperpanjang";
+    if (contractStatus === "Kontrak Habis") return "Diberhentikan";
     
-    // 3. Jika belum habis, cek apakah ada status manual (Meninggal, dll)
-    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
-    if (manualStatus === "Meninggal") return "Meninggal";
-    
-    // 4. Jika masih aktif, kembalikan Aktif atau status manual lainnya
     if (contractStatus === "Kontrak Hampir Habis" || contractStatus === "Kontrak Masih Berlaku") {
         return "Aktif";
     }
     
-    return manualStatus || "Aktif";
+    return "Aktif";
+};
+
+export const getKeteranganDiberhentikan = (item) => {
+    const ket = item["KETERANGAN DIBERHENTIKAN"];
+    if (ket) return ket;
+    
+    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+    if (manualStatus === "Meninggal") return "Meninggal";
+    if (manualStatus === "Mengundurkan Diri") return "Mengundurkan Diri";
+    if (manualStatus === "Tidak Diperpanjang") return "Kontrak Tidak Diperpanjang";
+    
+    const contractStatus = calculateContractPeriod(item).statusText;
+    if (contractStatus === "Kontrak Habis") return "Kontrak Tidak Diperpanjang";
+    
+    return "Diberhentikan";
 };
 
 /**
@@ -127,9 +140,14 @@ export const getStatusPppk = (item) => {
  * - 'aktif'             : kontrak masih berlaku / hampir habis
  * - 'akan-pensiun'      : terkena BUP tapi tanggal BUP belum terlewat
  * - 'sudah-pensiun'     : terkena BUP dan tanggal BUP sudah terlewat
- * - 'tidak-diperpanjang': kontrak habis (bukan karena BUP)
+ * - 'diberhentikan'     : kontrak habis (bukan karena BUP) atau manual diberhentikan
  */
 export const getPegawaiCategory = (item) => {
+    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+    if (manualStatus === "Diberhentikan" || manualStatus === "Meninggal" || manualStatus === "Mengundurkan Diri" || manualStatus === "Tidak Diperpanjang") {
+        return "diberhentikan";
+    }
+
     const result = calculateContractPeriod(item);
     const { statusText, isBup, rawDate } = result;
     const today = new Date();
@@ -143,7 +161,7 @@ export const getPegawaiCategory = (item) => {
         return "aktif";
     }
     if (statusText === "Kontrak Habis") {
-        return "tidak-diperpanjang";
+        return "diberhentikan";
     }
     // Fallback: anggap aktif
     return "aktif";

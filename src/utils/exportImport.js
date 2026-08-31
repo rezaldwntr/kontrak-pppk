@@ -72,6 +72,18 @@ export const processImportFile = async (file, options = {}) => {
               }
             }
           })
+
+          // Extract Gender from NIP or normalize
+          const nip = String(newRow['NIP BARU'] || '').replace(/\D/g, '');
+          if (nip.length === 18) {
+            const jkChar = nip.charAt(14);
+            if (jkChar === '1') newRow['JENIS KELAMIN'] = 'L';
+            else if (jkChar === '2') newRow['JENIS KELAMIN'] = 'P';
+          } else if (newRow['JENIS KELAMIN']) {
+            let jk = String(newRow['JENIS KELAMIN']).toUpperCase();
+            if (jk.startsWith('L') || jk === 'PRIA' || jk === '1') newRow['JENIS KELAMIN'] = 'L';
+            else if (jk.startsWith('P') || jk === 'WANITA' || jk === '2' || jk === 'PEREMPUAN') newRow['JENIS KELAMIN'] = 'P';
+          }
           
           return newRow
         })

@@ -201,8 +201,8 @@ const getSelectedItems = () => {
 
 const getStatusPppkClass = (status) => {
   if (status === 'Aktif') return 'badge-success';
-  if (status === 'Tidak Diperpanjang') return 'badge-warning';
-  return 'badge-danger'; // Meninggal, Pensiun
+  if (status === 'Pensiun') return 'badge-primary';
+  return 'badge-danger'; // Diberhentikan
 }
 
 const filteredData = computed(() => {
