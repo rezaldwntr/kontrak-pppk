@@ -29,6 +29,16 @@ export const usePegawaiStore = defineStore('pegawai', {
       if (this.isLoading) return
       this.isLoading = true
       
+      const ensurePnsId = (dataArray) => {
+        if (!Array.isArray(dataArray)) return [];
+        return dataArray.map(item => {
+          if (!item['PNS ID']) {
+            item['PNS ID'] = item['NIP BARU'] || `TEMP-${Math.random().toString(36).substr(2, 9)}`
+          }
+          return item;
+        });
+      };
+
       try {
         const docRef = doc(db, 'database', 'pegawai')
         // Use real-time listener instead of getDoc
@@ -48,10 +58,10 @@ export const usePegawaiStore = defineStore('pegawai', {
                       }
                     }
                     const decompressed = LZString.decompressFromUTF16(fullCompressed);
-                    this.pppkData = decompressed ? JSON.parse(decompressed) : [];
+                    this.pppkData = ensurePnsId(decompressed ? JSON.parse(decompressed) : []);
                   } catch (err) {
                     console.error("Error loading chunks:", err);
-                    this.pppkData = [...initialMockData];
+                    this.pppkData = ensurePnsId([...initialMockData]);
                   } finally {
                     this.isLoading = false;
                   }
@@ -59,15 +69,15 @@ export const usePegawaiStore = defineStore('pegawai', {
                 return; // wait for async completion
               } else if (data.payload) {
                 const decompressed = LZString.decompressFromUTF16(data.payload)
-                this.pppkData = JSON.parse(decompressed)
+                this.pppkData = ensurePnsId(JSON.parse(decompressed))
               }
             } else if (data.jsonString) {
-              this.pppkData = JSON.parse(data.jsonString)
+              this.pppkData = ensurePnsId(JSON.parse(data.jsonString))
             } else {
-              this.pppkData = [...initialMockData]
+              this.pppkData = ensurePnsId([...initialMockData])
             }
           } else {
-            this.pppkData = [...initialMockData]
+            this.pppkData = ensurePnsId([...initialMockData])
           }
           this.isLoading = false
         }, (error) => {
@@ -113,10 +123,16 @@ export const usePegawaiStore = defineStore('pegawai', {
     },
     async updatePegawai(updatedItem) {
       try {
-        const index = this.pppkData.findIndex(item => item['PNS ID'] === updatedItem['PNS ID'])
+        const index = this.pppkData.findIndex(item => 
+          (item['PNS ID'] && item['PNS ID'] === updatedItem['PNS ID']) || 
+          (item['NIP BARU'] && item['NIP BARU'] === updatedItem['NIP BARU'])
+        )
         if (index !== -1) {
           this.pppkData[index] = { ...updatedItem }
           await this.saveAllPegawai()
+        } else {
+          console.error("Item not found for update:", updatedItem)
+          throw new Error("Pegawai tidak ditemukan dalam data internal.");
         }
       } catch (error) {
         console.error("Update error:", error)
@@ -249,7 +265,10 @@ export const usePegawaiStore = defineStore('pegawai', {
         const dateNow = new Date().toISOString()
         
         // Revert TMT on the specific Pegawai
-        const pIndex = this.pppkData.findIndex(p => p['PNS ID'] === historyItem.id)
+        const pIndex = this.pppkData.findIndex(p => 
+          (p['PNS ID'] && p['PNS ID'] === historyItem.id) ||
+          (p['NIP BARU'] && p['NIP BARU'] === historyItem.nip)
+        )
         if (pIndex !== -1) {
           this.pppkData[pIndex]['AWAL KONTRAK AKTIF'] = historyItem.kontrakLama
           // Hapus flag FORCE_AKTIF dan STATUS_PERPANJANGAN agar status kembali dihitung otomatis

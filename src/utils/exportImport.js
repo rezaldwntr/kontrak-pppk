@@ -104,7 +104,10 @@ export const saveImportedData = async (newData, mode = 'append', currentData = [
     let mergedData = []
     
     if (mode === 'overwrite') {
-      mergedData = [...newData]
+      mergedData = newData.map(item => {
+        if (!item['PNS ID']) item['PNS ID'] = item['NIP BARU'] || `TEMP-${Math.random().toString(36).substr(2, 9)}`;
+        return item;
+      })
     } else {
       // Append mode: merge based on NIP BARU
       mergedData = [...currentData]
@@ -112,6 +115,8 @@ export const saveImportedData = async (newData, mode = 'append', currentData = [
         const nip = newItem['NIP BARU']
         const index = mergedData.findIndex(item => item['NIP BARU'] === nip)
         
+        if (!newItem['PNS ID']) newItem['PNS ID'] = newItem['NIP BARU'] || `TEMP-${Math.random().toString(36).substr(2, 9)}`;
+
         if (index >= 0) {
           // Update existing
           mergedData[index] = { ...mergedData[index], ...newItem }
