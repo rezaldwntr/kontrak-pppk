@@ -33,7 +33,7 @@
     </div>
 
     <div style="margin-top: 24px; margin-bottom: 24px;">
-      <ChartCard title="Statistik Unor Induk (Belum Diperpanjang)" icon="fa-solid fa-building" chartType="bar" :chartData="unorChartData" />
+      <ChartCard title="Statistik Unor Induk (Belum Diperpanjang)" icon="fa-solid fa-building" chartType="horizontalBar" :chartData="unorChartData" :chartHeight="unorChartHeight" />
     </div>
 
     <!-- Modals -->
@@ -150,7 +150,7 @@ const unorChartData = computed(() => {
       counts[unorInduk] = (counts[unorInduk] || 0) + 1
     }
   })
-  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 20)
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1])
   return {
     labels: sorted.map(k => k[0]),
     datasets: [{
@@ -160,6 +160,10 @@ const unorChartData = computed(() => {
       borderRadius: 4
     }]
   }
+})
+
+const unorChartHeight = computed(() => {
+  return Math.max(320, unorChartData.value.labels.length * 30 + 100) + 'px'
 })
 
 const showPasswordModal = ref(false)

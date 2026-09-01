@@ -3,7 +3,7 @@
     <div class="widget-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
       <h3 style="font-size: 1rem; color: var(--text-dark); margin: 0; font-weight: 600;"><i :class="icon" style="color: var(--primary-color); margin-right: 0.5rem;"></i> {{ title }}</h3>
     </div>
-    <div class="widget-body" style="position: relative; height: 320px; width: 100%; padding: 20px;">
+    <div class="widget-body" :style="{ position: 'relative', height: chartHeight, width: '100%', padding: '20px' }">
       <canvas ref="canvasRef"></canvas>
     </div>
   </div>
@@ -17,7 +17,8 @@ const props = defineProps({
   title: String,
   icon: String,
   chartData: Object,
-  chartType: { type: String, default: 'pie' }
+  chartType: { type: String, default: 'pie' },
+  chartHeight: { type: String, default: '320px' }
 })
 
 const canvasRef = ref(null)
@@ -30,12 +31,16 @@ const renderChart = () => {
   }
   
   const isDoughnut = props.chartType === 'doughnut'
+  const isHorizontalBar = props.chartType === 'horizontalBar'
+  const actualType = isHorizontalBar ? 'bar' : props.chartType
+
   chartInstance.value = new Chart(canvasRef.value, {
-    type: props.chartType,
+    type: actualType,
     data: props.chartData,
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      indexAxis: isHorizontalBar ? 'y' : 'x',
       cutout: isDoughnut ? '75%' : undefined,
       elements: {
         arc: {
