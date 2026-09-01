@@ -2,6 +2,14 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
+
+### Pembaruan UI/UX Menu Perpanjangan & Sidebar
+- **Tab Menu Perpanjangan**: Memisahkan menu Perpanjangan Kontrak menjadi 2 tab, yaitu "Perpanjangan PPPK" dan "Perpanjangan PPPK Paruh Waktu" untuk membedakan kategori secara jelas.
+- **Grafik Horizontal Bar Dinamis**: Menambahkan visualisasi grafik jumlah pegawai yang belum diperpanjang berdasarkan Unor Induk. Grafik bersifat pintar: jika semua pegawai dalam filter berada di Unor Induk yang sama (misal Dinas Pendidikan), grafik akan otomatis menampilkan pemecahan berdasarkan **Unor Atasan** (SD A, SMP B, dst). Tinggi grafik juga menyesuaikan banyaknya data secara dinamis agar tidak bertumpuk.
+- **Penyederhanaan Filter**: Menghapus dropdown filter *Status Kontrak* dan *Jenis PPPK* di halaman Perpanjangan karena sudah terwakili secara otomatis oleh Tab dan logika halaman.
+- **Interaksi Sidebar (Collapse)**: Menghapus tombol panah *absolute* yang terkesan kurang rapi. Jika sidebar mengecil, logo akan berubah menjadi *icon* panah pembesar saat di-*hover*. Jika sidebar membesar, tombol panah pengecil digabung (*inline*) di samping nama aplikasi.
+- **Penyesuaian UI Kolom Berhenti**: Mengubah nama kolom *header* pada menu Diberhentikan menjadi "Keterangan Diberhentikan" dan memastikannya mendukung fitur Edit cepat (*inline edit*).
 ## [v3.4.0] - 2026-08-31 RILIS KE PRODUCTION
 
 ### Pembaruan Logika Kepegawaian & Perbaikan Bug
