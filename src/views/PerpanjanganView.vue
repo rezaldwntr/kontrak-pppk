@@ -22,6 +22,7 @@
         :allowBatchDownload="true"
         :onlyNeedExtension="true"
         :customData="filteredData"
+        :hideJenisPppkFilter="true"
         @batch-extend="handleBatchExtend"
         @download="handleDownload"
         @batch-download="handleBatchDownload"

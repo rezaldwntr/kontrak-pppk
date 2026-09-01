@@ -3,7 +3,7 @@
     <div class="filter-panel" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
         <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end; justify-content: space-between;">
             <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
-                <div class="filter-group">
+                <div class="filter-group" v-if="!hideJenisPppkFilter">
                     <label>Jenis PPPK</label>
                     <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control" style="min-width: 130px;">
                         <option value="all" v-if="jenisPppkOptions.length !== 1">Semua Jenis</option>
@@ -149,6 +149,7 @@ const props = defineProps({
   allowBatchDownload: { type: Boolean, default: false },
   onlyNeedExtension: { type: Boolean, default: false },
   customData: { type: Array, default: null },
+  hideJenisPppkFilter: { type: Boolean, default: false },
   hideStatusPppkFilter: { type: Boolean, default: false },
   hideStatusKontrakFilter: { type: Boolean, default: false },
   hidePerpanjanganFilter: { type: Boolean, default: false },
