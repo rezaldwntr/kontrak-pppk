@@ -243,7 +243,8 @@ const filteredData = computed(() => {
     })();
     
     if (props.onlyNeedExtension) {
-      if (!['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus)) {
+      if (getStatusPppk(item) === 'Diberhentikan') return false;
+        if (!['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus)) {
         return false;
       }
     }
@@ -311,7 +312,8 @@ const baseData = computed(() => {
   if (props.onlyNeedExtension) {
     return source.filter(item => {
       const contractStatus = calculateContractPeriod(item).statusText;
-      return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus);
+      if (getStatusPppk(item) === 'Diberhentikan') return false;
+        return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus);
     });
   }
   return source;

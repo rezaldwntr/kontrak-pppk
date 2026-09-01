@@ -106,6 +106,8 @@ const activeTab = computed(() => route.params.jenis || 'pppk')
 // Helper function to check if item is eligible for extension
 const isEligibleForExtension = (item) => {
   const contractStatus = calculateContractPeriod(item).statusText
+  const manualStatus = item['STATUS KEAKTIFAN PPPK'] || item['STATUS KEDUDUKAN'];
+  if (['Diberhentikan', 'Meninggal', 'Mengundurkan Diri', 'Tidak Diperpanjang'].includes(manualStatus)) return false;
   return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus)
 }
 
