@@ -209,3 +209,5 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 
 
+
+- **Pengurutan Data Pensiun:** Menambahkan fungsi pengurutan (*sorting*) otomatis secara descending pada tab **Sudah Pensiun**, sehingga pegawai yang paling baru pensiun akan selalu tampil di urutan teratas.
