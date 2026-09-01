@@ -33,7 +33,7 @@
     </div>
 
     <div style="margin-top: 24px; margin-bottom: 24px;">
-      <ChartCard title="Statistik Unor Induk (Belum Diperpanjang)" icon="fa-solid fa-building" chartType="horizontalBar" :chartData="unorChartData" :chartHeight="unorChartHeight" />
+      <ChartCard :title="chartTitle" icon="fa-solid fa-building" chartType="horizontalBar" :chartData="unorChartData" :chartHeight="unorChartHeight" />
     </div>
 
     <!-- Modals -->
@@ -134,6 +134,15 @@ const filteredData = computed(() => {
   })
 })
 
+const getUnorAtasan = (unorNama) => {
+  if (!unorNama) return '-'
+  let cleaned = unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
+  if (cleaned === '-') return '-'
+  const parts = cleaned.split(' - ')
+  if (parts.length <= 1) return parts[0]
+  return parts.slice(0, parts.length - 1).join(' - ') || '-'
+}
+
 const getUnorInduk = (unorNama) => {
   if (!unorNama) return '-'
   let cleaned = unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
@@ -142,12 +151,28 @@ const getUnorInduk = (unorNama) => {
   return parts[parts.length - 1] || '-'
 }
 
+const isSingleInduk = computed(() => {
+  const uniqueInduk = new Set()
+  filteredData.value.forEach(item => {
+    if (isEligibleForExtension(item)) {
+      uniqueInduk.add(getUnorInduk(item['UNOR NAMA']))
+    }
+  })
+  return uniqueInduk.size === 1
+})
+
+const chartTitle = computed(() => {
+  return isSingleInduk.value 
+    ? 'Statistik Unor Atasan (Belum Diperpanjang)' 
+    : 'Statistik Unor Induk (Belum Diperpanjang)'
+})
+
 const unorChartData = computed(() => {
   const counts = {}
   filteredData.value.forEach(item => {
     if (isEligibleForExtension(item)) {
-      const unorInduk = getUnorInduk(item['UNOR NAMA'])
-      counts[unorInduk] = (counts[unorInduk] || 0) + 1
+      const label = isSingleInduk.value ? getUnorAtasan(item['UNOR NAMA']) : getUnorInduk(item['UNOR NAMA'])
+      counts[label] = (counts[label] || 0) + 1
     }
   })
   const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1])
