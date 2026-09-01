@@ -16,7 +16,7 @@
     </div>
 
     <div class="card" style="padding: 1.5rem;">
-      <PegawaiTable 
+      <PegawaiTable ref="tableRef" 
         :key="activeTab"
         :allowBatchExtend="true"
         :allowBatchDownload="true"
@@ -101,7 +101,8 @@ const tabs = [
   { key: 'paruh-waktu', label: 'Perpanjangan PPPK Paruh Waktu', icon: 'fa-solid fa-file-invoice' },
 ]
 
-const activeTab = computed(() => route.params.jenis || 'pppk')
+const tableRef = ref(null)
+  const activeTab = computed(() => route.params.jenis || 'pppk')
 
 // Helper function to check if item is eligible for extension
 const isEligibleForExtension = (item) => {
@@ -252,7 +253,15 @@ const executeBatchExtend = async () => {
     await new Promise(resolve => setTimeout(resolve, 100))
     
     const res = await pegawaiStore.batchExtend(extendIds.value, pendingExtendData)
-    customSwal.fire({ icon: 'success', title: 'Berhasil', text: `Berhasil memperpanjang ${res.count} kontrak pegawai!` })
+    customSwal.fire({ 
+      icon: 'success', 
+      title: 'Berhasil', 
+      html: `Berhasil memperpanjang <b>${res.count}</b> kontrak pegawai!<br><br><span style='font-size: 0.9em; color: #666;'>Data tersebut kini berstatus Aktif dan telah dipindahkan dari antrean ini ke menu <b>Riwayat Perpanjangan</b>.</span>` 
+    }).then(() => {
+      if (tableRef.value) {
+        tableRef.value.resetFilters()
+      }
+    })
   } catch (e) {
     customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal memperpanjang kontrak: ' + e.message })
   } finally {
