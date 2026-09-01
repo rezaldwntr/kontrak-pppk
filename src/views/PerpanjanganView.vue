@@ -251,12 +251,11 @@ const executeBatchExtend = async () => {
     })
     
     await new Promise(resolve => setTimeout(resolve, 100))
-    
     const res = await pegawaiStore.batchExtend(extendIds.value, pendingExtendData)
     customSwal.fire({ 
       icon: 'success', 
       title: 'Berhasil', 
-      html: `Berhasil memperpanjang <b>${res.count}</b> kontrak pegawai!<br><br><span style='font-size: 0.9em; color: #666;'>Data tersebut kini berstatus Aktif dan telah dipindahkan dari antrean ini ke menu <b>Riwayat Perpanjangan</b>.</span>` 
+      text: `Berhasil memperpanjang ${res.count} kontrak pegawai!`
     }).then(() => {
       if (tableRef.value) {
         tableRef.value.resetFilters()

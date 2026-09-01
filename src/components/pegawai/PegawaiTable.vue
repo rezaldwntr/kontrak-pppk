@@ -330,7 +330,7 @@ watch(baseData, (newData) => {
     selectedIds.value = [];
   };
 
-  defineExpose({ clearSelection });
+  defineExpose({ clearSelection, resetFilters });
 
 const jenisPppkOptions = computed(() => {
   const types = new Set(baseData.value.map(item => item['JENIS PPPK'] || 'PPPK'))
