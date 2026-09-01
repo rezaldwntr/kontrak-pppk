@@ -23,6 +23,7 @@
         :onlyNeedExtension="true"
         :customData="filteredData"
         :hideJenisPppkFilter="true"
+        :hideStatusKontrakFilter="true"
         @batch-extend="handleBatchExtend"
         @download="handleDownload"
         @batch-download="handleBatchDownload"
