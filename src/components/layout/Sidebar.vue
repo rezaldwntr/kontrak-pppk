@@ -1,18 +1,18 @@
 <template>
   <aside class="sidebar" :class="{ collapsed: collapsed }">
-    <div class="sidebar-brand">
+    <div class="sidebar-brand" :class="{ 'clickable-brand': collapsed }" @click="collapsed ? $emit('toggle-collapse') : null">
       <div class="brand-icon">
-        <i class="fa-solid fa-file-signature"></i>
+        <i class="fa-solid fa-file-signature original-icon"></i>
+        <i class="fa-solid fa-chevron-right hover-icon" style="display: none;"></i>
       </div>
       <div class="brand-name">
         <h3>E-Kontrak</h3>
         <span>PPPK Manager</span>
       </div>
+      <button v-if="!collapsed" class="btn-collapse-inline" @click.stop="$emit('toggle-collapse')" title="Kecilkan Sidebar">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
     </div>
-    
-    <button class="btn-collapse" @click="$emit('toggle-collapse')" title="Toggle Sidebar">
-      <i class="fa-solid" :class="collapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
-    </button>
     
     <nav class="sidebar-menu">
       <router-link to="/" class="menu-item" active-class="active" title="Dashboard">
@@ -90,34 +90,45 @@ const handleLogout = async () => {
 </script>
 
 <style scoped>
-/* Collapse button styles */
-.btn-collapse {
-  position: absolute;
-  right: -12px;
-  top: 45px;
-  background: var(--primary-color);
-  color: white;
+/* Inline collapse button (expanded state) */
+.btn-collapse-inline {
+  background: transparent;
+  color: var(--text-secondary);
   border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  cursor: pointer;
+  margin-left: auto;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 101;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  transition: all 0.2s ease;
-  transform: scale(1);
 }
-.btn-collapse:hover {
-  background: var(--primary-hover);
-  transform: scale(1.1);
+.btn-collapse-inline:hover {
+  color: var(--primary-color);
+  background: var(--primary-light);
 }
 @media (max-width: 768px) {
-  .btn-collapse {
+  .btn-collapse-inline {
     display: none !important;
   }
+}
+
+/* Collapsed brand hover behavior */
+.sidebar-brand.clickable-brand {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sidebar-brand.clickable-brand:hover .brand-icon {
+  background: var(--primary-color);
+  transform: scale(1.05);
+}
+.sidebar-brand.clickable-brand:hover .original-icon {
+  display: none !important;
+}
+.sidebar-brand.clickable-brand:hover .hover-icon {
+  display: block !important;
 }
 
 /* Collapsed state adjustments */
