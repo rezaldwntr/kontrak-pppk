@@ -319,6 +319,19 @@ const baseData = computed(() => {
   return source;
 });
 
+watch(baseData, (newData) => {
+    if (selectedIds.value.length > 0) {
+      const currentIds = new Set(newData.map(item => item['PNS ID']))
+      selectedIds.value = selectedIds.value.filter(id => currentIds.has(id))
+    }
+  });
+
+  const clearSelection = () => {
+    selectedIds.value = [];
+  };
+
+  defineExpose({ clearSelection });
+
 const jenisPppkOptions = computed(() => {
   const types = new Set(baseData.value.map(item => item['JENIS PPPK'] || 'PPPK'))
   return Array.from(types).sort()
