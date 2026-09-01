@@ -359,7 +359,7 @@ const handleExport = () => {
 const handleImportSuccess = () => {}
 </script>
 
-<style scoped>
+<style>
 .pppk-tabs {
   overflow-x: auto;
   white-space: nowrap;

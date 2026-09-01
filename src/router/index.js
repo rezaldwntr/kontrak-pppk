@@ -21,6 +21,10 @@ const routes = [
   },
   {
     path: '/perpanjangan',
+    redirect: '/perpanjangan/pppk'
+  },
+  {
+    path: '/perpanjangan/:jenis',
     name: 'perpanjangan',
     component: () => import('../views/PerpanjanganView.vue'),
     meta: { requiresAuth: true, title: 'Proses Perpanjangan Kontrak PPPK', subtitle: 'Manajemen masa kontrak dan BUP' }
