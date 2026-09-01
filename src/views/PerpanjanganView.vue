@@ -32,6 +32,10 @@
       />
     </div>
 
+    <div style="margin-top: 24px; margin-bottom: 24px;">
+      <ChartCard title="Statistik Unor Induk (Belum Diperpanjang)" icon="fa-solid fa-building" chartType="bar" :chartData="unorChartData" />
+    </div>
+
     <!-- Modals -->
     <DetailModal 
       v-if="showDetail" 
@@ -74,6 +78,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePegawaiStore } from '../stores/pegawaiStore'
+import ChartCard from '../components/dashboard/ChartCard.vue'
 import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
 import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
@@ -127,6 +132,34 @@ const filteredData = computed(() => {
       return item['JENIS PPPK'] !== 'PPPK Paruh Waktu'
     }
   })
+})
+
+const getUnorInduk = (unorNama) => {
+  if (!unorNama) return '-'
+  let cleaned = unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
+  if (cleaned === '-') return '-'
+  const parts = cleaned.split(' - ')
+  return parts[parts.length - 1] || '-'
+}
+
+const unorChartData = computed(() => {
+  const counts = {}
+  filteredData.value.forEach(item => {
+    if (isEligibleForExtension(item)) {
+      const unorInduk = getUnorInduk(item['UNOR NAMA'])
+      counts[unorInduk] = (counts[unorInduk] || 0) + 1
+    }
+  })
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 20)
+  return {
+    labels: sorted.map(k => k[0]),
+    datasets: [{
+      label: 'Pegawai Belum Diperpanjang',
+      data: sorted.map(k => k[1]),
+      backgroundColor: '#1eaa6e',
+      borderRadius: 4
+    }]
+  }
 })
 
 const showPasswordModal = ref(false)
