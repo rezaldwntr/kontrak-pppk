@@ -199,15 +199,16 @@ const filteredData = computed(() => {
     return cat === activeTab.value
   })
 
-  if (activeTab.value === 'akan-pensiun') {
-    data.sort((a, b) => {
-      const pA = calculateContractPeriod(a)
-      const pB = calculateContractPeriod(b)
-      const tA = pA.rawDate ? pA.rawDate.getTime() : Infinity
-      const tB = pB.rawDate ? pB.rawDate.getTime() : Infinity
-      return tA - tB
-    })
-  }
+    if (activeTab.value === 'akan-pensiun' || activeTab.value === 'sudah-pensiun') {
+      data.sort((a, b) => {
+        const pA = calculateContractPeriod(a)
+        const pB = calculateContractPeriod(b)
+        const tA = pA.rawDate ? pA.rawDate.getTime() : Infinity
+        const tB = pB.rawDate ? pB.rawDate.getTime() : Infinity
+        if (activeTab.value === 'sudah-pensiun') return tB - tA;
+        return tA - tB
+      })
+    }
 
   return data
 })
@@ -402,4 +403,5 @@ const handleImportSuccess = () => {}
   color: var(--primary-color);
 }
 </style>
+
 
