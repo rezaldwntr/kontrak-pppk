@@ -1447,3 +1447,29 @@ textarea.form-control {
     padding-bottom: 5px;
   }
 }
+
+.pagination-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 15px;
+  padding-right: 15px;
+}
+@media (max-width: 768px) {
+  .pagination-container {
+    justify-content: space-between;
+    padding-right: 0;
+    padding-left: 0;
+    gap: 5px;
+  }
+  .pagination-container .page-info {
+    font-size: 0.8rem;
+    text-align: center;
+    flex: 1;
+  }
+  .pagination-container .btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+}

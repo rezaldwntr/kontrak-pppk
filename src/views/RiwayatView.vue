@@ -72,7 +72,7 @@
           </tbody>
         </table>
       </div>
-      <div class="pagination" style="display: flex; gap: 15px; align-items: center; justify-content: flex-end; padding-top: 15px; padding-right: 15px;">
+      <div class="pagination-container">
           <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
           <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
           <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>

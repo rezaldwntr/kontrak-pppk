@@ -64,8 +64,56 @@ const renderChart = () => {
         }
       },
       scales: isDoughnut ? {} : {
-        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0aec0' } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#a0aec0' } }
+        x: { 
+          grid: { color: 'rgba(255,255,255,0.05)' }, 
+          ticks: { 
+            color: '#a0aec0',
+            callback: function(value) {
+              const label = this.getLabelForValue(value);
+              if (typeof label === 'string' && label.length > 12 && !isHorizontalBar) {
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = '';
+                words.forEach(word => {
+                  if ((currentLine + ' ' + word).length > 12) {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                  } else {
+                    currentLine = currentLine ? currentLine + ' ' + word : word;
+                  }
+                });
+                if (currentLine) lines.push(currentLine);
+                return lines;
+              }
+              return label;
+            }
+          } 
+        },
+        y: { 
+          grid: { color: 'rgba(255,255,255,0.05)' }, 
+          ticks: { 
+            color: '#a0aec0',
+            callback: function(value) {
+              const label = this.getLabelForValue(value);
+              if (typeof label === 'string' && label.length > 15 && isHorizontalBar) {
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = '';
+                words.forEach(word => {
+                  if ((currentLine + ' ' + word).length > 15) {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                  } else {
+                    currentLine = currentLine ? currentLine + ' ' + word : word;
+                  }
+                });
+                if (currentLine) lines.push(currentLine);
+                return lines;
+              }
+              return label;
+            }
+          } 
+        }
       }
     }
   })
