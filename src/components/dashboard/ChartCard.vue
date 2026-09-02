@@ -93,6 +93,7 @@ const renderChart = () => {
           grid: { color: 'rgba(255,255,255,0.05)' }, 
           ticks: { 
             color: '#a0aec0',
+            autoSkip: false,
             callback: function(value) {
               const label = this.getLabelForValue(value);
               if (typeof label === 'string' && label.length > 15 && isHorizontalBar) {
