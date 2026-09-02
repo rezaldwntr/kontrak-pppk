@@ -16,8 +16,8 @@
       </div>
 
       <div style="display: flex; justify-content: flex-end; flex: 1;">
-        <button class="btn btn-success" @click="exportHistory" :disabled="filteredHistory.length === 0">
-          <i class="fa-solid fa-file-excel"></i> Ekspor Data
+        <button class="btn btn-success btn-icon-only" @click="exportHistory" :disabled="filteredHistory.length === 0" title="Ekspor Data">
+          <i class="fa-solid fa-file-excel"></i>
         </button>
       </div>
     </div>
@@ -27,8 +27,8 @@
         <i class="fa-solid fa-check-circle"></i> {{ selectedIds.length }} Riwayat Terpilih
       </div>
       <div>
-        <button class="btn btn-danger" @click="confirmBatchCancel">
-          <i class="fa-solid fa-rotate-left"></i> Batal Massal
+        <button class="btn btn-danger btn-icon-only" @click="confirmBatchCancel" title="Batal Massal">
+          <i class="fa-solid fa-rotate-left"></i>
         </button>
       </div>
     </div>
@@ -64,19 +64,23 @@
               <td>{{ history.kontrakLama ? formatIndoDate(history.kontrakLama) : '-' }}</td>
               <td>{{ history.tmtBaru ? formatIndoDate(history.tmtBaru) : '-' }}</td>
               <td v-if="authStore?.user">
-                <button class="btn btn-danger btn-sm" @click="confirmSingleCancel(history)" title="Batalkan Perpanjangan">
-                  <i class="fa-solid fa-rotate-left"></i> Batal
+                <button class="btn btn-danger btn-sm btn-icon-only" @click="confirmSingleCancel(history)" title="Batalkan Perpanjangan">
+                  <i class="fa-solid fa-rotate-left"></i>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div class="pagination-container">
-          <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
+        <div class="pagination-container">
+          <button class="btn btn-outline btn-sm btn-icon-only" :disabled="currentPage === 1" @click="currentPage--" title="Sebelumnya">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
           <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
-          <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
-      </div>
+          <button class="btn btn-outline btn-sm btn-icon-only" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++" title="Selanjutnya">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
     </div>
     
     <PasswordPromptModal 

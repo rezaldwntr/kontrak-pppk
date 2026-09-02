@@ -53,8 +53,8 @@
           <p>Kepegawaian</p>
         </div>
       </div>
-      <button class="btn btn-secondary btn-logout" style="width: 100%; justify-content: center; margin-top: 15px;" v-if="authStore.user" @click="handleLogout" title="Logout">
-        <i class="fa-solid fa-right-from-bracket"></i> <span class="logout-text">Logout</span>
+      <button class="btn btn-secondary btn-logout btn-icon-only" style="margin-top: 15px;" v-if="authStore.user" @click="handleLogout" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
       </button>
     </div>
   </aside>

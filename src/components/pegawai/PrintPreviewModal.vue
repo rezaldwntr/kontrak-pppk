@@ -54,11 +54,12 @@
       </div>
       
       <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
-        <button class="btn btn-secondary" @click="close">Batal</button>
-        <button class="btn btn-primary" @click="handleDownload" style="background-color: #2b579a;" :disabled="isProcessing">
+        <button class="btn btn-secondary btn-icon-only" @click="close" title="Batal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <button class="btn btn-primary btn-icon-only" @click="handleDownload" style="background-color: #2b579a;" :disabled="isProcessing" :title="isProcessing ? 'Memproses...' : 'Unduh Word (.docx)'">
           <i v-if="isProcessing" class="fa-solid fa-spinner fa-spin"></i>
-          <i v-else class="fa-solid fa-file-word"></i> 
-          {{ isProcessing ? 'Memproses...' : 'Unduh Word (.docx)' }}
+          <i v-else class="fa-solid fa-file-word"></i>
         </button>
       </div>
     </div>

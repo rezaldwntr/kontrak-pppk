@@ -12,18 +12,18 @@
     
     <div class="header-actions">
 
-      <button class="btn btn-primary" id="btn-login-modal" v-if="!authStore.user" @click="authStore.showLoginModal = true">
-        <i class="fa-solid fa-right-to-bracket"></i> Login
+      <button class="btn btn-primary btn-icon-only" id="btn-login-modal" v-if="!authStore.user" @click="authStore.showLoginModal = true" title="Login">
+        <i class="fa-solid fa-right-to-bracket"></i>
       </button>
 
-      <button class="btn btn-primary" id="btn-import-trigger" v-if="authStore.user && route.name === 'pegawai'" @click="pegawaiStore.showImportModal = true">
-        <i class="fa-solid fa-file-import"></i> Impor Data
+      <button class="btn btn-primary btn-icon-only" id="btn-import-trigger" v-if="authStore.user && route.name === 'pegawai'" @click="pegawaiStore.showImportModal = true" title="Impor Data">
+        <i class="fa-solid fa-file-import"></i>
       </button>
-      <button class="btn btn-secondary" id="btn-export" v-if="authStore.user && route.name === 'pegawai'" @click="handleExport">
-        <i class="fa-solid fa-file-export"></i> Ekspor CSV
+      <button class="btn btn-secondary btn-icon-only" id="btn-export" v-if="authStore.user && route.name === 'pegawai'" @click="handleExport" title="Ekspor CSV">
+        <i class="fa-solid fa-file-export"></i>
       </button>
-      <button class="btn btn-danger" id="btn-clear-all" v-if="authStore.user && route.name === 'pegawai'" style="background-color: var(--danger-color); color: #ffffff;" @click="handleClearAll">
-        <i class="fa-solid fa-trash-can"></i> Hapus Semua
+      <button class="btn btn-danger btn-icon-only" id="btn-clear-all" v-if="authStore.user && route.name === 'pegawai'" style="background-color: var(--danger-color); color: #ffffff;" @click="handleClearAll" title="Hapus Semua">
+        <i class="fa-solid fa-trash-can"></i>
       </button>
     </div>
   </header>

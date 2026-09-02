@@ -1,0 +1,1 @@
+const fs = require('fs'); const content = fs.readFileSync('scratch_docx/word/document.xml', 'utf8'); const matches = content.match(/<w:numId[^>]*w:val="(\d+)"[^>]*\/>/g); console.log(matches ? matches.length : 0);

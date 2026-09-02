@@ -51,8 +51,8 @@
                     </select>
                 </div>
                 <div class="filter-group" style="flex: 0 0 auto;">
-                    <button class="btn btn-outline" @click="resetFilters" style="height: 40px; margin-bottom: 2px;" title="Reset Filter">
-                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    <button class="btn btn-outline btn-icon-only" @click="resetFilters" style="height: 40px; width: 40px; margin-bottom: 2px;" title="Reset Filter">
+                        <i class="fa-solid fa-rotate-left"></i>
                     </button>
                 </div>
             </div>
@@ -64,14 +64,14 @@
         <i class="fa-solid fa-check-circle"></i> {{ selectedIds.length }} Data Terpilih
       </div>
       <div style="display: flex; gap: 10px;">
-        <button v-if="allowBatchExtend" class="btn btn-primary" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="emit('batchExtend', selectedIds)">
-          <i class="fa-solid fa-file-signature"></i> Perpanjang Massal
+        <button v-if="allowBatchExtend" class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="emit('batchExtend', selectedIds)" title="Perpanjang Massal">
+          <i class="fa-solid fa-file-signature"></i>
         </button>
-        <button v-if="allowBatchDownload || !allowBatchExtend" class="btn btn-primary" style="background-color: #2563eb; border-color: #2563eb; color: white;" @click="emit('batchDownload', getSelectedItems())">
-          <i class="fa-solid fa-download"></i> Unduh Massal
+        <button v-if="allowBatchDownload || !allowBatchExtend" class="btn btn-primary btn-icon-only" style="background-color: #2563eb; border-color: #2563eb; color: white;" @click="emit('batchDownload', getSelectedItems())" title="Unduh Massal">
+          <i class="fa-solid fa-download"></i>
         </button>
-        <button v-if="allowBatchDelete" class="btn btn-danger" @click="emit('batchDelete', selectedIds)">
-          <i class="fa-solid fa-trash"></i> Hapus Massal
+        <button v-if="allowBatchDelete" class="btn btn-danger btn-icon-only" @click="emit('batchDelete', selectedIds)" title="Hapus Massal">
+          <i class="fa-solid fa-trash"></i>
         </button>
       </div>
     </div>
@@ -129,11 +129,15 @@
                 </tbody>
             </table>
         </div>
-        <div class="pagination-container">
-            <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
+          <div class="pagination-container">
+            <button class="btn btn-outline btn-sm btn-icon-only" :disabled="currentPage === 1" @click="currentPage--" title="Sebelumnya">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
             <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
-            <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
-        </div>
+            <button class="btn btn-outline btn-sm btn-icon-only" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++" title="Selanjutnya">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
     </div>
   </div>
 </template>

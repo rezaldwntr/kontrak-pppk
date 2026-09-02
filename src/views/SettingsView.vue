@@ -19,10 +19,9 @@
           </select>
         </div>
         
-        <button class="btn btn-primary" @click="savePihakPertama" :disabled="isSavingPihakPertama" style="background-color: var(--primary-color);">
+        <button class="btn btn-primary btn-icon-only" @click="savePihakPertama" :disabled="isSavingPihakPertama" style="background-color: var(--primary-color);" title="Simpan Pengaturan">
           <i v-if="isSavingPihakPertama" class="fa-solid fa-spinner fa-spin"></i>
-          <i v-else class="fa-solid fa-save"></i> 
-          Simpan Pengaturan
+          <i v-else class="fa-solid fa-save"></i>
         </button>
       </div>
     </div>
@@ -217,20 +216,20 @@
         <div><i class="fa-solid fa-shield-halved"></i> Keamanan & Akun</div>
       </h3>
 
-      <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+      <div class="template-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
         <div class="template-card">
           <h4><i class="fa-solid fa-envelope"></i> Ganti Email</h4>
           <p class="text-muted">Perbarui alamat email yang digunakan untuk masuk ke aplikasi.</p>
-          <button class="btn btn-outline" style="width: 100%; display: block;" @click="handleChangeEmail">
-            Ubah Email
+          <button class="btn btn-outline" style="width: 100%; display: block; text-align: center;" @click="handleChangeEmail" title="Ubah Email">
+            <i class="fa-solid fa-envelope"></i>
           </button>
         </div>
 
         <div class="template-card">
           <h4><i class="fa-solid fa-key"></i> Ganti Password</h4>
           <p class="text-muted">Perbarui kata sandi untuk mengamankan akun Anda.</p>
-          <button class="btn btn-outline" style="width: 100%; display: block;" @click="handleChangePassword">
-            Ubah Password
+          <button class="btn btn-outline" style="width: 100%; display: block; text-align: center;" @click="handleChangePassword" title="Ubah Password">
+            <i class="fa-solid fa-key"></i>
           </button>
         </div>
       </div>

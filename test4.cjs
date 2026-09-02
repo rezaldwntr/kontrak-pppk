@@ -1,0 +1,1 @@
+const fs = require('fs'); const content = fs.readFileSync('scratch_docx/word/numbering.xml', 'utf8'); const regex = /<w:num[^>]*w:numId="([^"]+)"[^>]*>([\s\S]*?)<\/w:num>/g; let match; while((match = regex.exec(content)) !== null) { console.log('ID:', match[1], 'INNER:', match[2]); }

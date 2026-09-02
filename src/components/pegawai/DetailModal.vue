@@ -219,12 +219,14 @@
       </div>
       
       <div class="modal-footer">
-        <button class="btn btn-outline" @click="emit('close')">Batal</button>
-        <button class="btn btn-primary" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSave">
-          Simpan Perubahan
+        <button class="btn btn-outline btn-icon-only" @click="emit('close')" title="Batal">
+          <i class="fa-solid fa-xmark"></i>
         </button>
-        <button class="btn btn-primary" v-if="authStore.user" @click="emit('print', editForm)">
-          <i class="fa-solid fa-print"></i> Cetak / Unduh Kontrak
+        <button class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSave" title="Simpan Perubahan">
+          <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+        <button class="btn btn-primary btn-icon-only" v-if="authStore.user" @click="emit('print', editForm)" title="Cetak / Unduh Kontrak">
+          <i class="fa-solid fa-print"></i>
         </button>
       </div>
     </div>

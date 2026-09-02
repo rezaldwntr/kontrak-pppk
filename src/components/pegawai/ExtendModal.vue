@@ -68,9 +68,11 @@
         </template>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn btn-outline" @click="emit('close')">Batal</button>
-        <button class="btn btn-primary" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSubmit" :disabled="!newTmtDate">
-          <i class="fa-solid fa-file-signature"></i> Proses Perpanjangan
+        <button class="btn btn-outline btn-icon-only" @click="emit('close')" title="Batal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <button class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSubmit" :disabled="!newTmtDate" title="Proses Perpanjangan">
+          <i class="fa-solid fa-file-signature"></i>
         </button>
       </div>
     </div>

@@ -32,9 +32,9 @@
           </div>
         </div>
 
-        <button class="btn btn-primary login-btn" @click="handleLogin" :disabled="isLoading" style="width: 100%; height: 48px; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; justify-content: center; align-items: center;">
+        <button class="btn btn-primary login-btn" @click="handleLogin" :disabled="isLoading" style="width: 100%; height: 48px; font-size: 1rem; font-weight: 600; border-radius: 12px; display: flex; justify-content: center; align-items: center;" title="Masuk ke Sistem">
           <i v-if="isLoading" class="fa-solid fa-spinner fa-spin"></i>
-          <span v-else>Masuk ke Sistem</span>
+          <i v-else class="fa-solid fa-right-to-bracket"></i>
         </button>
       </div>
     </div>
