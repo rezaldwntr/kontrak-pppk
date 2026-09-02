@@ -1,7 +1,7 @@
 <template>
   <header class="main-header">
     <div class="header-title" style="display: flex; align-items: center; gap: 15px;">
-      <button class="btn btn-icon-only mobile-menu-toggle" id="btn-mobile-menu" style="display: none;">
+      <button class="btn btn-icon-only mobile-menu-toggle" id="btn-mobile-menu" style="display: none;" @click="$emit('toggle-mobile-menu')">
         <i class="fa-solid fa-bars"></i>
       </button>
       <div>
@@ -37,6 +37,7 @@ import { usePegawaiStore } from '../../stores/pegawaiStore'
 import { exportToExcel } from '../../utils/exportImport'
 import { customSwal } from '../../utils/swal'
 
+const emit = defineEmits(['toggle-mobile-menu'])
 const route = useRoute()
 const authStore = useAuthStore()
 const pegawaiStore = usePegawaiStore()

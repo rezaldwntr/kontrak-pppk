@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar" :class="{ collapsed: collapsed }">
+  <aside class="sidebar" :class="{ collapsed: collapsed, open: mobileOpen }">
     <div class="sidebar-brand" :class="{ 'clickable-brand': collapsed }" @click="collapsed ? $emit('toggle-collapse') : null">
       <div class="brand-icon">
         <i class="fa-solid fa-file-signature original-icon"></i>
@@ -14,7 +14,7 @@
       </button>
     </div>
     
-    <nav class="sidebar-menu">
+    <nav class="sidebar-menu" @click="$emit('close-mobile')">
       <router-link to="/" class="menu-item" active-class="active" title="Dashboard">
         <i class="fa-solid fa-chart-pie"></i>
         <span>Dashboard</span>
@@ -65,8 +65,8 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 import { useRouter } from 'vue-router'
 
-const props = defineProps({ collapsed: Boolean })
-const emit = defineEmits(['toggle-collapse'])
+const props = defineProps({ collapsed: Boolean, mobileOpen: Boolean })
+const emit = defineEmits(['toggle-collapse', 'close-mobile'])
 
 const authStore = useAuthStore()
 const router = useRouter()

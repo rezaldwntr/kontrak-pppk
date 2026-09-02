@@ -1437,3 +1437,13 @@ textarea.form-control {
   color: var(--primary-color);
 }
 
+
+@media (max-width: 768px) {
+  .pppk-tab-item {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+  .pppk-tabs {
+    padding-bottom: 5px;
+  }
+}

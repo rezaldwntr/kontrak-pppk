@@ -1,9 +1,10 @@
 <template>
   <div class="app-container" :class="{ 'collapsed-sidebar': isSidebarCollapsed }">
-    <Sidebar :collapsed="isSidebarCollapsed" @toggle-collapse="isSidebarCollapsed = !isSidebarCollapsed" />
+    <div v-if="isMobileMenuOpen" class="mobile-overlay" @click="isMobileMenuOpen = false"></div>
+    <Sidebar :collapsed="isSidebarCollapsed" :mobileOpen="isMobileMenuOpen" @toggle-collapse="isSidebarCollapsed = !isSidebarCollapsed" @close-mobile="isMobileMenuOpen = false" />
     
     <div class="main-content">
-      <Header />
+      <Header @toggle-mobile-menu="isMobileMenuOpen = !isMobileMenuOpen" />
       <router-view />
     </div>
 
@@ -24,6 +25,7 @@ const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const isSidebarCollapsed = ref(false)
+const isMobileMenuOpen = ref(false)
 
 const isAuthenticated = computed(() => !!authStore.user)
 
@@ -136,5 +138,14 @@ onUnmounted(() => {
 .main-content.auth-mode {
   justify-content: center;
   align-items: center;
+}
+</style>
+
+<style>
+.mobile-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9998;
 }
 </style>
