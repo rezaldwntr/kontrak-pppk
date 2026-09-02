@@ -1528,3 +1528,9 @@ textarea.form-control {
     grid-column: span 1;
   }
 }
+
+@media (max-width: 768px) {
+  .form-grid > .form-group {
+    grid-column: 1 / -1 !important;
+  }
+}
