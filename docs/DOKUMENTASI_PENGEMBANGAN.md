@@ -217,3 +217,5 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Responsivitas Mobile:** Memperbaiki *bug* pada tombol menu (garis 3/hamburger) yang sebelumnya tidak merespon saat ditekan di HP. Selain itu, menyesuaikan skala ukuran font dan *padding* pada tab menu horizontal agar tidak terlalu memakan tempat dan lebih muat di layar kecil.
 
 - **Optimalisasi Tata Letak Paginasi & Grafik:** Merapikan tata letak tombol navigasi paginasi (Sebelumnya/Selanjutnya) agar tidak terjepit dan tetap rapi di layar ponsel. Selain itu, menyesuaikan label teks nama Unor pada grafik batang agar otomatis terpotong menjadi beberapa baris (*multiline*) jika terlalu panjang, sehingga teks tidak lagi terpotong/hilang di sisi kiri layar.
+
+- **Visibilitas Menu Sidebar (*Landscape* Mobile):** Memperbaiki masalah di mana item menu navigasi pada *sidebar* hilang/tersembunyi ketika layar berorientasi *landscape* (memanjang ke samping) atau memiliki tinggi yang sangat terbatas. Kini *sidebar* secara otomatis menyesuaikan diri menjadi panel yang bisa di-*scroll* secara penuh jika ruang vertikal tidak mencukupi.
