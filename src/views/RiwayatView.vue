@@ -51,10 +51,10 @@
             <tr v-if="pegawaiStore.isLoading">
               <td colspan="7" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Riwayat...</td>
             </tr>
-            <tr v-else-if="filteredHistory.length === 0">
+            <tr v-else-if="paginatedHistory.length === 0">
               <td colspan="7" class="text-center">Belum ada riwayat perpanjangan kontrak.</td>
             </tr>
-            <tr v-else v-for="(history, index) in filteredHistory" :key="history.nip + history.tglDiperpanjang">
+            <tr v-else v-for="(history, index) in paginatedHistory" :key="history.nip + history.tglDiperpanjang">
               <td v-if="authStore?.user">
                 <input type="checkbox" :value="history" v-model="selectedItems">
               </td>
@@ -71,6 +71,11 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      <div class="pagination" style="display: flex; gap: 15px; align-items: center; justify-content: flex-end; padding-top: 15px; padding-right: 15px;">
+          <button class="btn btn-outline btn-sm" :disabled="currentPage === 1" @click="currentPage--"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
+          <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+          <button class="btn btn-outline btn-sm" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++">Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
       </div>
     </div>
     
@@ -105,6 +110,9 @@ const uniqueTmtBaru = computed(() => {
   return [...new Set(tmts)].sort((a, b) => new Date(b) - new Date(a))
 })
 
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
 const filteredHistory = computed(() => {
   let result = pegawaiStore.extensionHistory
 
@@ -123,20 +131,33 @@ const filteredHistory = computed(() => {
   return result
 })
 
+const totalPages = computed(() => Math.ceil(filteredHistory.value.length / itemsPerPage.value))
+
+const paginatedHistory = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + Number(itemsPerPage.value)
+  return filteredHistory.value.slice(start, end)
+})
+
 // Hapus pilihan jika filter diubah
-watch(filterTmtBaru, () => {
-  selectedItems.value = []
+watch([filterTmtBaru, searchQuery], () => {
+  currentPage.value = 1
+  selectedItems.value = selectedItems.value.filter(item => !paginatedHistory.value.includes(item))
 })
 
 const selectAll = computed({
   get: () => {
-    return filteredHistory.value.length > 0 && selectedItems.value.length === filteredHistory.value.length
+    return paginatedHistory.value.length > 0 && paginatedHistory.value.every(item => selectedItems.value.includes(item))
   },
   set: (val) => {
     if (val) {
-      selectedItems.value = [...filteredHistory.value]
+      const newSelection = [...selectedItems.value]
+      paginatedHistory.value.forEach(item => {
+        if (!newSelection.includes(item)) newSelection.push(item)
+      })
+      selectedItems.value = newSelection
     } else {
-      selectedItems.value = []
+      selectedItems.value = selectedItems.value.filter(item => !paginatedHistory.value.includes(item))
     }
   }
 })
