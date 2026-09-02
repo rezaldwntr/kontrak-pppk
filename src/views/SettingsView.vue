@@ -2,21 +2,18 @@
   <div>
     <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 class="section-header">
-        <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama (Bupati)</div>
+        <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama</div>
       </h3>
       
       <div style="max-width: 600px;">
         <div class="form-group" style="margin-bottom: 15px;">
-          <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Nama Lengkap Bupati / Pj. Bupati</label>
+          <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Nama Lengkap Pihak Pertama</label>
           <input type="text" class="form-control" v-model="pihakPertama.nama" placeholder="Contoh: H. SAHRUJANI">
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
           <label style="font-weight: bold; margin-bottom: 8px; display: block; color: var(--text-primary);">Jabatan Pihak Pertama</label>
-          <select class="form-control" v-model="pihakPertama.jabatan">
-            <option value="Bupati">Bupati</option>
-            <option value="Pj. Bupati">Pj. Bupati</option>
-          </select>
+          <input type="text" class="form-control" v-model="pihakPertama.jabatan" placeholder="Contoh: Pj. Bupati Hulu Sungai Utara">
         </div>
         
         <button class="btn btn-primary btn-icon-only" @click="savePihakPertama" :disabled="isSavingPihakPertama" style="background-color: var(--primary-color);" title="Simpan Pengaturan">
@@ -142,8 +139,8 @@
                   📌 Pihak Pertama
                 </td>
               </tr>
-              <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Bupati / Pj. Bupati — otomatis <strong>HURUF BESAR</strong></td></tr>
-              <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Jabatan Pihak Pertama (Bupati / Pj. Bupati)</td></tr>
+              <tr><td><code>{{NAMA_BUPATI}}</code></td><td>Nama Pihak Pertama — otomatis <strong>HURUF BESAR</strong></td></tr>
+              <tr><td><code>{{JABATAN_BUPATI}}</code></td><td>Jabatan Pihak Pertama</td></tr>
 
               <tr style="background: var(--primary-light);">
                 <td colspan="2" style="font-weight: 700; color: var(--primary-color); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 12px;">
