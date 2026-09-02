@@ -387,9 +387,22 @@ const statusPppkOptions = computed(() => {
   return Array.from(types).sort()
 })
 
+const baseForPerpanjanganOptions = computed(() => {
+  return baseData.value.filter(item => {
+    const period = calculateContractPeriod(item);
+    const contractStatus = period.statusText;
+    const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value;
+    const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value;
+    const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value;
+    const matchUnorAtasan = unorAtasanFilter.value === 'all' || getUnorAtasan(item['UNOR NAMA']) === unorAtasanFilter.value;
+    const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value;
+    return matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk;
+  });
+});
+
 const perpanjanganOptions = computed(() => {
   const groups = {}; 
-  pegawaiStore.pppkData.forEach(item => {
+  baseForPerpanjanganOptions.value.forEach(item => {
     const period = calculateContractPeriod(item);
     if (!period.isBup && period.statusText !== 'Meninggal' && period.rawDate && !isNaN(period.rawDate.getTime())) {
       const newTmt = new Date(period.rawDate);
