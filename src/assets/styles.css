@@ -1499,3 +1499,32 @@ textarea.form-control {
 .sidebar-brand, .sidebar-footer {
   flex-shrink: 0;
 }
+
+@media (max-width: 768px) {
+  .modal-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    padding: 12px 15px;
+    font-size: 12px;
+  }
+  .modal-footer {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .modal-footer .btn {
+    flex: 1 1 100%;
+    margin-bottom: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .col-span-2 {
+    grid-column: span 1;
+  }
+}
