@@ -215,3 +215,5 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Paginasi Riwayat Perpanjangan:** Menambahkan fitur paginasi pada tabel halaman Riwayat Perpanjangan dengan batas 10 data per halaman untuk mencegah tampilan tabel memanjang ke bawah dan meningkatkan kenyamanan navigasi (*UX*).
 
 - **Responsivitas Mobile:** Memperbaiki *bug* pada tombol menu (garis 3/hamburger) yang sebelumnya tidak merespon saat ditekan di HP. Selain itu, menyesuaikan skala ukuran font dan *padding* pada tab menu horizontal agar tidak terlalu memakan tempat dan lebih muat di layar kecil.
+
+- **Optimalisasi Tata Letak Paginasi & Grafik:** Merapikan tata letak tombol navigasi paginasi (Sebelumnya/Selanjutnya) agar tidak terjepit dan tetap rapi di layar ponsel. Selain itu, menyesuaikan label teks nama Unor pada grafik batang agar otomatis terpotong menjadi beberapa baris (*multiline*) jika terlalu panjang, sehingga teks tidak lagi terpotong/hilang di sisi kiri layar.
