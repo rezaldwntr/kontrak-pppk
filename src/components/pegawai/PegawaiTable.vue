@@ -455,10 +455,10 @@ const paginatedData = computed(() => {
 })
 
 const selectAll = computed({
-  get: () => selectedIds.value.length === paginatedData.value.length && paginatedData.value.length > 0,
+  get: () => selectedIds.value.length === filteredData.value.length && filteredData.value.length > 0,
   set: (val) => {
     if (val) {
-      selectedIds.value = paginatedData.value.map(item => item['PNS ID'])
+      selectedIds.value = filteredData.value.map(item => item['PNS ID'])
     } else {
       selectedIds.value = []
     }

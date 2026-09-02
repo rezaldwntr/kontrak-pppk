@@ -142,22 +142,18 @@ const paginatedHistory = computed(() => {
 // Hapus pilihan jika filter diubah
 watch([filterTmtBaru, searchQuery], () => {
   currentPage.value = 1
-  selectedItems.value = selectedItems.value.filter(item => !paginatedHistory.value.includes(item))
+  selectedItems.value = []
 })
 
 const selectAll = computed({
   get: () => {
-    return paginatedHistory.value.length > 0 && paginatedHistory.value.every(item => selectedItems.value.includes(item))
+    return filteredHistory.value.length > 0 && selectedItems.value.length === filteredHistory.value.length
   },
   set: (val) => {
     if (val) {
-      const newSelection = [...selectedItems.value]
-      paginatedHistory.value.forEach(item => {
-        if (!newSelection.includes(item)) newSelection.push(item)
-      })
-      selectedItems.value = newSelection
+      selectedItems.value = [...filteredHistory.value]
     } else {
-      selectedItems.value = selectedItems.value.filter(item => !paginatedHistory.value.includes(item))
+      selectedItems.value = []
     }
   }
 })
