@@ -211,3 +211,5 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 
 - **Pengurutan Data Pensiun:** Menambahkan fungsi pengurutan (*sorting*) otomatis secara descending pada tab **Sudah Pensiun**, sehingga pegawai yang paling baru pensiun akan selalu tampil di urutan teratas.
+
+- **Paginasi Riwayat Perpanjangan:** Menambahkan fitur paginasi pada tabel halaman Riwayat Perpanjangan dengan batas 10 data per halaman untuk mencegah tampilan tabel memanjang ke bawah dan meningkatkan kenyamanan navigasi (*UX*).
