@@ -191,7 +191,7 @@ const unorChartData = computed(() => {
 })
 
 const unorChartHeight = computed(() => {
-  return Math.max(320, unorChartData.value.labels.length * 45 + 100) + 'px'
+  return Math.max(320, unorChartData.value.labels.length * 60 + 100) + 'px'
 })
 
 const showPasswordModal = ref(false)

@@ -96,12 +96,12 @@ const renderChart = () => {
             autoSkip: false,
             callback: function(value) {
               const label = this.getLabelForValue(value);
-              if (typeof label === 'string' && label.length > 15 && isHorizontalBar) {
+              if (typeof label === 'string' && label.length > 25 && isHorizontalBar) {
                 const words = label.split(' ');
                 let lines = [];
                 let currentLine = '';
                 words.forEach(word => {
-                  if ((currentLine + ' ' + word).length > 15) {
+                  if ((currentLine + ' ' + word).length > 25) {
                     if (currentLine) lines.push(currentLine);
                     currentLine = word;
                   } else {
