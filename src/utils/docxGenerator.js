@@ -490,8 +490,9 @@ export async function downloadSingleContract(item, paperSize = 'f4', tanggalKont
     throw new Error(`Template belum memiliki tag section lengkap: ${result.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template di menu Pengaturan.`)
   }
 
-  const baseName = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}`
-    .replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
+  const namaBersih = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
+  const nipBersih = String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')
+  const baseName = `kontrak_${namaBersih}_${nipBersih}`
 
   if (documentPart === 'pisah') {
     const pisahZip = new JSZip()
@@ -680,8 +681,9 @@ export async function downloadBatchContracts(items, paperSize = 'f4', onProgress
         throw new Error(`Template belum memiliki tag section lengkap: ${result.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template.`)
       }
 
-      const baseName = `kontrak_${String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')}_${item['NAMA'] || 'pegawai'}`
-        .replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
+      const namaBersih = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
+      const nipBersih = String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')
+      const baseName = `kontrak_${namaBersih}_${nipBersih}`
 
       if (documentPart === 'pisah') {
         anySections = true

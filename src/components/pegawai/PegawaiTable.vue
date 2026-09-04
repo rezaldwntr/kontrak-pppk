@@ -199,7 +199,12 @@ const handleUnorIndukChange = () => {
 
 // Get full item objects from selectedIds
 const getSelectedItems = () => {
-  return baseData.value.filter(item => selectedIds.value.includes(item['PNS ID']))
+  const items = baseData.value.filter(item => selectedIds.value.includes(item['PNS ID']))
+  return items.sort((a, b) => {
+    const nameA = (a['NAMA'] || '').toString().toUpperCase()
+    const nameB = (b['NAMA'] || '').toString().toUpperCase()
+    return nameA.localeCompare(nameB)
+  })
 }
 
 // getStatusPppk is imported from pppkLogic.js
