@@ -188,13 +188,7 @@ watch(() => props.isOpen, (v) => {
 })
 
 function getNamaLengkap(item) {
-  const gelarDepan = (item['GELAR DEPAN'] || '').trim()
-  const nama = (item['NAMA'] || '').trim()
-  const gelarBelakang = (item['GELAR BELAKANG'] || '').trim()
-  let full = nama
-  if (gelarDepan) full = gelarDepan + ' ' + full
-  if (gelarBelakang) full = full + ', ' + gelarBelakang
-  return full
+  return (item['NAMA'] || '').trim()
 }
 
 /**

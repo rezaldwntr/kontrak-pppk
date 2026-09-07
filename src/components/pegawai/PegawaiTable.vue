@@ -284,9 +284,7 @@ const getUnorInduk = (unorNama) => {
 
 const getNamaLengkap = (item) => {
   if (!item) return ''
-  const dpn = item['GELAR DEPAN'] && item['GELAR DEPAN'] !== '-' ? item['GELAR DEPAN'] + ' ' : ''
-  const blk = item['GELAR BELAKANG'] && item['GELAR BELAKANG'] !== '-' ? ', ' + item['GELAR BELAKANG'] : ''
-  return dpn + item['NAMA'] + blk
+  return (item['NAMA'] || '').trim()
 }
 
 const formatIndoDate = (dateStr) => {

@@ -154,7 +154,7 @@
                   👤 Data Pegawai
                 </td>
               </tr>
-              <tr><td><code>{{NAMA_PEGAWAI}}</code></td><td>Nama Lengkap PPPK (beserta gelar)</td></tr>
+              <tr><td><code>{{NAMA_PEGAWAI}}</code></td><td>Nama Lengkap PPPK (tanpa gelar)</td></tr>
               <tr><td><code>{{NIP_BARU}}</code></td><td>NIP Baru PPPK</td></tr>
               <tr><td><code>{{ALAMAT}}</code></td><td>Alamat tempat tinggal pegawai</td></tr>
               <tr><td><code>{{JABATAN}}</code></td><td>Nama Jabatan Kerja PPPK</td></tr>

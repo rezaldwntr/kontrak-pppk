@@ -87,13 +87,8 @@ function getKelompokPegawai(item) {
 }
 
 function getNamaLengkap(item) {
-  const gelarDepan = (item['GELAR DEPAN'] || '').trim()
-  const nama = (item['NAMA'] || '').trim()
-  const gelarBelakang = (item['GELAR BELAKANG'] || '').trim()
-  let full = nama
-  if (gelarDepan) full = gelarDepan + ' ' + full
-  if (gelarBelakang) full = full + ', ' + gelarBelakang
-  return full
+  // Hanya kembalikan nama lengkap tanpa gelar depan/belakang sesuai permintaan
+  return (item['NAMA'] || '').trim()
 }
 
 /**
