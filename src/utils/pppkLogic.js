@@ -166,3 +166,10 @@ export const getPegawaiCategory = (item) => {
     // Fallback: anggap aktif
     return "aktif";
 };
+
+export function getKelompokPegawai(item) {
+  const jabatan = (item['JABATAN NAMA'] || item['JABATAN'] || '').toLowerCase()
+  if (jabatan.includes('guru')) return 'Tenaga Guru'
+  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker') || jabatan.includes('gizi') || jabatan.includes('kesehatan') || jabatan.includes('sanitarian') || jabatan.includes('epidemiolog')) return 'Tenaga Kesehatan'
+  return 'Tenaga Teknis'
+}

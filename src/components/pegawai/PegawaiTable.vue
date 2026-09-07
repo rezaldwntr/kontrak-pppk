@@ -11,6 +11,13 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Kelompok Pegawai</label>
+                    <select v-model="kelompokPppkFilter" @change="handleSearch" class="form-control" style="min-width: 140px;">
+                        <option value="all" v-if="kelompokPppkOptions.length !== 1">Semua Kelompok</option>
+                        <option v-for="opt in kelompokPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Cari</label>
                     <input type="text" v-model="searchQuery" @input="handleSearch" placeholder="Cari data apapun..." class="form-control" style="min-width: 150px;">
                 </div>
@@ -165,6 +172,7 @@ const pegawaiStore = usePegawaiStore()
 const emit = defineEmits(['view', 'edit', 'print', 'delete', 'add', 'export', 'show-import', 'batchExtend', 'batchDelete', 'download', 'batchDownload'])
 
 const jenisPppkFilter = ref('all')
+const kelompokPppkFilter = ref('all')
 const unorAtasanFilter = ref('all')
 const unorIndukFilter = ref('all')
 const statusFilter = ref('all')
@@ -175,7 +183,7 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const selectedIds = ref([])
 
-import { calculateContractPeriod, getStatusPppk } from '../../utils/pppkLogic';
+import { calculateContractPeriod, getStatusPppk, getKelompokPegawai } from '../../utils/pppkLogic';
 
 const handleSearch = () => {
   currentPage.value = 1
@@ -183,6 +191,7 @@ const handleSearch = () => {
 
 const resetFilters = () => {
   jenisPppkFilter.value = jenisPppkOptions.value.length === 1 ? jenisPppkOptions.value[0] : 'all'
+  kelompokPppkFilter.value = kelompokPppkOptions.value.length === 1 ? kelompokPppkOptions.value[0] : 'all'
   unorIndukFilter.value = unorIndukOptions.value.length === 1 ? unorIndukOptions.value[0] : 'all'
   unorAtasanFilter.value = unorAtasanOptions.value.length === 1 ? unorAtasanOptions.value[0] : 'all'
   statusFilter.value = statusOptions.value.length === 1 ? statusOptions.value[0] : 'all'
@@ -232,6 +241,7 @@ const filteredData = computed(() => {
     
     const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value
     const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value
+    const matchKelompok = kelompokPppkFilter.value === 'all' || getKelompokPegawai(item) === kelompokPppkFilter.value
     const matchUnorAtasan = unorAtasanFilter.value === 'all' || getUnorAtasan(item['UNOR NAMA']) === unorAtasanFilter.value
     const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value
     
@@ -258,7 +268,7 @@ const filteredData = computed(() => {
       }
     }
     
-    return matchQuery && matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk && matchPerpanjangan
+    return matchQuery && matchStatus && matchStatusPppk && matchJenis && matchKelompok && matchUnorAtasan && matchUnorInduk && matchPerpanjangan
   })
 })
 
@@ -344,6 +354,11 @@ const jenisPppkOptions = computed(() => {
   return Array.from(types).sort()
 })
 
+const kelompokPppkOptions = computed(() => {
+  const types = new Set(baseData.value.map(item => getKelompokPegawai(item)))
+  return Array.from(types).sort()
+})
+
 const filteredOptionsBase = computed(() => {
   return baseData.value.filter(item => {
     const period = calculateContractPeriod(item);
@@ -351,6 +366,7 @@ const filteredOptionsBase = computed(() => {
     const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value;
     const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value;
     const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value;
+    const matchKelompok = kelompokPppkFilter.value === 'all' || getKelompokPegawai(item) === kelompokPppkFilter.value;
     
     const matchPerpanjangan = (() => {
         if (perpanjanganFilter.value === 'all') return true;
@@ -366,7 +382,7 @@ const filteredOptionsBase = computed(() => {
         return false;
     })();
 
-    return matchStatus && matchStatusPppk && matchJenis && matchPerpanjangan;
+    return matchStatus && matchStatusPppk && matchJenis && matchKelompok && matchPerpanjangan;
   });
 });
 
@@ -401,9 +417,10 @@ const baseForPerpanjanganOptions = computed(() => {
     const matchStatus = statusFilter.value === 'all' || contractStatus === statusFilter.value || item["STATUS_PERPANJANGAN"] === statusFilter.value;
     const matchStatusPppk = statusPppkFilter.value === 'all' || getStatusPppk(item) === statusPppkFilter.value;
     const matchJenis = jenisPppkFilter.value === 'all' || (item['JENIS PPPK'] || 'PPPK') === jenisPppkFilter.value;
+    const matchKelompok = kelompokPppkFilter.value === 'all' || getKelompokPegawai(item) === kelompokPppkFilter.value;
     const matchUnorAtasan = unorAtasanFilter.value === 'all' || getUnorAtasan(item['UNOR NAMA']) === unorAtasanFilter.value;
     const matchUnorInduk = unorIndukFilter.value === 'all' || getUnorInduk(item['UNOR NAMA']) === unorIndukFilter.value;
-    return matchStatus && matchStatusPppk && matchJenis && matchUnorAtasan && matchUnorInduk;
+    return matchStatus && matchStatusPppk && matchJenis && matchKelompok && matchUnorAtasan && matchUnorInduk;
   });
 });
 
@@ -459,6 +476,7 @@ const perpanjanganOptions = computed(() => {
 watch(() => pegawaiStore.pppkData, () => {
   if (pegawaiStore.pppkData.length > 0) {
     if (jenisPppkOptions.value.length === 1) jenisPppkFilter.value = jenisPppkOptions.value[0]
+    if (kelompokPppkOptions.value.length === 1) kelompokPppkFilter.value = kelompokPppkOptions.value[0]
     if (unorIndukOptions.value.length === 1) unorIndukFilter.value = unorIndukOptions.value[0]
     if (unorAtasanOptions.value.length === 1) unorAtasanFilter.value = unorAtasanOptions.value[0]
     if (statusOptions.value.length === 1) statusFilter.value = statusOptions.value[0]

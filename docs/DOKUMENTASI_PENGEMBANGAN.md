@@ -239,3 +239,5 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Pengurutan Berdasarkan Abjad pada Unduh Massal:** Menambahkan fitur pengurutan data agar saat pengguna melakukan Unduh Massal (baik format digabung maupun format ZIP), urutan halaman dokumen atau nama file akan otomatis diurutkan secara alfabetis berdasarkan nama pegawai (A-Z). Format nama file di dalam ZIP juga diubah menjadi kontrak_<NAMA>_<NIP>.docx agar Explorer komputer otomatis mengurutkannya berdasarkan abjad nama.
 
 - **Pembaruan Tag Nama Pegawai:** Mengubah implementasi tag {{NAMA_PEGAWAI}} pada sistem *generate* dokumen Word (kontrak) dan tampilan tabel. Sebelumnya sistem secara otomatis menggabungkan *Gelar Depan* + *Nama* + *Gelar Belakang*. Kini tag dan tampilan tersebut diperbaiki hanya memunculkan *Nama Lengkap tanpa gelar* sesuai permintaan.
+
+- **Penambahan Filter Kelompok Pegawai:** Menambahkan opsi penyaringan (filter) baru pada tabel utama untuk menyortir data berdasarkan **Kelompok Pegawai** (Tenaga Guru, Tenaga Kesehatan, dan Tenaga Teknis). Filter ini akan mendeteksi otomatis secara cerdas dari nama jabatan masing-masing pegawai.
