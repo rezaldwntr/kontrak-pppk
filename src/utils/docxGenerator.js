@@ -472,7 +472,7 @@ function getTemplateKey(item, paperSize = 'f4') {
  * @param {string}    documentPart   - 'full' | 'perjanjian' | 'tandatangan' | 'pisah'
  * @returns {{ hasSections: boolean }}
  */
-export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null, documentPart = 'full') {
+export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null, documentPart = 'full', options = {}) {
   const templateKey = getTemplateKey(item, paperSize)
   const [templateBase64, pihakPertama] = await Promise.all([
     loadTemplate(templateKey),
@@ -483,6 +483,11 @@ export async function downloadSingleContract(item, paperSize = 'f4', tanggalKont
 
   if (documentPart !== 'full' && !result.hasSections) {
     throw new Error(`Template belum memiliki tag section lengkap: ${result.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template di menu Pengaturan.`)
+  }
+
+  // Jika returnBlob aktif, jangan trigger download dialog browser
+  if (options && options.returnBlob) {
+    return result
   }
 
   const namaBersih = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')

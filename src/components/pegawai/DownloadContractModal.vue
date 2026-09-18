@@ -134,12 +134,24 @@
           <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" @click="emit('close')" :disabled="isGenerating">Batal</button>
-        <button class="btn btn-primary" @click="handleDownload" :disabled="isGenerating" style="background-color: #2563eb;">
+      <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+        <button class="btn btn-outline" @click="emit('close')" :disabled="isGenerating || isSavingToDrive">Batal</button>
+        <button class="btn btn-primary" @click="handleDownload" :disabled="isGenerating || isSavingToDrive" style="background-color: #2563eb;">
           <i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i>
           <i v-else class="fa-solid fa-download"></i>
           {{ (items.length > 1 && exportFormat === 'zip') || documentPart === 'pisah' ? 'Unduh ZIP' : 'Unduh Word' }}
+        </button>
+        <button
+          v-if="driveStore.isConnected"
+          class="btn btn-primary"
+          @click="handleSaveToDrive"
+          :disabled="isGenerating || isSavingToDrive"
+          style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;"
+          title="Simpan langsung ke Google Drive"
+        >
+          <i v-if="isSavingToDrive" class="fa-solid fa-spinner fa-spin"></i>
+          <i v-else class="fa-brands fa-google-drive"></i>
+          {{ isSavingToDrive ? `Menyimpan ${progress}/${items.length}...` : 'Simpan ke Drive' }}
         </button>
       </div>
     </div>
@@ -148,8 +160,23 @@
 
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { downloadSingleContract, downloadBatchContracts } from '../../utils/docxGenerator'
+import { useDriveStore } from '../../stores/driveStore'
+import { useGoogleDrive } from '../../composables/useGoogleDrive'
+import { useDriveSync } from '../../composables/useDriveSync'
+import { customSwal } from '../../utils/swal'
+
+const driveStore = useDriveStore()
+const { getTargetFolder, upsertFile } = useGoogleDrive()
+const { getFileName, getUnorInduk } = useDriveSync()
+const isSavingToDrive = ref(false)
+
+onMounted(async () => {
+  if (driveStore.isConnected && !driveStore.settings.folderId) {
+    await driveStore.loadSettings()
+  }
+})
 
 const props = defineProps({
   isOpen: Boolean,
@@ -223,6 +250,51 @@ const handleDownload = async () => {
     errorMsg.value = e.message || 'Gagal membuat dokumen. Pastikan template sudah diunggah di menu Pengaturan.'
   } finally {
     isGenerating.value = false
+  }
+}
+
+const handleSaveToDrive = async () => {
+  isSavingToDrive.value = true
+  errorMsg.value = ''
+  progress.value = 0
+
+  const tanggalKontrak = parseDateInput(tanggalKontrakStr.value)
+
+  try {
+    for (let i = 0; i < props.items.length; i++) {
+      const item = props.items[i]
+      progress.value = i + 1
+      const result = await downloadSingleContract(item, selectedPaper.value, tanggalKontrak, documentPart.value, { returnBlob: true })
+      const unorInduk = getUnorInduk(item)
+
+      if (documentPart.value === 'pisah') {
+        const pFolder = await getTargetFolder('perjanjian', unorInduk, 'individual')
+        const tFolder = await getTargetFolder('tandatangan', unorInduk, 'individual')
+        await upsertFile(result.perjanjianBlob, getFileName(item, '_perjanjian'), pFolder)
+        await upsertFile(result.tandatanganBlob, getFileName(item, '_tandatangan'), tFolder)
+      } else {
+        const targetFolder = await getTargetFolder(documentPart.value, unorInduk, 'individual')
+        const blobToUpload = documentPart.value === 'perjanjian' ? result.perjanjianBlob :
+                             documentPart.value === 'tandatangan' ? result.tandatanganBlob :
+                             result.fullBlob
+        await upsertFile(blobToUpload, getFileName(item), targetFolder)
+      }
+    }
+
+    customSwal.fire({
+      icon: 'success',
+      title: 'Tersimpan di Google Drive!',
+      text: `${props.items.length} dokumen berhasil disimpan ke Google Drive.`,
+      timer: 2000,
+      showConfirmButton: false
+    })
+    emit('success')
+    emit('close')
+  } catch (e) {
+    console.error('Save to Drive error:', e)
+    errorMsg.value = e.message || 'Gagal menyimpan ke Google Drive. Pastikan folder sudah dipilih di menu Pengaturan.'
+  } finally {
+    isSavingToDrive.value = false
   }
 }
 </script>

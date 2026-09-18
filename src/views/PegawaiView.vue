@@ -94,7 +94,7 @@
                 <button class="btn btn-outline btn-sm" @click="handleView(item)" title="Detail">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn btn-outline btn-sm" @click="handleDownload(item)" title="Unduh Kontrak">
+                <button class="btn btn-outline btn-sm" v-if="getStatusPppk(item) === 'Aktif'" @click="handleDownload(item)" title="Unduh Kontrak">
                   <i class="fa-solid fa-download"></i>
                 </button>
               </td>
@@ -153,8 +153,11 @@ import DownloadContractModal from '../components/pegawai/DownloadContractModal.v
 import { exportToExcel } from '../utils/exportImport'
 import { customSwal } from '../utils/swal'
 import { calculateContractPeriod, getStatusPppk, getPegawaiCategory, getKeteranganDiberhentikan } from '../utils/pppkLogic'
+import { useDriveStore } from '../stores/driveStore'
+import { useDriveSync } from '../composables/useDriveSync'
 
 const pegawaiStore = usePegawaiStore()
+const driveStore = useDriveStore()
 const route = useRoute()
 
 const showDetail = ref(false)
@@ -267,6 +270,18 @@ const handleSaveDetail = async (updatedItem) => {
     await new Promise(resolve => setTimeout(resolve, 100))
     await pegawaiStore.updatePegawai(updatedItem)
     customSwal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Data pegawai berhasil diperbarui.', timer: 1500, showConfirmButton: false })
+
+    // Auto-sync ke Google Drive jika diaktifkan dan memenuhi aturan sync
+    try {
+      if (driveStore.isEnabled && driveStore.isConnected) {
+        const { shouldSync, syncEmployee, addToQueue } = useDriveSync()
+        if (shouldSync(updatedItem)) {
+          syncEmployee(updatedItem).catch(err => addToQueue(updatedItem, err))
+        }
+      }
+    } catch (syncErr) {
+      console.warn('Drive sync error on save:', syncErr)
+    }
   } catch (error) {
     customSwal.fire({ icon: 'error', title: 'Gagal', text: 'Terjadi kesalahan saat menyimpan data.' })
   }

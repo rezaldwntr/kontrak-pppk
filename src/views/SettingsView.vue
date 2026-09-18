@@ -1,5 +1,28 @@
 <template>
   <div>
+    <!-- Tab Navigation -->
+    <div style="display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); overflow-x: auto;">
+      <button
+        class="pppk-tab-item"
+        :class="{ active: activeTab === 'umum' }"
+        @click="activeTab = 'umum'"
+        style="background:none; border:none; cursor:pointer;"
+      >
+        <i class="fa-solid fa-gear"></i> Pengaturan Umum
+      </button>
+      <button
+        class="pppk-tab-item"
+        :class="{ active: activeTab === 'drive' }"
+        @click="activeTab = 'drive'"
+        style="background:none; border:none; cursor:pointer;"
+      >
+        <i class="fa-brands fa-google-drive"></i> Google Drive
+      </button>
+    </div>
+
+    <!-- Tab: Pengaturan Umum -->
+    <div v-if="activeTab === 'umum'">
+
     <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 class="section-header">
         <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama</div>
@@ -231,6 +254,14 @@
         </div>
       </div>
     </div>
+
+    </div> <!-- end umum tab -->
+
+    <!-- Tab: Google Drive -->
+    <div v-if="activeTab === 'drive'">
+      <DriveSyncTab />
+    </div>
+
   </div>
 </template>
 
@@ -240,8 +271,10 @@ import { db } from '../services/firebase'
 import { doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore'
 import { useAuthStore } from '../stores/authStore'
 import { customSwal } from '../utils/swal'
+import DriveSyncTab from '../components/settings/DriveSyncTab.vue'
 
 const authStore = useAuthStore()
+const activeTab = ref('umum')
 
 // --- State Pihak Pertama ---
 const pihakPertama = reactive({
@@ -474,6 +507,30 @@ const handleChangePassword = async () => {
 </script>
 
 <style scoped>
+/* Tab styles */
+.pppk-tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pppk-tab-item:hover {
+  color: var(--primary-color);
+  background: rgba(45, 122, 241, 0.05);
+}
+.pppk-tab-item.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  font-weight: 600;
+}
+
 /* Card Styles */
 .settings-section-card {
   padding: 2rem;

@@ -11,7 +11,7 @@
           <div class="tab-btn" :class="{ active: activeTab === 'personal' }" @click="activeTab = 'personal'">Personal</div>
           <div class="tab-btn" :class="{ active: activeTab === 'kepegawaian' }" @click="activeTab = 'kepegawaian'">Kepegawaian</div>
           <div class="tab-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">Jabatan & Kerja</div>
-          <div class="tab-btn" :class="{ active: activeTab === 'kontrak' }" @click="activeTab = 'kontrak'">Kontrak & Gaji PPPK</div>
+          <div class="tab-btn" v-if="getStatusPppk(editForm) === 'Aktif'" :class="{ active: activeTab === 'kontrak' }" @click="activeTab = 'kontrak'">Kontrak & Gaji PPPK</div>
         </div>
 
         <!-- TAB 1: PERSONAL -->
@@ -225,7 +225,7 @@
         <button class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSave" title="Simpan Perubahan">
           <i class="fa-solid fa-floppy-disk"></i>
         </button>
-        <button class="btn btn-primary btn-icon-only" v-if="authStore.user" @click="emit('print', editForm)" title="Cetak / Unduh Kontrak">
+        <button class="btn btn-primary btn-icon-only" v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" @click="emit('print', editForm)" title="Cetak / Unduh Kontrak">
           <i class="fa-solid fa-print"></i>
         </button>
       </div>
@@ -236,7 +236,7 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { calculateContractPeriod, parseDate } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate, getStatusPppk } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
