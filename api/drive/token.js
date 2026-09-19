@@ -53,6 +53,7 @@ export default async function handler(req, res) {
         expiresIn: tokenData.expires_in,
         tokenExpiry: expiry,
         connectedEmail: userInfo.email || '',
+        scope: tokenData.scope || '',
       })
 
     } else if (action === 'refresh') {
@@ -88,6 +89,7 @@ export default async function handler(req, res) {
         accessToken: tokenData.access_token,
         expiresIn: tokenData.expires_in,
         tokenExpiry: expiry,
+        scope: tokenData.scope || '',
       })
 
     } else if (action === 'revoke') {

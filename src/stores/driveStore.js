@@ -10,6 +10,7 @@ export const useDriveStore = defineStore('drive', () => {
   const isEnabled = ref(false)
   const accessToken = ref(null)
   const tokenExpiry = ref(0)
+  const scope = ref('')
 
   // Settings
   const settings = ref({
@@ -60,6 +61,7 @@ export const useDriveStore = defineStore('drive', () => {
         const data = tokensDoc.data()
         isConnected.value = !!data.refreshToken
         connectedEmail.value = data.connectedEmail || ''
+        scope.value = data.scope || ''
       }
 
       const rulesDoc = await getDoc(doc(db, 'config', 'drive_sync_rules'))
@@ -105,21 +107,29 @@ export const useDriveStore = defineStore('drive', () => {
   }
 
   // Mark as connected
-  function setConnected(email) {
+  function setConnected(email, userScope = '') {
     isConnected.value = true
     connectedEmail.value = email
+    scope.value = userScope
   }
 
   // Mark as disconnected
   function setDisconnected() {
     isConnected.value = false
     connectedEmail.value = ''
+    scope.value = ''
     accessToken.value = null
     tokenExpiry.value = 0
   }
 
+  const hasDriveScope = computed(() => {
+    if (!isConnected.value) return true
+    if (!scope.value) return true // Jika belum ada data scope, anggap true agar tidak false positive
+    return scope.value.includes('drive')
+  })
+
   return {
-    isConnected, connectedEmail, isEnabled, accessToken, tokenExpiry,
+    isConnected, connectedEmail, scope, hasDriveScope, isEnabled, accessToken, tokenExpiry,
     settings, syncRules, syncRulesLogic, queueCount, isLoading, isSaving,
     isTokenValid,
     loadSettings, saveSettings, saveSyncRules, setAccessToken, setConnected, setDisconnected,

@@ -5,7 +5,9 @@ import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 const ENV_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 const SCOPES = [
   'https://www.googleapis.com/auth/drive',
+  'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/userinfo.email',
+  'openid',
 ].join(' ')
 
 export function getRedirectUri() {
@@ -45,6 +47,7 @@ export function useGoogleAuth() {
       scope: SCOPES,
       access_type: 'offline',
       prompt: 'consent',
+      include_granted_scopes: 'true',
       state,
     })
     return `https://accounts.google.com/o/oauth2/v2/auth?${params}`
@@ -75,11 +78,12 @@ export function useGoogleAuth() {
       refreshToken: data.refreshToken,
       tokenExpiry: data.tokenExpiry,
       connectedEmail: data.connectedEmail || '',
+      scope: data.scope || '',
       updatedAt: new Date(),
     }, { merge: true })
 
     driveStore.setAccessToken(data.accessToken, data.tokenExpiry)
-    driveStore.setConnected(data.connectedEmail)
+    driveStore.setConnected(data.connectedEmail, data.scope || '')
     return data
   }
 

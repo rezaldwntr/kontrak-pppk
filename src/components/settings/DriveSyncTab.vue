@@ -38,9 +38,32 @@
           <span class="text-muted" style="font-size:0.85rem;">{{ driveStore.isEnabled ? 'Aktif' : 'Nonaktif' }}</span>
         </div>
 
-        <button class="btn btn-outline" style="color: #dc2626; border-color: #dc2626;" @click="handleDisconnect">
-          <i class="fa-solid fa-link-slash"></i>&nbsp; Putuskan Koneksi
-        </button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-outline" style="color: #dc2626; border-color: #dc2626;" @click="handleDisconnect" title="Putuskan koneksi Google Drive">
+            <i class="fa-solid fa-link-slash"></i>&nbsp; Putuskan Koneksi
+          </button>
+          <button class="btn btn-outline" @click="reconnectWithDrive" title="Hubungkan ulang akun Google untuk memperbarui izin">
+            <i class="fa-solid fa-rotate"></i>&nbsp; Hubungkan Ulang (Perbarui Izin)
+          </button>
+        </div>
+
+        <!-- Banner Peringatan jika Izin Google Drive Belum Diberikan -->
+        <div v-if="!driveStore.hasDriveScope" style="margin-top: 14px; background: rgba(239, 68, 68, 0.08); border: 1.5px solid #ef4444; border-radius: 10px; padding: 14px 18px;">
+          <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; font-size: 1.4rem; margin-top: 2px;"></i>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; color: #ef4444; font-size: 0.95rem; margin-bottom: 4px;">
+                Izin Akses Google Drive Belum Dicentang
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 10px; line-height: 1.5;">
+                Akun Google Anda saat ini terhubung tanpa izin mengelola Google Drive. Silakan klik tombol di bawah dan <strong>pastikan mencentang kotak izin Google Drive</strong> saat login di halaman Google.
+              </p>
+              <button type="button" class="btn btn-sm btn-primary" @click="reconnectWithDrive" style="background: #ef4444; border-color: #ef4444; font-weight: 600;">
+                <i class="fa-solid fa-rotate"></i>&nbsp;Hubungkan Ulang & Beri Izin Drive
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -380,6 +403,43 @@ async function handleDisconnect() {
   }
 }
 
+async function reconnectWithDrive() {
+  await disconnectDrive()
+  startOAuthFlow()
+}
+
+async function promptInsufficientScopes() {
+  const result = await customSwal.fire({
+    icon: 'warning',
+    title: 'Izin Google Drive Belum Lengkap',
+    html: `
+      <div style="text-align: left; font-size: 0.9rem; line-height: 1.55;">
+        <p style="margin-bottom: 8px;">Google melaporkan: <strong>Request had insufficient authentication scopes</strong>.</p>
+        <p style="margin-bottom: 10px;">Artinya akun Google Anda saat ini terhubung <u>tanpa izin mengelola Google Drive</u>.</p>
+        <div style="background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.25); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+          <strong style="color: #2563eb; display: block; margin-bottom: 6px;">Langkah Penyelesaian Mudah:</strong>
+          <ol style="margin: 0 0 0 16px; padding: 0;">
+            <li style="margin-bottom: 4px;">Klik tombol <strong>"Hubungkan Ulang Sekarang"</strong> di bawah.</li>
+            <li style="margin-bottom: 4px;">Pilih akun Google Anda.</li>
+            <li><strong style="color: #2563eb;">PENTING:</strong> Pada layar persetujuan Google, pastikan Anda <strong>mencentang kotak izin</strong>:<br/>
+              <span style="display:inline-block; margin-top: 6px; padding: 4px 8px; background: rgba(37,99,235,0.12); border-radius: 4px; font-weight: 600; color: #1e40af;">
+                ☑ Lihat, edit, buat, dan hapus semua file Google Drive Anda
+              </span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="fa-solid fa-rotate"></i>&nbsp; Hubungkan Ulang Sekarang',
+    cancelButtonText: 'Tutup',
+    confirmButtonColor: '#2563eb',
+  })
+  if (result.isConfirmed) {
+    await reconnectWithDrive()
+  }
+}
+
 async function applyManualFolder() {
   const val = manualFolderInput.value.trim()
   if (!val) return
@@ -398,6 +458,10 @@ async function applyManualFolder() {
       showConfirmButton: false,
     })
   } catch (e) {
+    if (e.message && e.message.toLowerCase().includes('insufficient')) {
+      await promptInsufficientScopes()
+      return
+    }
     customSwal.fire({
       icon: 'error',
       title: 'Gagal Menghubungkan Folder',
@@ -444,6 +508,10 @@ async function createNewDriveFolder() {
       showConfirmButton: false,
     })
   } catch (err) {
+    if (err.message && err.message.toLowerCase().includes('insufficient')) {
+      await promptInsufficientScopes()
+      return
+    }
     customSwal.fire({
       icon: 'error',
       title: 'Gagal Membuat Folder',
@@ -482,6 +550,10 @@ async function openPicker() {
     )
   } catch (e) {
     isPickerLoading.value = false
+    if (e.message && e.message.toLowerCase().includes('insufficient')) {
+      await promptInsufficientScopes()
+      return
+    }
     customSwal.fire({
       icon: 'error',
       title: 'Gagal membuka Google Picker',
