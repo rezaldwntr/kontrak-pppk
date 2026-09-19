@@ -105,48 +105,67 @@
           </div>
         </div>
 
-        <!-- Formulir Hubungkan Folder (Solusi 2) -->
+        <!-- Formulir Hubungkan Folder -->
         <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
-              <i class="fa-solid fa-link" style="margin-right: 4px;"></i> Hubungkan Folder Google Drive:
-            </span>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="btn btn-sm btn-outline" @click="createNewDriveFolder" :disabled="isValidatingFolder" title="Buat folder baru otomatis di root Google Drive">
-                <i class="fa-solid fa-folder-plus"></i>&nbsp;Buat Folder Otomatis
+          <!-- Baris Aksi Utama: Google Picker & Buat Folder -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              <!-- Tombol Utama: Google Picker Visual -->
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click="openPicker"
+                :disabled="isPickerLoading"
+                style="padding: 9px 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;"
+                title="Pilih folder secara visual langsung dari Google Drive"
+              >
+                <i class="fa-solid fa-folder-open" v-if="!isPickerLoading"></i>
+                <i class="fa-solid fa-spinner fa-spin" v-else></i>
+                <span>{{ isPickerLoading ? 'Membuka Google Picker...' : (driveStore.settings.folderId ? 'Ganti Folder (Google Picker)' : 'Pilih Folder (Google Picker)') }}</span>
               </button>
-              <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka Google Drive di tab baru">
-                <i class="fa-brands fa-google-drive"></i>&nbsp;Buka Drive
-              </a>
-            </div>
-          </div>
 
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 260px;">
-              <input
-                type="text"
-                class="form-control"
-                v-model="manualFolderInput"
-                placeholder="Tempel Link Folder (drive.google.com/drive/folders/...) atau ID Folder"
-                @keyup.enter="applyManualFolder"
+              <!-- Tombol Cepat: Buat Folder Otomatis -->
+              <button
+                type="button"
+                class="btn btn-outline"
+                @click="createNewDriveFolder"
                 :disabled="isValidatingFolder"
-                style="font-size: 0.88rem;"
-              />
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;"
+                title="Buat folder baru otomatis di Google Drive tanpa perlu membuka tab lain"
+              >
+                <i class="fa-solid fa-folder-plus" style="color: #1eaa6e;"></i>
+                <span>Buat Folder Otomatis</span>
+              </button>
             </div>
-            <button type="button" class="btn btn-primary" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space: nowrap; padding: 8px 18px; font-weight: 600;">
-              <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
-              <i class="fa-solid fa-spinner fa-spin" v-else></i>
-              &nbsp;Hubungkan Folder
-            </button>
+
+            <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka Google Drive di tab baru">
+              <i class="fa-brands fa-google-drive"></i>&nbsp; Buka Drive
+            </a>
           </div>
 
-          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">
-              <i class="fa-solid fa-circle-info"></i> Buka folder tujuan di Google Drive, salin link dari address bar browser, lalu tempel di atas. Atau klik <strong>Buat Folder Otomatis</strong>.
-            </p>
-            <button type="button" class="btn btn-link" @click="openPicker" :disabled="isPickerLoading" style="font-size: 0.76rem; color: var(--text-muted); text-decoration: none; padding: 0;" title="Buka popup Google Picker jika ingin mencoba lagi">
-              <i class="fa-solid fa-window-restore"></i> {{ isPickerLoading ? 'Membuka...' : 'Coba Google Picker' }}
-            </button>
+          <!-- Pilihan Alternatif: Tempel Link / ID Folder Manual -->
+          <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 4px;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">
+              Atau tempel Link / ID Folder Google Drive secara manual:
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 260px;">
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="manualFolderInput"
+                  placeholder="Contoh: https://drive.google.com/drive/folders/1aBcDeFgHiJk... atau tempel ID folder"
+                  @keyup.enter="applyManualFolder"
+                  :disabled="isValidatingFolder"
+                  style="font-size: 0.88rem;"
+                />
+              </div>
+              <button type="button" class="btn btn-outline" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space: nowrap; padding: 8px 18px; font-weight: 600;">
+                <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
+                <i class="fa-solid fa-spinner fa-spin" v-else></i>
+                &nbsp;Terapkan Link
+              </button>
+            </div>
           </div>
         </div>
       </div>
