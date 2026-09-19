@@ -285,3 +285,9 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Harmonisasi UI Pemilihan Folder Google Drive (Google Picker & Aksi Cepat):**
   - Mengintegrasikan tombol **Pilih Folder (Google Picker)** sebagai tombol aksi utama berfitur lengkap bersama tombol cepat **Buat Folder Otomatis** dan tautan **Buka Drive**.
   - Menyediakan formulir alternatif **Tempel Link / ID Folder Manual** di bagian bawah untuk fleksibilitas maksimal jika pengguna ingin menyalin link langsung dari browser.
+- **Perbaikan Tampilan Folder Google Picker (Menampilkan Tab 'Drive Saya'):**
+  - **Penyebab:** Pada konfigurasi sebelumnya, flag .setEnableDrives(true) dipasang pada satu-satunya tampilan DocsView. Hal ini menyebabkan Google Picker memprioritaskan hanya tab *Shared Drives* (Drive Bersama). Karena akun pengguna adalah akun personal (yang belum memiliki Shared Drive), tampilan picker menjadi kosong (*blank* dengan tulisan "No documents.").
+  - **Solusi:** Memisahkan tampilan menjadi dua DocsView:
+    - **View 1 (Utama/Default):** Menampilkan folder-folder dari **Drive Saya (My Drive)** pengguna.
+    - **View 2 (Sekunder):** Menampilkan **Drive Bersama (Shared Drives)** jika instansi menggunakan Shared Drive.
+    - Dengan perubahan ini, begitu dialog Google Picker terbuka, tab yang aktif pertama kali adalah seluruh folder yang ada di **Drive Saya** milik pengguna.

@@ -204,7 +204,14 @@ export function useGoogleDrive() {
       }
     }
 
-    const view = new google.picker.DocsView()
+    // View 1 (Default): Drive Saya (My Drive)
+    const myDriveView = new google.picker.DocsView()
+      .setIncludeFolders(true)
+      .setSelectFolderEnabled(true)
+      .setMimeTypes('application/vnd.google-apps.folder')
+
+    // View 2: Drive Bersama (Shared Drives) jika ada
+    const sharedDriveView = new google.picker.DocsView()
       .setIncludeFolders(true)
       .setSelectFolderEnabled(true)
       .setEnableDrives(true)
@@ -215,7 +222,8 @@ export function useGoogleDrive() {
     const appId = clientId.includes('-') ? clientId.split('-')[0] : ''
 
     const builder = new google.picker.PickerBuilder()
-      .addView(view)
+      .addView(myDriveView)
+      .addView(sharedDriveView)
       .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
       .setOAuthToken(token)
       .setDeveloperKey(apiKey)
