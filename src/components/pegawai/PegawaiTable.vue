@@ -1,150 +1,285 @@
 <template>
-  <div>
-    <div class="filter-panel" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 15px;">
-        <div style="display: flex; flex-wrap: wrap; gap: 16px; width: 100%; align-items: flex-end; justify-content: space-between;">
-            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
-                <div class="filter-group" v-if="!hideJenisPppkFilter">
-                    <label>Jenis PPPK</label>
-                    <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control" style="min-width: 130px;">
-                        <option value="all" v-if="jenisPppkOptions.length !== 1">Semua Jenis</option>
-                        <option v-for="opt in jenisPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Kelompok Pegawai</label>
-                    <select v-model="kelompokPppkFilter" @change="handleSearch" class="form-control" style="min-width: 140px;">
-                        <option value="all" v-if="kelompokPppkOptions.length !== 1">Semua Kelompok</option>
-                        <option v-for="opt in kelompokPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Cari</label>
-                    <input type="text" v-model="searchQuery" @input="handleSearch" placeholder="Cari data apapun..." class="form-control" style="min-width: 150px;">
-                </div>
-                <div class="filter-group">
-                    <label>Unor Induk</label>
-                    <select v-model="unorIndukFilter" @change="handleUnorIndukChange" class="form-control" style="min-width: 150px; max-width: 200px;">
-                        <option value="all" v-if="unorIndukOptions.length !== 1">Semua Unor Induk</option>
-                        <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Unor Atasan</label>
-                    <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control" style="min-width: 150px; max-width: 200px;" :disabled="unorIndukFilter === 'all'">
-                        <option value="all" v-if="unorAtasanOptions.length !== 1">Semua Unor Atasan</option>
-                        <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                </div>
-                <div class="filter-group" v-if="!hideStatusKontrakFilter">
-                    <label>Status Kontrak</label>
-                    <select v-model="statusFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
-                        <option value="all" v-if="statusOptions.length !== 1">Semua Status</option>
-                        <option v-for="opt in statusOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                </div>
-                <div class="filter-group" v-if="!onlyNeedExtension && !hideStatusPppkFilter">
-                    <label>Status PPPK</label>
-                    <select v-model="statusPppkFilter" @change="handleSearch" class="form-control" style="min-width: 160px;">
-                        <option value="all" v-if="statusPppkOptions.length !== 1">Semua Status PPPK</option>
-                        <option v-for="opt in statusPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                </div>
-                <div class="filter-group" v-if="!onlyNeedExtension && !hidePerpanjanganFilter">
-                    <label>Perpanjangan Kontrak</label>
-                    <select v-model="perpanjanganFilter" @change="handleSearch" class="form-control" style="min-width: 220px;">
-                        <option value="all">Semua Perpanjangan</option>
-                        <option value="bup">Kontrak Habis (BUP)</option>
-                        <option v-for="opt in perpanjanganOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                    </select>
-                </div>
-                <div class="filter-group" style="flex: 0 0 auto;">
-                    <button class="btn btn-outline btn-icon-only" @click="resetFilters" style="height: 40px; width: 40px; margin-bottom: 2px;" title="Reset Filter">
-                        <i class="fa-solid fa-rotate-left"></i>
-                    </button>
-                </div>
-            </div>
+  <div class="pegawai-table-wrapper">
+    <!-- Filter Card 2-Tier -->
+    <div class="filter-panel-card">
+      <!-- Tier 1: Search Bar, Quick Kelompok Chips, Total & Reset -->
+      <div class="filter-tier-main">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            type="text"
+            v-model="searchQuery"
+            @input="handleSearch"
+            placeholder="Cari nama, NIP, jabatan, unit organisasi..."
+            class="form-control table-search-input"
+          />
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="btn-clear-search"
+            @click="searchQuery = ''; handleSearch()"
+            title="Bersihkan pencarian"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
+
+        <div class="quick-kelompok-chips">
+          <button
+            type="button"
+            class="chip-btn"
+            :class="{ active: kelompokPppkFilter === 'all' }"
+            @click="kelompokPppkFilter = 'all'; handleSearch()"
+            title="Semua Kelompok Pegawai"
+          >
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Semua Kelompok</span>
+          </button>
+          <button
+            v-for="opt in kelompokPppkOptions.filter(o => o !== 'all')"
+            :key="opt"
+            type="button"
+            class="chip-btn"
+            :class="{ active: kelompokPppkFilter === opt }"
+            @click="kelompokPppkFilter = opt; handleSearch()"
+          >
+            <i :class="opt.includes('Guru') ? 'fa-solid fa-graduation-cap' : opt.includes('Kesehatan') ? 'fa-solid fa-user-doctor' : 'fa-solid fa-laptop-code'"></i>
+            <span>{{ opt }}</span>
+          </button>
+        </div>
+
+        <div class="filter-tier-actions">
+          <span class="total-records-pill">
+            <i class="fa-solid fa-users"></i>
+            <span><strong>{{ filteredData.length }}</strong> Pegawai</span>
+          </span>
+          <button
+            type="button"
+            class="btn btn-outline btn-sm btn-reset-filters"
+            @click="resetFilters"
+            title="Reset seluruh filter"
+          >
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Reset Filter</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tier 2: Specific Dropdown Filters -->
+      <div class="filter-tier-sub">
+        <div class="sub-filter-item" v-if="!hideJenisPppkFilter">
+          <label class="sub-filter-label">Jenis PPPK</label>
+          <select v-model="jenisPppkFilter" @change="handleSearch" class="form-control form-control-sm">
+            <option value="all" v-if="jenisPppkOptions.length !== 1">Semua Jenis</option>
+            <option v-for="opt in jenisPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+        </div>
+
+        <div class="sub-filter-item">
+          <label class="sub-filter-label">Unor Induk (OPD)</label>
+          <select v-model="unorIndukFilter" @change="handleUnorIndukChange" class="form-control form-control-sm">
+            <option value="all" v-if="unorIndukOptions.length !== 1">Semua Unor Induk</option>
+            <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+        </div>
+
+        <div class="sub-filter-item">
+          <label class="sub-filter-label">Unor Atasan (Unit Kerja)</label>
+          <select v-model="unorAtasanFilter" @change="handleSearch" class="form-control form-control-sm" :disabled="unorIndukFilter === 'all'">
+            <option value="all" v-if="unorAtasanOptions.length !== 1">Semua Unor Atasan</option>
+            <option v-for="opt in unorAtasanOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+        </div>
+
+        <div class="sub-filter-item" v-if="!hideStatusKontrakFilter">
+          <label class="sub-filter-label">Status Kontrak</label>
+          <select v-model="statusFilter" @change="handleSearch" class="form-control form-control-sm">
+            <option value="all" v-if="statusOptions.length !== 1">Semua Status</option>
+            <option v-for="opt in statusOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+        </div>
+
+        <div class="sub-filter-item" v-if="!onlyNeedExtension && !hideStatusPppkFilter">
+          <label class="sub-filter-label">Status PPPK</label>
+          <select v-model="statusPppkFilter" @change="handleSearch" class="form-control form-control-sm">
+            <option value="all" v-if="statusPppkOptions.length !== 1">Semua Status PPPK</option>
+            <option v-for="opt in statusPppkOptions" :key="opt" :value="opt">{{ opt }}</option>
+          </select>
+        </div>
+
+        <div class="sub-filter-item" v-if="!onlyNeedExtension && !hidePerpanjanganFilter">
+          <label class="sub-filter-label">Periode Perpanjangan</label>
+          <select v-model="perpanjanganFilter" @change="handleSearch" class="form-control form-control-sm">
+            <option value="all">Semua Perpanjangan</option>
+            <option value="bup">Kontrak Habis (BUP)</option>
+            <option v-for="opt in perpanjanganOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div v-if="selectedIds.length > 0 && (allowBatchExtend || allowBatchDelete || allowBatchDownload)" class="batch-action-bar" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-      <div style="font-weight: bold; color: #1eaa6e;">
-        <i class="fa-solid fa-check-circle"></i> {{ selectedIds.length }} Data Terpilih
+    <!-- Floating / Sticky Batch Action Bar -->
+    <div
+      v-if="selectedIds.length > 0 && (allowBatchExtend || allowBatchDelete || allowBatchDownload)"
+      class="batch-action-bar-modern"
+    >
+      <div class="batch-selected-info">
+        <i class="fa-solid fa-circle-check batch-icon-check"></i>
+        <span><strong>{{ selectedIds.length }}</strong> data pegawai terpilih</span>
       </div>
-      <div style="display: flex; gap: 10px;">
-        <button v-if="allowBatchExtend" class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="emit('batchExtend', selectedIds)" title="Perpanjang Massal">
+      <div class="batch-buttons-group">
+        <button
+          v-if="allowBatchExtend"
+          class="btn btn-sm btn-success btn-batch"
+          @click="emit('batchExtend', selectedIds)"
+          title="Perpanjang kontrak pegawai terpilih"
+        >
           <i class="fa-solid fa-file-signature"></i>
+          <span>Perpanjang Massal ({{ selectedIds.length }})</span>
         </button>
-        <button v-if="allowBatchDownload || !allowBatchExtend" class="btn btn-primary btn-icon-only" style="background-color: #2563eb; border-color: #2563eb; color: white;" @click="emit('batchDownload', getSelectedItems())" title="Unduh Massal">
+        <button
+          v-if="allowBatchDownload || !allowBatchExtend"
+          class="btn btn-sm btn-primary btn-batch"
+          @click="emit('batchDownload', getSelectedItems())"
+          title="Unduh dokumen kontrak pegawai terpilih"
+        >
           <i class="fa-solid fa-download"></i>
+          <span>Unduh Kontrak ({{ selectedIds.length }})</span>
         </button>
-        <button v-if="allowBatchDelete" class="btn btn-danger btn-icon-only" @click="emit('batchDelete', selectedIds)" title="Hapus Massal">
-          <i class="fa-solid fa-trash"></i>
+        <button
+          v-if="allowBatchDelete"
+          class="btn btn-sm btn-outline-danger btn-batch"
+          @click="emit('batchDelete', selectedIds)"
+          title="Hapus data pegawai terpilih"
+        >
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Hapus Data ({{ selectedIds.length }})</span>
         </button>
       </div>
     </div>
 
-    <div class="widget-card table-widget">
-        <div class="widget-header-actions">
-            <div class="total-rows text-muted">
-                Total: <span>{{ filteredData.length }}</span> PPPK
-            </div>
+    <!-- Table Card Container -->
+    <div class="table-container-card">
+      <div class="table-responsive">
+        <table class="table modern-data-table">
+          <thead>
+            <tr>
+              <th width="44" style="text-align:center;">
+                <input type="checkbox" v-model="selectAll" title="Pilih Semua di Filter Ini" class="custom-checkbox">
+              </th>
+              <th>NIP BARU / ID</th>
+              <th>NAMA LENGKAP</th>
+              <th v-if="!isBupTab">TMT CPNS / MULAI</th>
+              <th v-if="!isBupTab">AKHIR KONTRAK</th>
+              <th v-if="isBupTab">TMT PENSIUN</th>
+              <th>JABATAN</th>
+              <th>UNIT ORGANISASI</th>
+              <th width="120" style="text-align:center;">AKSI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="pegawaiStore.isLoading">
+              <td :colspan="isBupTab ? 7 : 8" class="text-center table-loading-cell">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Memuat data pegawai...</span>
+              </td>
+            </tr>
+            <tr v-else-if="paginatedData.length === 0">
+              <td :colspan="isBupTab ? 7 : 8" class="text-center table-empty-cell">
+                <i class="fa-solid fa-folder-open text-muted" style="font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                <span>Tidak ada data pegawai yang sesuai dengan filter saat ini.</span>
+              </td>
+            </tr>
+            <tr v-for="item in paginatedData" :key="item['PNS ID']" :class="{ 'row-selected': selectedIds.includes(item['PNS ID']) }">
+              <td style="text-align:center;">
+                <input type="checkbox" v-model="selectedIds" :value="item['PNS ID']" class="custom-checkbox">
+              </td>
+              <td class="cell-nip">{{ item["NIP BARU"] ? String(item["NIP BARU"]).replace(/^'/, '') : '-' }}</td>
+              <td class="cell-nama">
+                <strong>{{ getNamaLengkap(item) }}</strong>
+                <span v-if="item['JENIS PPPK'] === 'PPPK Paruh Waktu'" class="badge-paruh-inline">Paruh Waktu</span>
+              </td>
+              <td v-if="!isBupTab" class="cell-date">{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
+              <td v-if="!isBupTab" class="cell-date">
+                <span :class="calculateContractPeriod(item).statusText === 'Kontrak Hampir Habis' ? 'badge-warning-soft' : ''">
+                  {{ calculateContractPeriod(item).endDateStr }}
+                </span>
+              </td>
+              <td v-if="isBupTab" class="cell-date">{{ getTmtPensiunStr(calculateContractPeriod(item).rawDate) }}</td>
+              <td class="cell-jabatan">{{ item["JABATAN NAMA"] }}</td>
+              <td class="cell-unor">{{ cleanUnorName(item["UNOR NAMA"]) }}</td>
+              <td>
+                <div class="table-actions-group">
+                  <button
+                    class="btn btn-sm btn-outline btn-table-icon"
+                    v-if="!allowBatchExtend"
+                    @click="emit('view', item)"
+                    title="Lihat Detail Profil"
+                  >
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-primary btn-table-icon"
+                    v-if="!allowBatchExtend && getStatusPppk(item) === 'Aktif'"
+                    @click="emit('download', item)"
+                    title="Unduh Perjanjian Kerja"
+                  >
+                    <i class="fa-solid fa-download"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-success btn-table-icon"
+                    v-if="authStore.user && allowBatchExtend && getStatusPppk(item) === 'Aktif'"
+                    @click="emit('batchExtend', [item['PNS ID']])"
+                    title="Perpanjang Kontrak Pegawai Ini"
+                  >
+                    <i class="fa-solid fa-file-signature"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-primary btn-table-icon"
+                    v-if="allowBatchExtend && getStatusPppk(item) === 'Aktif'"
+                    @click="emit('download', item)"
+                    title="Unduh Perjanjian Kerja"
+                  >
+                    <i class="fa-solid fa-download"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modern Pagination Bar -->
+      <div class="pagination-bar-modern">
+        <div class="pagination-count-info">
+          Menampilkan <strong>{{ filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0 }}</strong> - <strong>{{ Math.min(currentPage * itemsPerPage, filteredData.length) }}</strong> dari <strong>{{ filteredData.length }}</strong> PPPK
         </div>
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th width="40"><input type="checkbox" v-model="selectAll"></th>
-                        <th>NIP BARU / ID</th>
-                        <th>NAMA LENGKAP</th>
-                        <th v-if="!isBupTab">TMT CPNS / MULAI</th>
-                        <th v-if="!isBupTab">AKHIR KONTRAK</th>
-                        <th v-if="isBupTab">TMT PENSIUN</th>
-                        <th>JABATAN</th>
-                        <th>UNIT ORGANISASI</th>
-                        <th width="120">AKSI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                      <tr v-if="pegawaiStore.isLoading">
-                          <td :colspan="isBupTab ? 7 : 8" class="text-center"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Data...</td>
-                      </tr>
-                      <tr v-else-if="paginatedData.length === 0">
-                          <td :colspan="isBupTab ? 7 : 8" class="text-center">Data tidak ditemukan.</td>
-                      </tr>
-                    <tr v-for="item in paginatedData" :key="item['PNS ID']">
-                        <td>
-                            <input type="checkbox" v-model="selectedIds" :value="item['PNS ID']">
-                        </td>
-                        <td>{{ item["NIP BARU"] ? String(item["NIP BARU"]).replace(/^'/, '') : '-' }}</td>
-                        <td>
-                            <strong>{{ getNamaLengkap(item) }}</strong>
-                        </td>
-                        <td v-if="!isBupTab">{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
-                        <td v-if="!isBupTab">{{ calculateContractPeriod(item).endDateStr }}</td>
-                        <td v-if="isBupTab">{{ getTmtPensiunStr(calculateContractPeriod(item).rawDate) }}</td>
-                        <td>{{ item["JABATAN NAMA"] }}</td>
-                        <td>{{ cleanUnorName(item["UNOR NAMA"]) }}</td>
-                        <td>
-                            <div class="action-buttons-cell" style="display: flex; gap: 4px;">
-                                <button class="btn btn-icon-only btn-sm" v-if="!allowBatchExtend" @click="emit('view', item)" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="background-color: #2563eb; color: white;" v-if="!allowBatchExtend && getStatusPppk(item) === 'Aktif'" @click="emit('download', item)" title="Unduh Perjanjian Kerja"><i class="fa-solid fa-download"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="background-color: #1eaa6e; color: white;" v-if="authStore.user && allowBatchExtend && getStatusPppk(item) === 'Aktif'" @click="emit('batchExtend', [item['PNS ID']])" title="Perpanjang Kontrak"><i class="fa-solid fa-file-signature"></i></button>
-                                <button class="btn btn-icon-only btn-sm" style="background-color: #2563eb; color: white;" v-if="allowBatchExtend && getStatusPppk(item) === 'Aktif'" @click="emit('download', item)" title="Unduh Perjanjian Kerja"><i class="fa-solid fa-download"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="pagination-controls">
+          <button
+            type="button"
+            class="btn btn-outline btn-sm btn-page-nav"
+            :disabled="currentPage === 1"
+            @click="currentPage--"
+            title="Halaman Sebelumnya"
+          >
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Sebelumnya</span>
+          </button>
+          <span class="pagination-page-indicator">
+            Halaman <strong>{{ currentPage }}</strong> / {{ totalPages || 1 }}
+          </span>
+          <button
+            type="button"
+            class="btn btn-outline btn-sm btn-page-nav"
+            :disabled="currentPage === totalPages || totalPages === 0"
+            @click="currentPage++"
+            title="Halaman Selanjutnya"
+          >
+            <span>Selanjutnya</span>
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
         </div>
-          <div class="pagination-container">
-            <button class="btn btn-outline btn-sm btn-icon-only" :disabled="currentPage === 1" @click="currentPage--" title="Sebelumnya">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <span class="page-info text-muted">Halaman {{ currentPage }} dari {{ totalPages }}</span>
-            <button class="btn btn-outline btn-sm btn-icon-only" :disabled="currentPage === totalPages || totalPages === 0" @click="currentPage++" title="Selanjutnya">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -522,5 +657,458 @@ const getRowClass = (item) => {
 </script>
 
 <style scoped>
-/* Table styles inherit from global CSS */
+.pegawai-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* --- Tiered Filter Card --- */
+.filter-panel-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  transition: border-color var(--transition-fast, 0.2s);
+}
+
+.filter-panel-card:focus-within {
+  border-color: var(--primary-color);
+}
+
+/* Tier 1: Search, Quick Chips, Actions */
+.filter-tier-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.table-search-input {
+  width: 100%;
+  padding: 10px 38px 10px 38px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all var(--transition-fast, 0.2s);
+}
+
+.table-search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  background: var(--bg-secondary);
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.btn-clear-search:hover {
+  color: var(--danger-color);
+}
+
+/* Quick Kelompok Chips */
+.quick-kelompok-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.chip-btn:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.chip-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.filter-tier-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.total-records-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.btn-reset-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-md, 8px);
+  white-space: nowrap;
+}
+
+/* Tier 2: Specific Dropdown Filters */
+.filter-tier-sub {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.sub-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub-filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-light);
+}
+
+.sub-filter-item select.form-control-sm {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-primary);
+  font-size: 0.83rem;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s);
+}
+
+.sub-filter-item select.form-control-sm:focus {
+  border-color: var(--primary-color);
+  background: var(--bg-secondary);
+}
+
+.sub-filter-item select.form-control-sm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --- Batch Action Bar Modern --- */
+.batch-action-bar-modern {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.15);
+  animation: slideDownFade 0.25s ease-out;
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.batch-selected-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.batch-icon-check {
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
+.batch-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-batch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm, 6px);
+  transition: all var(--transition-fast, 0.2s);
+}
+
+/* --- Table Card & Data Table --- */
+.table-container-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+}
+
+.modern-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.modern-data-table thead th {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.modern-data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  background: transparent;
+  transition: background-color 0.15s;
+}
+
+.modern-data-table tbody tr:hover td {
+  background: var(--primary-light);
+}
+
+.modern-data-table tbody tr.row-selected td {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.custom-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.cell-nip {
+  font-family: var(--font-secondary, monospace);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.cell-nama {
+  color: var(--text-primary);
+}
+
+.badge-paruh-inline {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  vertical-align: middle;
+}
+
+.cell-date {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.cell-jabatan {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.cell-unor {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+}
+
+.table-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-table-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.btn-table-icon:hover {
+  transform: translateY(-1px);
+}
+
+.badge-warning-soft {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--warning-light, rgba(245, 176, 65, 0.15));
+  color: #d97706;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.table-loading-cell,
+.table-empty-cell {
+  padding: 40px 20px !important;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.table-loading-cell i {
+  margin-right: 8px;
+  color: var(--primary-color);
+}
+
+/* --- Pagination Modern Bar --- */
+.pagination-bar-modern {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-count-info {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-page-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.btn-page-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-page-indicator {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  padding: 0 4px;
+}
+
+@media (max-width: 768px) {
+  .filter-tier-main {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-tier-actions {
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  .pagination-bar-modern {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
 </style>

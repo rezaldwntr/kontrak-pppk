@@ -1,22 +1,24 @@
 <template>
   <div>
-    <!-- Tab Bar -->
-    <div class="pppk-tabs" style="display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--border-color);">
-      <router-link
-        v-for="tab in tabs"
-        :key="tab.key"
-        :to="`/data-pegawai/${tab.key}`"
-        class="pppk-tab-item"
-        :class="{ active: activeTab === tab.key }"
-      >
-        <i :class="tab.icon"></i>
-        <span>{{ tab.label }}</span>
-        <span class="tab-badge">{{ tabCounts[tab.key] }}</span>
-      </router-link>
+    <!-- Modern Segmented Tab Bar -->
+    <div class="pppk-tabs-wrapper">
+      <div class="pppk-segmented-tabs">
+        <router-link
+          v-for="tab in tabs"
+          :key="tab.key"
+          :to="`/data-pegawai/${tab.key}`"
+          class="tab-pill"
+          :class="{ active: activeTab === tab.key }"
+        >
+          <i :class="tab.icon"></i>
+          <span>{{ tab.label }}</span>
+          <span class="tab-pill-badge">{{ tabCounts[tab.key] }}</span>
+        </router-link>
+      </div>
     </div>
 
     <!-- Tab: Aktif, Akan Pensiun, Sudah Pensiun -->
-    <div v-if="activeTab !== 'diberhentikan'" class="card" style="padding: 1.5rem;">
+    <div v-if="activeTab !== 'diberhentikan'">
       <PegawaiTable
         :key="activeTab"
         :allowBatchDelete="true"
@@ -39,10 +41,10 @@
       />
     </div>
 
-    <!-- Tab: Tidak Diperpanjang -->
-    <div v-else class="card" style="padding: 1.5rem;">
+    <!-- Tab: Diberhentikan -->
+    <div v-else class="table-container-card">
       <div class="table-responsive">
-        <table class="table">
+        <table class="table modern-data-table">
           <thead>
             <tr>
               <th>NAMA PEGAWAI</th>
@@ -50,53 +52,62 @@
               <th>JENIS PPPK</th>
               <th>AKHIR KONTRAK</th>
               <th>KETERANGAN DIBERHENTIKAN</th>
-              <th>AKSI</th>
+              <th width="120" style="text-align: center;">AKSI</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="filteredData.length === 0">
-              <td colspan="6" class="text-center">Tidak ada pegawai yang diberhentikan.</td>
+              <td colspan="6" class="text-center table-empty-cell">
+                <i class="fa-solid fa-folder-open text-muted" style="font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>
+                <span>Tidak ada pegawai yang diberhentikan.</span>
+              </td>
             </tr>
             <tr v-for="item in filteredData" :key="item['NIP BARU']">
               <td><strong>{{ item['NAMA'] }}</strong></td>
-              <td>{{ item['NIP BARU'] }}</td>
-              <td>{{ item['JENIS PPPK'] || '-' }}</td>
-              <td>{{ calculateContractPeriod(item).endDateStr }}</td>
+              <td class="cell-nip">{{ item['NIP BARU'] }}</td>
               <td>
-                <div v-if="editingKeteranganNip !== item['NIP BARU']" style="display:flex; align-items:center; gap:8px;">
-                  <span :style="{ color: getKeteranganDiberhentikan(item) ? 'inherit' : 'var(--text-muted)', fontStyle: getKeteranganDiberhentikan(item) ? 'normal' : 'italic' }">
+                <span :class="item['JENIS PPPK'] === 'PPPK Paruh Waktu' ? 'badge-paruh-inline' : ''">
+                  {{ item['JENIS PPPK'] || '-' }}
+                </span>
+              </td>
+              <td class="cell-date">{{ calculateContractPeriod(item).endDateStr }}</td>
+              <td>
+                <div v-if="editingKeteranganNip !== item['NIP BARU']" style="display: flex; align-items: center; gap: 8px;">
+                  <span :style="{ color: getKeteranganDiberhentikan(item) ? 'inherit' : 'var(--text-light)', fontStyle: getKeteranganDiberhentikan(item) ? 'normal' : 'italic' }">
                     {{ getKeteranganDiberhentikan(item) || 'Belum ada keterangan' }}
                   </span>
-                  <button class="btn btn-outline btn-sm" @click="startEditKeterangan(item)" title="Edit Keterangan" style="padding: 2px 8px;">
+                  <button class="btn btn-sm btn-outline btn-table-icon" @click="startEditKeterangan(item)" title="Edit Keterangan">
                     <i class="fa-solid fa-pen"></i>
                   </button>
                 </div>
-                <div v-else style="display:flex; align-items:center; gap:8px;">
+                <div v-else style="display: flex; align-items: center; gap: 8px;">
                   <input
                     type="text"
                     v-model="keteranganInput"
-                    class="form-control"
-                    style="padding: 4px 8px; font-size: 0.9rem;"
+                    class="form-control form-control-sm"
+                    style="padding: 4px 10px; font-size: 0.85rem;"
                     placeholder="Tulis alasan..."
                     @keyup.enter="saveKeterangan(item)"
                     @keyup.esc="cancelEditKeterangan"
                     ref="keteranganInputRef"
                   >
-                  <button class="btn btn-success btn-sm" @click="saveKeterangan(item)" title="Simpan">
+                  <button class="btn btn-success btn-sm btn-table-icon" @click="saveKeterangan(item)" title="Simpan">
                     <i class="fa-solid fa-check"></i>
                   </button>
-                  <button class="btn btn-outline btn-sm" @click="cancelEditKeterangan" title="Batal">
-                    <i class="fa-solid fa-times"></i>
+                  <button class="btn btn-outline btn-sm btn-table-icon" @click="cancelEditKeterangan" title="Batal">
+                    <i class="fa-solid fa-xmark"></i>
                   </button>
                 </div>
               </td>
-              <td style="display: flex; gap: 6px;">
-                <button class="btn btn-outline btn-sm" @click="handleView(item)" title="Detail">
-                  <i class="fa-solid fa-eye"></i>
-                </button>
-                <button class="btn btn-outline btn-sm" v-if="getStatusPppk(item) === 'Aktif'" @click="handleDownload(item)" title="Unduh Kontrak">
-                  <i class="fa-solid fa-download"></i>
-                </button>
+              <td>
+                <div class="table-actions-group">
+                  <button class="btn btn-sm btn-outline btn-table-icon" @click="handleView(item)" title="Detail Profil">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-primary btn-table-icon" v-if="getStatusPppk(item) === 'Aktif'" @click="handleDownload(item)" title="Unduh Kontrak">
+                    <i class="fa-solid fa-download"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -375,47 +386,161 @@ const handleExport = () => {
 const handleImportSuccess = () => {}
 </script>
 
-<style>
-.pppk-tabs {
+<style scoped>
+.pppk-tabs-wrapper {
+  margin-bottom: 20px;
   overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pppk-segmented-tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
   white-space: nowrap;
 }
-.pppk-tab-item {
+
+.tab-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  font-size: 0.9rem;
+  padding: 8px 16px;
+  font-size: 0.86rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-decoration: none;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s;
+  border-radius: var(--radius-md, 8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  white-space: nowrap;
 }
-.pppk-tab-item:hover {
-  color: var(--primary-color);
-  background: rgba(45, 122, 241, 0.05);
+
+.tab-pill:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
 }
-.pppk-tab-item.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
+
+.tab-pill.active {
+  color: #ffffff;
+  background: var(--primary-color);
   font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
-.tab-badge {
-  background: var(--bg-secondary);
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
+
+.tab-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 1px 7px;
   border-radius: 12px;
-  min-width: 22px;
-  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--bg-primary);
+  color: var(--text-light);
+  min-width: 20px;
+  transition: all 0.2s;
 }
-.pppk-tab-item.active .tab-badge {
-  background: rgba(45, 122, 241, 0.15);
-  color: var(--primary-color);
+
+.tab-pill.active .tab-pill-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Table Card for Diberhentikan */
+.table-container-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+}
+
+.modern-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.modern-data-table thead th {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.modern-data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  background: transparent;
+  transition: background-color 0.15s;
+}
+
+.modern-data-table tbody tr:hover td {
+  background: var(--primary-light);
+}
+
+.cell-nip {
+  font-family: var(--font-secondary, monospace);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.cell-date {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.badge-paruh-inline {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  vertical-align: middle;
+}
+
+.table-actions-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-table-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.btn-table-icon:hover {
+  transform: translateY(-1px);
+}
+
+.table-empty-cell {
+  padding: 40px 20px !important;
+  color: var(--text-light);
+  font-size: 0.9rem;
 }
 </style>
 

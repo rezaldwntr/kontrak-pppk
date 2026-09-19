@@ -4,6 +4,39 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 ## [v3.6.0] - 2026-09-19 (Staging)
 
+### Harmonisasi & Peningkatan Desain UI/UX Seluruh Menu (User-Friendly Overhaul)
+- **Header Global (`Header.vue`)**:
+  - Mengubah tombol aksi menjadi tombol berlabel teks yang jelas dan informatif (`Impor Data`, `Ekspor`, `Hapus Semua`), menggantikan tombol ikon gundul sebelumnya.
+  - Menambahkan garis pembatas visual (*divider*) sebelum tombol bahaya `Hapus Semua` untuk mencegah klik yang tidak disengaja.
+  - Tampilan responsif adaptif: teks label otomatis disembunyikan pada layar kecil/perangkat mobile untuk menjaga kerapian header.
+- **Dashboard Overview (`DashboardView.vue`)**:
+  - Menambahkan *empty state card* bertema modern dengan ikon informatif dan tombol "Reset Filter Dashboard" jika tidak ada data yang cocok dengan kriteria filter.
+  - Memperbaiki tata letak responsif pada kartu statistik dan bagan analitik.
+- **Tabel & Filter Data PPPK (`PegawaiTable.vue` & `PegawaiView.vue`)**:
+  - **Filter 2-Tier Terstruktur**:
+    - **Tier 1 (Pencarian & Kelompok Cepat)**: Kolom input pencarian dengan tombol hapus cepat (`x`), tombol chip cepat untuk kelompok pegawai (*Semua Kelompok*, *Guru*, *Kesehatan*, *Teknis*), pill total jumlah pegawai terpilih, serta tombol reset filter.
+    - **Tier 2 (Dimensi Spesifik)**: Dropdown teratur untuk *Jenis PPPK*, *Unor Induk*, *Unor Atasan*, *Status Kontrak*, *Status PPPK*, dan *Periode Perpanjangan*.
+  - **Segmented Pill Tab Bar**: Mengganti tab garis bawah lama dengan desain pill segmented yang modern, elevasi aktif, dan badge jumlah data yang kontras.
+  - **Batch Action Bar Mengambang (Sticky)**: Dilengkapi tombol berlabel teks yang jelas (`Perpanjang Massal`, `Unduh Kontrak`, `Hapus Data`) menggantikan tombol ikon sempit.
+  - **Tabel & Paginasi Modern**: Baris tabel berstatus seleksi yang jelas, cell teks rapi, serta bilah paginasi modern dengan indikator rentang data ("Menampilkan X - Y dari Z PPPK") dan tombol navigasi yang nyaman.
+  - **Penyempurnaan Tab Diberhentikan**: Tampilan tabel diberhentikan diselaraskan dengan tata letak tabel utama serta aksi edit keterangan inline yang intuitif.
+- **Perpanjangan Kontrak (`PerpanjanganView.vue`)**:
+  - Mengadopsi navigasi segmented pill tab bar yang seragam dan konsisten dengan menu Data PPPK.
+  - Menghilangkan *double-card nesting* agar tabel tampil bersih dan menyatu dengan kontainer utama.
+  - Menyelaraskan jarak dan pembungkus bagan distribusi OPD.
+- **Riwayat Perpanjangan (`RiwayatView.vue`)**:
+  - Menyatukan filter floating yang terpisah-pisah ke dalam satu kartu toolbar filter terpadu (`filter-panel-card`).
+  - Mengubah tombol ekspor ikon menjadi tombol berlabel `Ekspor Excel`.
+  - Mengubah kotak pembatalan massal menjadi bilah batch action modern dengan tombol `Batalkan Terpilih`.
+  - Memodernisasi tabel dengan badge TMT Baru (`badge-tmt-baru`), tombol aksi tabel terstandarisasi, dan bilah paginasi modern.
+- **Pengaturan Aplikasi (`SettingsView.vue`)**:
+  - Mengganti halaman pengaturan satu gulir panjang menjadi antarmuka 3 sub-tab segmented:
+    1. **Pihak Pertama**: Formulir bersih dengan panduan kolom dan tombol `Simpan Pihak Pertama`.
+    2. **Template Master Dokumen**: Kartu unggah master F4 Penuh Waktu dan Paruh Waktu dengan status terpasang, disertai tabel referensi tag template yang dilengkapi **kolom pencarian tag langsung** dan **tombol salin tag satu-klik** ke clipboard.
+    3. **Keamanan & Akun**: Kartu aksi ganti email dan password dengan tombol aksi berlabel jelas (`Ubah Email Akun` dan `Ubah Kata Sandi`).
+- **Sidebar Global (`Sidebar.vue`)**:
+  - Memperbarui tombol keluar (*logout*) agar menampilkan teks `Keluar` saat sidebar terbuka dan otomatis beralih ke ikon saat sidebar diciutkan (*collapsed*).
+
 ### Integrasi Sinkronisasi Dokumen Google Drive & Optimalisasi Google Picker
 - **Tampilan Google Picker Rapi & Terstruktur**:
   - Mengonfigurasi DocsView dengan .setParent('root') agar hanya memuat folder tingkat utama di "Drive Saya" (*My Drive*). Hal ini mencegah pemindaian rekursif ke ribuan folder sistem/chunk backup yang tidak diinginkan (seperti folder angka/kode hash 67, de, e0, dll).

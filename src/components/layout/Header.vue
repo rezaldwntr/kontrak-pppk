@@ -11,20 +11,26 @@
     </div>
     
     <div class="header-actions">
-
-      <button class="btn btn-primary btn-icon-only" id="btn-login-modal" v-if="!authStore.user" @click="authStore.showLoginModal = true" title="Login">
+      <button class="btn btn-primary btn-header-action" id="btn-login-modal" v-if="!authStore.user" @click="authStore.showLoginModal = true" title="Masuk ke aplikasi">
         <i class="fa-solid fa-right-to-bracket"></i>
+        <span>Masuk</span>
       </button>
 
-      <button class="btn btn-primary btn-icon-only" id="btn-import-trigger" v-if="authStore.user && route.name === 'pegawai'" @click="pegawaiStore.showImportModal = true" title="Impor Data">
-        <i class="fa-solid fa-file-import"></i>
-      </button>
-      <button class="btn btn-secondary btn-icon-only" id="btn-export" v-if="authStore.user && route.name === 'pegawai'" @click="handleExport" title="Ekspor CSV">
-        <i class="fa-solid fa-file-export"></i>
-      </button>
-      <button class="btn btn-danger btn-icon-only" id="btn-clear-all" v-if="authStore.user && route.name === 'pegawai'" style="background-color: var(--danger-color); color: #ffffff;" @click="handleClearAll" title="Hapus Semua">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
+      <template v-if="authStore.user && route.name === 'pegawai'">
+        <button class="btn btn-primary btn-header-action" id="btn-import-trigger" @click="pegawaiStore.showImportModal = true" title="Impor data dari berkas Excel/CSV">
+          <i class="fa-solid fa-file-import"></i>
+          <span>Impor Data</span>
+        </button>
+        <button class="btn btn-outline btn-header-action" id="btn-export" @click="handleExport" title="Ekspor seluruh data ke format Excel">
+          <i class="fa-solid fa-file-export"></i>
+          <span>Ekspor</span>
+        </button>
+        <div class="header-action-divider"></div>
+        <button class="btn btn-outline btn-header-action btn-header-danger" id="btn-clear-all" @click="handleClearAll" title="Hapus seluruh data pegawai">
+          <i class="fa-solid fa-trash-can"></i>
+          <span>Hapus Semua</span>
+        </button>
+      </template>
     </div>
   </header>
 </template>
@@ -83,3 +89,43 @@ const handleClearAll = async () => {
   }
 }
 </script>
+
+<style scoped>
+.btn-header-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.header-action-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 4px;
+}
+
+.btn-header-danger {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+.btn-header-danger:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: #ef4444 !important;
+}
+
+@media (max-width: 768px) {
+  .btn-header-action span {
+    display: none;
+  }
+  .btn-header-action {
+    padding: 8px 11px;
+  }
+}
+</style>

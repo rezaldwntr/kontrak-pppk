@@ -97,7 +97,20 @@
     </div>
   </div>
 
-  <div class="charts-grid">
+  <!-- Empty state if no data matches filters -->
+  <div v-if="totalPegawai === 0 && !pegawaiStore.isLoading" class="dashboard-empty-card">
+    <div class="empty-icon-circle">
+      <i class="fa-solid fa-folder-open"></i>
+    </div>
+    <h4>Tidak Ada Data yang Sesuai</h4>
+    <p>Tidak ditemukan data pegawai untuk kombinasi filter yang Anda pilih saat ini.</p>
+    <button class="btn btn-outline btn-sm" @click="setJenis('all'); setKelompok('all')">
+      <i class="fa-solid fa-rotate-left"></i>
+      <span>Reset Filter Dashboard</span>
+    </button>
+  </div>
+
+  <div class="charts-grid" v-else>
     <ChartCard title="Komposisi Jabatan PPPK" icon="fa-solid fa-chart-pie" chartType="doughnut" :chartData="jabatanChartData" />
     <ChartCard title="Jadwal Perpanjangan" icon="fa-solid fa-calendar-check" chartType="bar" :chartData="kontrakChartData" />
     <ChartCard title="Proyeksi Pensiun (BUP)" icon="fa-solid fa-user-clock" chartType="line" :chartData="bupChartData" />
@@ -433,5 +446,47 @@ const bupChartData = computed(() => {
     padding: 8px 10px;
     font-size: 0.82rem;
   }
+}
+
+/* Empty State Card */
+.dashboard-empty-card {
+  background: var(--bg-primary);
+  border: 1.5px dashed var(--border-color);
+  border-radius: 16px;
+  padding: 40px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.empty-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+
+.dashboard-empty-card h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dashboard-empty-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.5;
 }
 </style>
