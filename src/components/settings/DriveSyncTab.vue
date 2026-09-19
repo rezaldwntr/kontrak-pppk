@@ -204,6 +204,30 @@
         <p class="text-muted" style="font-size:0.82rem; margin-top:6px;">Tanggal ini digunakan saat auto-sync. Dapat diubah kapan saja.</p>
       </div>
 
+      <!-- Format Nama File (Pilihan Gelar) -->
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label style="font-weight:bold; margin-bottom:8px; display:block;">Format Penamaan File Dokumen</label>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:1.5px solid var(--border-color); border-radius:8px; flex:1;"
+            :style="!driveStore.settings.includeGelar ? 'border-color:#2563eb; background:rgba(37,99,235,0.05)' : ''">
+            <input type="radio" :value="false" v-model="driveStore.settings.includeGelar" style="accent-color:#2563eb;">
+            <div>
+              <div style="font-weight:600;">Tanpa Gelar (Rekomendasi)</div>
+              <div class="text-muted" style="font-size:0.78rem;">Contoh: <code>197407042025212030_ANA ERPINA.docx</code></div>
+            </div>
+          </label>
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:1.5px solid var(--border-color); border-radius:8px; flex:1;"
+            :style="driveStore.settings.includeGelar ? 'border-color:#2563eb; background:rgba(37,99,235,0.05)' : ''">
+            <input type="radio" :value="true" v-model="driveStore.settings.includeGelar" style="accent-color:#2563eb;">
+            <div>
+              <div style="font-weight:600;">Sertakan Gelar</div>
+              <div class="text-muted" style="font-size:0.78rem;">Contoh: <code>197407042025212030_ANA ERPINA, S.Pd.docx</code></div>
+            </div>
+          </label>
+        </div>
+        <p class="text-muted" style="font-size:0.82rem; margin-top:6px;">Spasi di tengah nama tetap dipertahankan (tidak diganti dengan underscore).</p>
+      </div>
+
       <button class="btn btn-primary" @click="saveSettings" :disabled="driveStore.isSaving" style="background-color:var(--primary-color);">
         <i v-if="driveStore.isSaving" class="fa-solid fa-spinner fa-spin"></i>
         <i v-else class="fa-solid fa-save"></i>&nbsp;

@@ -2,7 +2,7 @@ import { useDriveStore } from '../stores/driveStore'
 import { useGoogleDrive } from './useGoogleDrive'
 import { db } from '../services/firebase'
 import { collection, addDoc, updateDoc, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
-import { getKelompokPegawai, parseDate, getUnorInduk as resolveUnorInduk, getUnorAtasan as resolveUnorAtasan, getDriveFolderName } from '../utils/pppkLogic'
+import { getKelompokPegawai, parseDate, getUnorInduk as resolveUnorInduk, getUnorAtasan as resolveUnorAtasan, getDriveFolderName, formatNamaFilePegawai } from '../utils/pppkLogic'
 import { downloadSingleContract } from '../utils/docxGenerator'
 
 export function useDriveSync() {
@@ -50,11 +50,12 @@ export function useDriveSync() {
     return matchRules(item, validRules, driveStore.syncRulesLogic)
   }
 
-  // Generate nama file
-  function getFileName(item, suffix = '') {
-    const nip = String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')
-    const nama = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
-    return `${nip}_${nama}${suffix}.docx`
+  // Generate nama file (mempertahankan spasi dan mendukung opsi gelar)
+  function getFileName(item, suffix = '', includeGelarOverride = null) {
+    const nip = String(item['NIP BARU'] || item['NIP'] || '').replace(/[^a-zA-Z0-9]/g, '')
+    const withGelar = includeGelarOverride !== null ? includeGelarOverride : (driveStore.settings.includeGelar || false)
+    const nama = formatNamaFilePegawai(item, withGelar)
+    return nip ? `${nip}_${nama}${suffix}.docx` : `${nama}${suffix}.docx`
   }
 
   // Dapatkan folder tujuan Drive per pegawai

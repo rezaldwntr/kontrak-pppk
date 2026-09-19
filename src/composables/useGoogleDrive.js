@@ -59,7 +59,20 @@ export function useGoogleDrive() {
       const listData = await listRes.json()
       if (listData.files && listData.files.length > 0) {
         const match = listData.files.find(f => f.name.trim().toLowerCase() === name.trim().toLowerCase())
-        if (match) return match.id
+        if (match) {
+          if (match.name !== name) {
+            try {
+              await fetch(`${DRIVE_API}/files/${match.id}`, {
+                method: 'PATCH',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+              })
+            } catch (renameErr) {
+              console.warn('Gagal mengubah nama folder:', renameErr)
+            }
+          }
+          return match.id
+        }
       }
     } catch (e) {
       console.warn('Case-insensitive folder check error:', e)

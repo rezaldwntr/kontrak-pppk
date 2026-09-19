@@ -304,9 +304,9 @@ export function getDriveFolderName(item) {
     return 'RUMAH SAKIT UMUM DAERAH PAMBALAH BATUNG'
   }
 
-  // 3. Puskesmas -> folder 'Dinas Kesehatan'
+  // 3. Puskesmas -> folder 'DINAS KESEHATAN' (seluruh nama dinas huruf besar)
   if (unorLower.includes('puskesmas')) {
-    return 'Dinas Kesehatan'
+    return 'DINAS KESEHATAN'
   }
 
   // 4. Kecamatan atau Kelurahan -> folder 'KECAMATAN DAN KELURAHAN'
@@ -314,7 +314,40 @@ export function getDriveFolderName(item) {
     return 'KECAMATAN DAN KELURAHAN'
   }
 
-  // 5. Default: Unor Induk
+  // 5. Default: Unor Induk (huruf besar)
   const induk = getUnorInduk(unorNama)
-  return induk && induk !== '-' ? induk : 'Umum'
+  return induk && induk !== '-' ? induk.toUpperCase() : 'Umum'
+}
+
+/**
+ * Format nama pegawai untuk nama file dokumen:
+ * - Menjaga spasi asli antar kata (tidak diubah menjadi underscore)
+ * - Menghapus karakter ilegal sistem file (\ / : * ? " < > |)
+ * - Mendukung opsi sertakan gelar (depan & belakang)
+ */
+export function formatNamaFilePegawai(item, includeGelar = false) {
+  if (!item) return 'pegawai'
+  const namaDasar = String(item['NAMA'] || 'pegawai').trim()
+
+  let namaLengkap = namaDasar
+  if (includeGelar) {
+    const gelarDepan = (item['GELAR DEPAN'] && item['GELAR DEPAN'] !== '-') ? item['GELAR DEPAN'].trim() : ''
+    const gelarBelakang = (item['GELAR BELAKANG'] && item['GELAR BELAKANG'] !== '-') ? item['GELAR BELAKANG'].trim() : ''
+
+    if (gelarDepan) {
+      namaLengkap = `${gelarDepan} ${namaLengkap}`
+    }
+    if (gelarBelakang) {
+      namaLengkap = `${namaLengkap}, ${gelarBelakang}`
+    }
+  }
+
+  // Bersihkan karakter ilegal sistem file, pertahankan spasi biasa
+  const cleanNama = namaLengkap
+    .replace(/[\/\\:*?"<>|]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\.+$/, '') // hilangkan titik di ujung agar tidak double dot sebelum .docx
+
+  return cleanNama || 'pegawai'
 }

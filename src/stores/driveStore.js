@@ -20,6 +20,7 @@ export const useDriveStore = defineStore('drive', () => {
     documentPart: 'full',
     mergeMode: 'individual',
     tanggalKontrak: '',
+    includeGelar: false,
   })
 
   // Sync rules
@@ -52,6 +53,7 @@ export const useDriveStore = defineStore('drive', () => {
           documentPart: data.documentPart || 'full',
           mergeMode: data.mergeMode || 'individual',
           tanggalKontrak: data.tanggalKontrak || '',
+          includeGelar: data.includeGelar || false,
         }
         isEnabled.value = data.isEnabled || false
       }

@@ -39,6 +39,18 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - **Dukungan Penuh 30 Rumpun Nakes:** Memperbaiki fungsi getKelompokPegawai yang sebelumnya salah mengklasifikasikan tenaga kesehatan seperti *Nutrisionis*, *Terapis Gigi dan Mulut*, *Radiografer*, *Fisioterapis*, *Perekam Medis*, dsb. ke dalam *Tenaga Teknis*. Rumpun kini mengenali seluruh 30 standar jabatan fungsional kesehatan Permenpan-RB & Kemenkes.
   - **Integrasi Menyeluruh:** Perbaikan rumpun pegawai ini secara otomatis memperbarui keakuratan filter di tabel Data PPPK, kartu statistik di Dashboard, aturan filter Google Drive Sync, serta tag KELOMPOK_PEGAWAI, FUNGSI_PEGAWAI, dan SASARAN_PELAYANAN pada template cetak Word dokumen kontrak.
   - **Penyempurnaan UI Form Aturan Sync:** Dropdown Unor Induk pada form kriteria aturan sinkronisasi Google Drive kini otomatis terisi daftar pilihan OPD yang tersedia dari database, mencegah salah ketik nilai filter.
+### Standarisasi Huruf Besar Folder Dinas, Penataan Spasi Nama File & Opsi Gelar
+- **Standarisasi Huruf Besar Nama Folder (`DINAS KESEHATAN`)**:
+  - Mengubah output nama folder untuk unit Puskesmas menjadi huruf besar penuh: `DINAS KESEHATAN` (sebelumnya `Dinas Kesehatan`) serta memastikan seluruh penamaan folder Unor Induk default menggunakan `.toUpperCase()`.
+  - **Auto-Rename Folder Google Drive In-Place:** Menambahkan logika penyesuaian nama folder pada `getOrCreateFolder` di `useGoogleDrive.js`. Jika folder target sudah ada di Google Drive namun penulisannya masih huruf kecil/Title Case (misal `Dinas Kesehatan`), sistem secara otomatis mengirimkan permintaan `PATCH` ke Google Drive REST API untuk memperbarui nama folder menjadi `DINAS KESEHATAN` tanpa merusak ID folder maupun memindahkan file yang sudah ada di dalamnya.
+- **Pemeliharaan Spasi Nama Pegawai pada File Dokumen**:
+  - Menghapus konversi spasi menjadi underscore (`_`) pada nama pegawai di nama file dokumen kontrak Google Drive. Spasi asli antar kata pada nama pegawai tetap dipertahankan sesuai nama aslinya (contoh: `197407042025212030_ANA ERPINA.docx`, bukan `197407042025212030_ANA_ERPINA.docx`).
+  - Pembersihan nama file secara selektif hanya membuang karakter terlarang sistem berkas (`[\/\\:*?"<>|]`).
+- **Opsi Konfigurasi Gelar pada Penamaan File Dokumen**:
+  - Menambahkan pengaturan baru pada menu Google Drive: **Format Penamaan File Dokumen** dengan dua pilihan:
+    1. **Tanpa Gelar (Rekomendasi)**: Contoh: `197407042025212030_ANA ERPINA.docx`
+    2. **Sertakan Gelar**: Contoh: `197407042025212030_ANA ERPINA, S.Pd.docx` atau `197407042025212030_Dr. ANA ERPINA, Sp.A.docx`
+  - Pengaturan tersimpan secara persisten ke Firestore (`config/drive_sync_settings`) pada atribut `includeGelar` dan berlaku otomatis saat proses sinkronisasi dokumen berjalan.
 ## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
 
 ### Pembaruan UI/UX Menu Perpanjangan & Sidebar
