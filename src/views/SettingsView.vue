@@ -185,7 +185,7 @@
                 <span>Daftar Tag Template Kontrak</span>
               </h4>
               <p class="tag-section-desc text-muted">
-                Salin tag berikut ke dalam dokumen Word (.docx). Klik tombol salin di samping tag untuk menyalin langsung.
+                Salin tag berikut ke dalam dokumen Word (.docx). Klik tombol salin atau ketuk langsung tag untuk menyalin. Geser tabel ke kanan untuk melihat kolom selengkapnya.
               </p>
             </div>
             <div class="tag-search-input-wrap">
@@ -211,10 +211,10 @@
             <table class="table modern-data-table tag-table">
               <thead>
                 <tr>
-                  <th width="150">KATEGORI</th>
-                  <th width="260">TAG DOKUMEN</th>
+                  <th width="140">KATEGORI</th>
+                  <th width="240">TAG DOKUMEN</th>
                   <th>KETERANGAN & PENGGUNAAN</th>
-                  <th width="80" style="text-align: center;">SALIN</th>
+                  <th width="75" class="col-salin">SALIN</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,10 +228,17 @@
                     <span class="tag-category-badge">{{ item.category }}</span>
                   </td>
                   <td>
-                    <code class="tag-code">{{ item.tag }}</code>
+                    <code
+                      class="tag-code"
+                      @click="copyTag(item.tag)"
+                      title="Klik untuk menyalin tag"
+                    >
+                      <span>{{ item.tag }}</span>
+                      <i class="fa-regular fa-copy tag-copy-icon"></i>
+                    </code>
                   </td>
                   <td class="tag-desc-cell">{{ item.desc }}</td>
-                  <td style="text-align: center;">
+                  <td class="col-salin">
                     <button
                       type="button"
                       class="btn btn-outline btn-sm btn-table-icon"
@@ -903,7 +910,17 @@ const handleChangePassword = async () => {
 .tag-table-wrap {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md, 8px);
-  overflow: hidden;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  display: block;
+}
+
+.tag-table {
+  min-width: 620px;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .tag-table thead th {
@@ -915,6 +932,7 @@ const handleChangePassword = async () => {
   padding: 10px 14px;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .tag-table tbody td {
@@ -922,6 +940,24 @@ const handleChangePassword = async () => {
   border-bottom: 1px solid var(--border-color);
   font-size: 0.84rem;
   vertical-align: middle;
+}
+
+.tag-table .col-salin {
+  position: sticky;
+  right: 0;
+  background: var(--bg-secondary);
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+  text-align: center;
+}
+
+.tag-table thead th.col-salin {
+  background: var(--bg-primary);
+  z-index: 3;
+}
+
+.tag-table tbody tr:hover td.col-salin {
+  background: var(--bg-secondary);
 }
 
 .tag-category-badge {
@@ -940,15 +976,38 @@ const handleChangePassword = async () => {
   font-family: var(--font-secondary, monospace);
   font-size: 0.82rem;
   background: var(--bg-primary);
-  padding: 3px 7px;
+  padding: 4px 8px;
   border-radius: 4px;
   border: 1px solid var(--border-color);
   color: var(--primary-color);
   font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: all;
+  white-space: nowrap;
+}
+
+.tag-code:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.tag-copy-icon {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.tag-code:hover .tag-copy-icon {
+  opacity: 1;
 }
 
 .tag-desc-cell {
   color: var(--text-secondary);
+  min-width: 200px;
 }
 
 .btn-table-icon {

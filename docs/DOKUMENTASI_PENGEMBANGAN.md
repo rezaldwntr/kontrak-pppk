@@ -32,7 +32,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Pengaturan Aplikasi (`SettingsView.vue`)**:
   - Mengganti halaman pengaturan satu gulir panjang menjadi antarmuka 3 sub-tab segmented:
     1. **Pihak Pertama**: Formulir bersih dengan panduan kolom dan tombol `Simpan Pihak Pertama`.
-    2. **Template Master Dokumen**: Kartu unggah master F4 Penuh Waktu dan Paruh Waktu dengan status terpasang, disertai tabel referensi tag template yang dilengkapi **kolom pencarian tag langsung** dan **tombol salin tag satu-klik** ke clipboard.
+    2. **Template Master Dokumen**: Kartu unggah master F4 Penuh Waktu dan Paruh Waktu dengan status terpasang, disertai tabel referensi tag template yang dilengkapi **kolom pencarian tag langsung** dan **tombol salin tag satu-klik** ke clipboard. Memperbaiki masalah horizontal scroll pada tampilan layar ponsel/mobile (`overflow-x: auto !important` dan `min-width: 620px`), kolom SALIN dibuat mengambang (*sticky column*) di tepi kanan, serta teks tag kini dapat langsung diketuk (*tap-to-copy*) untuk menyalin instan.
     3. **Keamanan & Akun**: Kartu aksi ganti email dan password dengan tombol aksi berlabel jelas (`Ubah Email Akun` dan `Ubah Kata Sandi`).
 - **Sidebar Global (`Sidebar.vue`)**:
   - Memperbarui tombol keluar (*logout*) agar menampilkan teks `Keluar` saat sidebar terbuka dan otomatis beralih ke ikon saat sidebar diciutkan (*collapsed*).
