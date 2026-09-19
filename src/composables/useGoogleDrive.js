@@ -146,6 +146,40 @@ export function useGoogleDrive() {
     })
   }
 
+  // Dapatkan info folder berdasarkan ID atau URL Google Drive
+  async function getFolderInfo(folderIdOrUrl) {
+    if (!folderIdOrUrl) throw new Error('ID atau URL folder tidak boleh kosong')
+
+    let folderId = folderIdOrUrl.trim()
+    const urlMatch = folderId.match(/folders\/([a-zA-Z0-9_-]+)/)
+    if (urlMatch && urlMatch[1]) {
+      folderId = urlMatch[1]
+    } else if (folderId.includes('id=')) {
+      const idParam = new URLSearchParams(folderId.split('?')[1]).get('id')
+      if (idParam) folderId = idParam
+    }
+
+    const headers = await authHeaders()
+    const res = await fetch(
+      `${DRIVE_API}/files/${folderId}?fields=id,name,mimeType,trashed`,
+      { headers }
+    )
+    const data = await res.json()
+    if (data.error) {
+      if (data.error.code === 404) {
+        throw new Error('Folder tidak ditemukan di Google Drive akun yang terhubung.')
+      }
+      throw new Error(data.error.message || 'Gagal mengakses folder Google Drive.')
+    }
+    if (data.trashed) {
+      throw new Error('Folder ini berada di tempat sampah (Trash).')
+    }
+    if (data.mimeType !== 'application/vnd.google-apps.folder') {
+      throw new Error('Item yang dimasukkan adalah file, bukan folder Google Drive.')
+    }
+    return { id: data.id, name: data.name }
+  }
+
   // Buka Google Picker untuk pilih folder
   async function openFolderPicker(onSelected) {
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY
@@ -172,16 +206,35 @@ export function useGoogleDrive() {
       .setSelectFolderEnabled(true)
       .setMimeTypes('application/vnd.google-apps.folder')
 
-    const picker = new google.picker.PickerBuilder()
+    const origin = window.location.protocol + '//' + window.location.host
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+    const appId = clientId.includes('-') ? clientId.split('-')[0] : ''
+
+    const builder = new google.picker.PickerBuilder()
       .addView(view)
       .setOAuthToken(token)
       .setDeveloperKey(apiKey)
+      .setOrigin(origin)
       .setCallback(pickerCallback)
       .setTitle('Pilih Folder Tujuan Google Drive')
-      .build()
 
+    if (appId) {
+      builder.setAppId(appId)
+    }
+
+    const picker = builder.build()
     picker.setVisible(true)
   }
 
-  return { findItem, createFolder, getOrCreateFolder, uploadFile, updateFile, upsertFile, getTargetFolder, openFolderPicker }
+  return {
+    findItem,
+    createFolder,
+    getOrCreateFolder,
+    uploadFile,
+    updateFile,
+    upsertFile,
+    getTargetFolder,
+    openFolderPicker,
+    getFolderInfo,
+  }
 }

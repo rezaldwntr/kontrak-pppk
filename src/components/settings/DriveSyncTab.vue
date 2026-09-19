@@ -51,17 +51,56 @@
       </h3>
 
       <!-- Folder -->
-      <div class="form-group" style="margin-bottom: 16px;">
+      <div class="form-group" style="margin-bottom: 20px;">
         <label style="font-weight:bold; margin-bottom:8px; display:block;">Folder Tujuan Google Drive</label>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <input type="text" class="form-control" :value="driveStore.settings.folderName || 'Belum dipilih'" readonly
-            style="flex:1; background:var(--bg-secondary); cursor:default;"
-            :style="driveStore.settings.folderId ? 'color:var(--text-primary)' : 'color:var(--text-secondary)'" />
-          <button class="btn btn-outline" @click="openPicker" :disabled="isPickerLoading" style="white-space:nowrap;">
+
+        <!-- Status Folder Terpilih -->
+        <div v-if="driveStore.settings.folderId" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(30, 170, 110, 0.08); border: 1.5px solid #1eaa6e; border-radius: 8px; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
+            <i class="fa-solid fa-folder-check" style="font-size: 1.3rem; color: #1eaa6e; flex-shrink: 0;"></i>
+            <div style="min-width: 0;">
+              <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ driveStore.settings.folderName || 'Folder Google Drive' }}
+              </div>
+              <div style="font-size: 0.78rem; font-family: monospace; color: var(--text-muted);">
+                ID: {{ driveStore.settings.folderId }}
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-shrink: 0;">
+            <a :href="'https://drive.google.com/drive/folders/' + driveStore.settings.folderId" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka folder di Google Drive">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline" @click="clearFolder" title="Lepas / Ganti Folder" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Link / ID Folder & Tombol Pilih Visual -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:240px;">
+            <input
+              type="text"
+              class="form-control"
+              v-model="manualFolderInput"
+              placeholder="Tempel URL folder (drive.google.com/...) atau Folder ID di sini..."
+              @keyup.enter="applyManualFolder"
+            />
+          </div>
+          <button type="button" class="btn btn-primary" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space:nowrap;" title="Terapkan link / ID folder yang ditempel">
+            <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
+            <i class="fa-solid fa-spinner fa-spin" v-else></i>
+            &nbsp;Terapkan Link
+          </button>
+          <button type="button" class="btn btn-outline" @click="openPicker" :disabled="isPickerLoading" style="white-space:nowrap;" title="Pilih folder secara visual melalui Google Picker">
             <i class="fa-solid fa-folder-open"></i>&nbsp;
-            {{ isPickerLoading ? 'Memuat...' : 'Pilih Folder' }}
+            {{ isPickerLoading ? 'Memuat...' : 'Pilih Folder Visual' }}
           </button>
         </div>
+        <p class="form-text" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);">
+          Anda dapat langsung menyalin URL folder dari browser Google Drive (contoh: <code>drive.google.com/drive/folders/...</code>) lalu klik <strong>Terapkan Link</strong>, atau klik <strong>Pilih Folder Visual</strong>.
+        </p>
       </div>
 
       <!-- Bagian Dokumen -->
@@ -223,12 +262,14 @@ import { customSwal } from '../../utils/swal'
 
 const driveStore = useDriveStore()
 const { startOAuthFlow, handleOAuthCallback, disconnectDrive } = useGoogleAuth()
-const { openFolderPicker } = useGoogleDrive()
+const { openFolderPicker, getFolderInfo } = useGoogleDrive()
 const { shouldSync, syncEmployee, addToQueue } = useDriveSync()
 const pegawaiStore = usePegawaiStore()
 
 const isConnecting = ref(false)
 const isPickerLoading = ref(false)
+const manualFolderInput = ref('')
+const isValidatingFolder = ref(false)
 const isSavingRules = ref(false)
 const isSyncingAll = ref(false)
 const syncProgress = ref('')
@@ -313,13 +354,55 @@ async function handleDisconnect() {
   }
 }
 
+async function applyManualFolder() {
+  const val = manualFolderInput.value.trim()
+  if (!val) return
+  isValidatingFolder.value = true
+  try {
+    const folder = await getFolderInfo(val)
+    driveStore.settings.folderId = folder.id
+    driveStore.settings.folderName = folder.name
+    manualFolderInput.value = ''
+    await driveStore.saveSettings()
+    customSwal.fire({
+      icon: 'success',
+      title: 'Folder Dihubungkan',
+      text: `Folder "${folder.name}" berhasil dihubungkan!`,
+      timer: 2000,
+      showConfirmButton: false,
+    })
+  } catch (e) {
+    customSwal.fire({
+      icon: 'error',
+      title: 'Gagal Menghubungkan Folder',
+      text: e.message || 'Pastikan link atau ID folder valid dan akun Google Drive Anda memiliki akses ke folder tersebut.',
+    })
+  } finally {
+    isValidatingFolder.value = false
+  }
+}
+
+function clearFolder() {
+  driveStore.settings.folderId = ''
+  driveStore.settings.folderName = ''
+  driveStore.saveSettings()
+}
+
 async function openPicker() {
   isPickerLoading.value = true
   try {
     await openFolderPicker(async ({ id, name }) => {
       driveStore.settings.folderId = id
       driveStore.settings.folderName = name
+      await driveStore.saveSettings()
       isPickerLoading.value = false
+      customSwal.fire({
+        icon: 'success',
+        title: 'Folder Dipilih',
+        text: `Folder "${name}" berhasil dihubungkan!`,
+        timer: 2000,
+        showConfirmButton: false,
+      })
     })
   } catch (e) {
     isPickerLoading.value = false
