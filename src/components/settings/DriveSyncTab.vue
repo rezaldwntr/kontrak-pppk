@@ -1,351 +1,495 @@
 <template>
-  <div style="max-width: 800px;">
+  <div class="drive-sync-wrapper">
 
-    <!-- Section A: Koneksi -->
-    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
-      <h3 class="section-header">
-        <div><i class="fa-brands fa-google-drive"></i> Koneksi Google Drive</div>
-      </h3>
-
-      <div v-if="!driveStore.isConnected">
-        <p class="text-muted" style="margin-bottom: 16px;">
-          Hubungkan akun Google Anda untuk mengaktifkan sinkronisasi dokumen ke Google Drive.
-        </p>
-        <button class="btn btn-primary" @click="handleConnect" :disabled="isConnecting">
-          <i class="fa-brands fa-google"></i>&nbsp;
-          {{ isConnecting ? 'Menghubungkan...' : 'Hubungkan Google Drive' }}
-        </button>
-      </div>
-
-      <div v-else>
-        <div style="display: flex; align-items: center; gap: 12px; background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px;">
-          <i class="fa-brands fa-google-drive" style="font-size: 1.5rem; color: #1eaa6e;"></i>
-          <div>
-            <div style="font-weight: bold; color: #1eaa6e;">Terhubung</div>
-            <div class="text-muted" style="font-size: 0.85rem;">{{ driveStore.connectedEmail }}</div>
-          </div>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-          <label style="font-weight: bold;">Aktifkan Auto-Sync</label>
-          <div
-            @click="toggleEnabled"
-            style="cursor:pointer; width:44px; height:24px; border-radius:12px; position:relative; transition:background 0.2s;"
-            :style="driveStore.isEnabled ? 'background:#1eaa6e' : 'background:var(--border-color)'"
-          >
-            <div style="width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:2px;transition:left 0.2s;" :style="driveStore.isEnabled ? 'left:22px' : 'left:2px'"></div>
-          </div>
-          <span class="text-muted" style="font-size:0.85rem;">{{ driveStore.isEnabled ? 'Aktif' : 'Nonaktif' }}</span>
-        </div>
-
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button class="btn btn-outline" style="color: #dc2626; border-color: #dc2626;" @click="handleDisconnect" title="Putuskan koneksi Google Drive">
-            <i class="fa-solid fa-link-slash"></i>&nbsp; Putuskan Koneksi
-          </button>
-          <button class="btn btn-outline" @click="reconnectWithDrive" title="Hubungkan ulang akun Google untuk memperbarui izin">
-            <i class="fa-solid fa-rotate"></i>&nbsp; Hubungkan Ulang (Perbarui Izin)
-          </button>
-        </div>
-
-        <!-- Banner Peringatan jika Izin Google Drive Belum Diberikan -->
-        <div v-if="!driveStore.hasDriveScope" style="margin-top: 14px; background: rgba(239, 68, 68, 0.08); border: 1.5px solid #ef4444; border-radius: 10px; padding: 14px 18px;">
-          <div style="display: flex; gap: 12px; align-items: flex-start;">
-            <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; font-size: 1.4rem; margin-top: 2px;"></i>
-            <div style="flex: 1;">
-              <div style="font-weight: 700; color: #ef4444; font-size: 0.95rem; margin-bottom: 4px;">
-                Izin Akses Google Drive Belum Dicentang
-              </div>
-              <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 10px; line-height: 1.5;">
-                Akun Google Anda saat ini terhubung tanpa izin mengelola Google Drive. Silakan klik tombol di bawah dan <strong>pastikan mencentang kotak izin Google Drive</strong> saat login di halaman Google.
-              </p>
-              <button type="button" class="btn btn-sm btn-primary" @click="reconnectWithDrive" style="background: #ef4444; border-color: #ef4444; font-weight: 600;">
-                <i class="fa-solid fa-rotate"></i>&nbsp;Hubungkan Ulang & Beri Izin Drive
-              </button>
-            </div>
-          </div>
+    <!-- Card 1: Koneksi Akun Google Drive -->
+    <div class="drive-card">
+      <div class="drive-card-header">
+        <div class="card-title-group">
+          <i class="fa-brands fa-google-drive icon-accent-drive"></i>
+          <span>Koneksi Akun Google Drive</span>
         </div>
       </div>
-    </div>
 
-    <!-- Section B: Pengaturan Dokumen -->
-    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;" v-if="driveStore.isConnected">
-      <h3 class="section-header">
-        <div><i class="fa-solid fa-sliders"></i> Pengaturan Dokumen Default</div>
-      </h3>
+      <!-- State: Belum Terhubung -->
+      <div v-if="!driveStore.isConnected" class="connect-prompt-box">
+        <div class="connect-prompt-icon">
+          <i class="fa-brands fa-google-drive"></i>
+        </div>
+        <div class="connect-prompt-content">
+          <h4>Hubungkan Google Drive Anda</h4>
+          <p>
+            Integrasikan akun Google Drive Anda untuk mengaktifkan pengarsipan otomatis dan sinkronisasi berkas dokumen perjanjian kerja PPPK langsung ke penyimpanan cloud resmi instansi.
+          </p>
+          <button class="btn btn-primary btn-connect" @click="handleConnect" :disabled="isConnecting">
+            <i class="fa-brands fa-google"></i>
+            <span>{{ isConnecting ? 'Menghubungkan...' : 'Hubungkan dengan Google Drive' }}</span>
+          </button>
+        </div>
+      </div>
 
-      <!-- Folder Tujuan Google Drive (Solusi 2: Link/ID & Otomatis) -->
-      <div class="form-group" style="margin-bottom: 24px;">
-        <label style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 0.95rem;">
-          <i class="fa-solid fa-folder-tree" style="color: #2563eb; margin-right: 6px;"></i>
-          Folder Tujuan Google Drive
-        </label>
-
-        <!-- Status Folder Terpilih (Aktif) -->
-        <div v-if="driveStore.settings.folderId" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(30, 170, 110, 0.08); border: 1.5px solid #1eaa6e; border-radius: 10px; margin-bottom: 16px;">
-          <div style="display: flex; align-items: center; gap: 14px; overflow: hidden;">
-            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(30, 170, 110, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <i class="fa-solid fa-folder-check" style="font-size: 1.4rem; color: #1eaa6e;"></i>
+      <!-- State: Sudah Terhubung -->
+      <div v-else class="connected-content">
+        <!-- Bar Akun -->
+        <div class="account-card-bar">
+          <div class="account-profile-box">
+            <div class="drive-brand-circle">
+              <i class="fa-brands fa-google-drive"></i>
             </div>
-            <div style="min-width: 0;">
-              <div style="font-weight: 700; color: var(--text-primary); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ driveStore.settings.folderName || 'Folder Google Drive' }}
+            <div class="account-meta">
+              <div class="account-status-line">
+                <span class="status-indicator-dot"></span>
+                <span class="status-label">Terhubung ke Google Drive</span>
               </div>
-              <div style="font-size: 0.8rem; font-family: monospace; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                <span>ID: {{ driveStore.settings.folderId }}</span>
-              </div>
+              <div class="account-email">{{ driveStore.connectedEmail || 'Akun Google' }}</div>
             </div>
           </div>
-          <div style="display: flex; gap: 8px; flex-shrink: 0;">
-            <a :href="'https://drive.google.com/drive/folders/' + driveStore.settings.folderId" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka folder di Google Drive">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
-            <button type="button" class="btn btn-sm btn-outline" @click="clearFolder" title="Ganti / Lepas Folder" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
-              <i class="fa-solid fa-xmark"></i>
+          <div class="account-action-buttons">
+            <button
+              class="btn btn-sm btn-outline btn-reconnect"
+              @click="reconnectWithDrive"
+              title="Hubungkan ulang akun untuk memperbarui hak akses izin"
+            >
+              <i class="fa-solid fa-rotate"></i>
+              <span>Perbarui Izin</span>
+            </button>
+            <button
+              class="btn btn-sm btn-outline btn-outline-danger"
+              @click="handleDisconnect"
+              title="Putuskan koneksi Google Drive"
+            >
+              <i class="fa-solid fa-link-slash"></i>
+              <span>Putuskan</span>
             </button>
           </div>
         </div>
 
-        <!-- Formulir Hubungkan Folder -->
-        <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
-          <!-- Baris Aksi Utama: Google Picker & Buat Folder -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-              <!-- Tombol Utama: Google Picker Visual -->
-              <button
-                type="button"
-                class="btn btn-primary"
-                @click="openPicker"
-                :disabled="isPickerLoading"
-                style="padding: 9px 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;"
-                title="Pilih folder secara visual langsung dari Google Drive"
-              >
-                <i class="fa-solid fa-folder-open" v-if="!isPickerLoading"></i>
-                <i class="fa-solid fa-spinner fa-spin" v-else></i>
-                <span>{{ isPickerLoading ? 'Membuka Google Picker...' : (driveStore.settings.folderId ? 'Ganti Folder (Google Picker)' : 'Pilih Folder (Google Picker)') }}</span>
-              </button>
-
-              <!-- Tombol Cepat: Buat Folder Otomatis -->
-              <button
-                type="button"
-                class="btn btn-outline"
-                @click="createNewDriveFolder"
-                :disabled="isValidatingFolder"
-                style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px;"
-                title="Buat folder baru otomatis di Google Drive tanpa perlu membuka tab lain"
-              >
-                <i class="fa-solid fa-folder-plus" style="color: #1eaa6e;"></i>
-                <span>Buat Folder Otomatis</span>
-              </button>
+        <!-- Banner Auto-Sync -->
+        <div class="auto-sync-row">
+          <div class="auto-sync-info">
+            <div class="auto-sync-title">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <span>Sinkronisasi Otomatis (Auto-Sync)</span>
+              <span :class="driveStore.isEnabled ? 'pill-active' : 'pill-inactive'">
+                {{ driveStore.isEnabled ? 'Aktif' : 'Nonaktif' }}
+              </span>
             </div>
-
-            <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka Google Drive di tab baru">
-              <i class="fa-brands fa-google-drive"></i>&nbsp; Buka Drive
-            </a>
+            <p class="auto-sync-caption">
+              Dokumen kontrak otomatis dibuat dan diunggah ke Google Drive setiap kali Anda menyimpan perubahan data pegawai aktif.
+            </p>
           </div>
-
-          <!-- Pilihan Alternatif: Tempel Link / ID Folder Manual -->
-          <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 4px;">
-            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">
-              Atau tempel Link / ID Folder Google Drive secara manual:
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <div style="flex: 1; min-width: 260px;">
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="manualFolderInput"
-                  placeholder="Contoh: https://drive.google.com/drive/folders/1aBcDeFgHiJk... atau tempel ID folder"
-                  @keyup.enter="applyManualFolder"
-                  :disabled="isValidatingFolder"
-                  style="font-size: 0.88rem;"
-                />
-              </div>
-              <button type="button" class="btn btn-outline" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space: nowrap; padding: 8px 18px; font-weight: 600;">
-                <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
-                <i class="fa-solid fa-spinner fa-spin" v-else></i>
-                &nbsp;Terapkan Link
-              </button>
+          <div class="switch-container" @click="toggleEnabled" role="button" tabindex="0" title="Aktif/Nonaktifkan Sinkronisasi Otomatis">
+            <div class="switch-track" :class="{ 'switch-on': driveStore.isEnabled }">
+              <div class="switch-thumb"></div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Bagian Dokumen -->
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label style="font-weight:bold; margin-bottom:8px; display:block;">Bagian Dokumen</label>
-        <select v-model="driveStore.settings.documentPart" class="form-control" style="max-width:300px;">
-          <option value="full">Utuh (Perjanjian + Tanda Tangan)</option>
-          <option value="perjanjian">Isi Perjanjian Saja</option>
-          <option value="tandatangan">Halaman Tanda Tangan Saja</option>
-          <option value="pisah">Pisah (2 file terpisah)</option>
-        </select>
-      </div>
-
-      <!-- Mode File -->
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label style="font-weight:bold; margin-bottom:8px; display:block;">Mode File</label>
-        <div style="display:flex; gap:12px; flex-wrap:wrap;">
-          <label v-for="opt in mergeModeOptions" :key="opt.value"
-            style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:1.5px solid var(--border-color); border-radius:8px; flex:1;"
-            :style="driveStore.settings.mergeMode === opt.value ? 'border-color:#2563eb; background:rgba(37,99,235,0.05)' : ''">
-            <input type="radio" :value="opt.value" v-model="driveStore.settings.mergeMode" style="accent-color:#2563eb;">
+        <!-- Banner Peringatan jika Izin Google Drive Belum Diberikan -->
+        <div v-if="!driveStore.hasDriveScope" class="scope-warning-box">
+          <div class="scope-warning-header">
+            <i class="fa-solid fa-triangle-exclamation"></i>
             <div>
-              <div>{{ opt.label }}</div>
-              <div class="text-muted" style="font-size:0.78rem;">{{ opt.desc }}</div>
+              <h5>Izin Akses Google Drive Belum Lengkap</h5>
+              <p>
+                Akun Google Anda terhubung tanpa izin mengelola Google Drive. Silakan klik tombol di bawah dan <strong>pastikan mencentang seluruh kotak izin Google Drive</strong> saat login di halaman otentikasi Google.
+              </p>
             </div>
-          </label>
+          </div>
+          <button type="button" class="btn btn-sm btn-danger" @click="reconnectWithDrive">
+            <i class="fa-solid fa-rotate"></i>
+            <span>Hubungkan Ulang & Berikan Izin Drive</span>
+          </button>
         </div>
       </div>
-
-      <!-- Tanggal Kontrak -->
-      <div class="form-group" style="margin-bottom: 20px;">
-        <label style="font-weight:bold; margin-bottom:8px; display:block;">Tanggal Penandatanganan Kontrak Default</label>
-        <input type="date" v-model="driveStore.settings.tanggalKontrak" class="form-control" style="max-width:220px;">
-        <p class="text-muted" style="font-size:0.82rem; margin-top:6px;">Tanggal ini digunakan saat auto-sync. Dapat diubah kapan saja.</p>
-      </div>
-
-      <!-- Format Nama File (Pilihan Gelar) -->
-      <div class="form-group" style="margin-bottom: 20px;">
-        <label style="font-weight:bold; margin-bottom:8px; display:block;">Format Penamaan File Dokumen</label>
-        <div style="display:flex; gap:12px; flex-wrap:wrap;">
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:1.5px solid var(--border-color); border-radius:8px; flex:1;"
-            :style="!driveStore.settings.includeGelar ? 'border-color:#2563eb; background:rgba(37,99,235,0.05)' : ''">
-            <input type="radio" :value="false" v-model="driveStore.settings.includeGelar" style="accent-color:#2563eb;">
-            <div>
-              <div style="font-weight:600;">Tanpa Gelar (Rekomendasi)</div>
-              <div class="text-muted" style="font-size:0.78rem;">Contoh: <code>197407042025212030_ANA ERPINA.docx</code></div>
-            </div>
-          </label>
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:1.5px solid var(--border-color); border-radius:8px; flex:1;"
-            :style="driveStore.settings.includeGelar ? 'border-color:#2563eb; background:rgba(37,99,235,0.05)' : ''">
-            <input type="radio" :value="true" v-model="driveStore.settings.includeGelar" style="accent-color:#2563eb;">
-            <div>
-              <div style="font-weight:600;">Sertakan Gelar</div>
-              <div class="text-muted" style="font-size:0.78rem;">Contoh: <code>197407042025212030_ANA ERPINA, S.Pd.docx</code></div>
-            </div>
-          </label>
-        </div>
-        <p class="text-muted" style="font-size:0.82rem; margin-top:6px;">Spasi di tengah nama tetap dipertahankan (tidak diganti dengan underscore).</p>
-      </div>
-
-      <button class="btn btn-primary" @click="saveSettings" :disabled="driveStore.isSaving" style="background-color:var(--primary-color);">
-        <i v-if="driveStore.isSaving" class="fa-solid fa-spinner fa-spin"></i>
-        <i v-else class="fa-solid fa-save"></i>&nbsp;
-        Simpan Pengaturan
-      </button>
     </div>
 
-    <!-- Section C: Aturan Sync -->
-    <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;" v-if="driveStore.isConnected">
-      <h3 class="section-header">
-        <div><i class="fa-solid fa-filter"></i> Aturan Sync Otomatis</div>
-      </h3>
-      <p class="text-muted" style="margin-bottom:16px;">
-        Tentukan kriteria pegawai yang akan otomatis disinkronkan saat data disimpan.
-        Pegawai yang memenuhi semua kriteria di bawah akan masuk ke daftar sync.
+    <!-- Card 2: Folder Tujuan Google Drive -->
+    <div class="drive-card" v-if="driveStore.isConnected">
+      <div class="drive-card-header">
+        <div class="card-title-group">
+          <i class="fa-solid fa-folder-tree icon-accent-folder"></i>
+          <span>Folder Tujuan Penyimpanan di Google Drive</span>
+        </div>
+      </div>
+
+      <!-- Status Folder Terpilih (Aktif) -->
+      <div v-if="driveStore.settings.folderId" class="active-folder-card">
+        <div class="active-folder-left">
+          <div class="folder-avatar">
+            <i class="fa-solid fa-folder-check"></i>
+          </div>
+          <div class="folder-details">
+            <div class="folder-name-row">
+              <span class="folder-name">{{ driveStore.settings.folderName || 'Folder Google Drive' }}</span>
+              <span class="badge-folder-active">Folder Aktif</span>
+            </div>
+            <div class="folder-id-tag">
+              <i class="fa-solid fa-hashtag"></i>
+              <span>ID: {{ driveStore.settings.folderId }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="active-folder-actions">
+          <a
+            :href="'https://drive.google.com/drive/folders/' + driveStore.settings.folderId"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-sm btn-outline"
+            title="Buka folder di tab baru Google Drive"
+          >
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <span>Buka di Drive</span>
+          </a>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline btn-outline-danger"
+            @click="clearFolder"
+            title="Ganti atau lepas folder tujuan"
+          >
+            <i class="fa-solid fa-xmark"></i>
+            <span>Lepas Folder</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulir Pemilihan / Penghubungan Folder -->
+      <div class="folder-selection-panel">
+        <div class="panel-section-title">Pilih atau ubah folder penyimpanan:</div>
+
+        <!-- Tombol Aksi Utama -->
+        <div class="folder-action-buttons">
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="openPicker"
+            :disabled="isPickerLoading"
+            title="Buka jendela Google Picker untuk memilih folder secara visual"
+          >
+            <i class="fa-solid fa-folder-open" v-if="!isPickerLoading"></i>
+            <i class="fa-solid fa-spinner fa-spin" v-else></i>
+            <span>{{ isPickerLoading ? 'Membuka Picker...' : (driveStore.settings.folderId ? 'Ganti Folder (Google Picker)' : 'Pilih Folder (Google Picker)') }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline"
+            @click="createNewDriveFolder"
+            :disabled="isValidatingFolder"
+            title="Buat folder baru otomatis di root Google Drive"
+          >
+            <i class="fa-solid fa-folder-plus icon-success"></i>
+            <span>Buat Folder Otomatis</span>
+          </button>
+
+          <a
+            href="https://drive.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-outline btn-drive-link"
+            title="Buka Google Drive di tab baru"
+          >
+            <i class="fa-brands fa-google-drive"></i>
+            <span>Buka Google Drive</span>
+          </a>
+        </div>
+
+        <!-- Opsi Tempel Link / ID Manual -->
+        <div class="manual-input-box">
+          <label class="manual-input-label">Atau tempel Link URL / ID Folder Google Drive secara manual:</label>
+          <div class="manual-input-row">
+            <input
+              type="text"
+              class="form-control manual-input-field"
+              v-model="manualFolderInput"
+              placeholder="Contoh: https://drive.google.com/drive/folders/1aBcDeFgHiJk... atau tempel ID folder"
+              @keyup.enter="applyManualFolder"
+              :disabled="isValidatingFolder"
+            />
+            <button
+              type="button"
+              class="btn btn-outline btn-apply-manual"
+              @click="applyManualFolder"
+              :disabled="isValidatingFolder || !manualFolderInput.trim()"
+            >
+              <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
+              <i class="fa-solid fa-spinner fa-spin" v-else></i>
+              <span>Terapkan</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Pengaturan Format Dokumen & Penamaan File -->
+    <div class="drive-card" v-if="driveStore.isConnected">
+      <div class="drive-card-header">
+        <div class="card-title-group">
+          <i class="fa-solid fa-sliders icon-accent-sliders"></i>
+          <span>Pengaturan Format Dokumen & Penamaan Berkas</span>
+        </div>
+      </div>
+
+      <!-- Grid Pengaturan 2 Kolom -->
+      <div class="settings-two-col-grid">
+
+        <!-- Kolom 1: Bagian Dokumen -->
+        <div class="setting-grid-item">
+          <label class="field-label-bold">Bagian Dokumen</label>
+          <select v-model="driveStore.settings.documentPart" class="form-control select-modern">
+            <option value="full">Utuh (Perjanjian + Tanda Tangan)</option>
+            <option value="perjanjian">Isi Perjanjian Saja</option>
+            <option value="tandatangan">Halaman Tanda Tangan Saja</option>
+            <option value="pisah">Pisah (2 file terpisah)</option>
+          </select>
+          <span class="field-caption">Pilih bagian dokumen perjanjian kerja yang akan disimpan.</span>
+        </div>
+
+        <!-- Kolom 2: Tanggal Kontrak Default -->
+        <div class="setting-grid-item">
+          <label class="field-label-bold">Tanggal Kontrak Default</label>
+          <input type="date" v-model="driveStore.settings.tanggalKontrak" class="form-control date-modern">
+          <span class="field-caption">Tanggal penandatanganan yang digunakan saat proses auto-sync.</span>
+        </div>
+
+        <!-- Kolom 3: Mode File -->
+        <div class="setting-grid-item">
+          <label class="field-label-bold">Mode Pengelompokan File</label>
+          <div class="radio-card-grid">
+            <label
+              v-for="opt in mergeModeOptions"
+              :key="opt.value"
+              class="radio-selection-card"
+              :class="{ 'card-selected': driveStore.settings.mergeMode === opt.value }"
+            >
+              <input
+                type="radio"
+                :value="opt.value"
+                v-model="driveStore.settings.mergeMode"
+                class="radio-input-element"
+              />
+              <div class="radio-selection-content">
+                <span class="radio-selection-title">{{ opt.label }}</span>
+                <span class="radio-selection-desc">{{ opt.desc }}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Kolom 4: Format Nama File Pegawai (Pilihan Gelar - Contoh Dihilangkan) -->
+        <div class="setting-grid-item">
+          <label class="field-label-bold">Format Penamaan File Pegawai</label>
+          <div class="radio-card-grid">
+            <label
+              class="radio-selection-card"
+              :class="{ 'card-selected': !driveStore.settings.includeGelar }"
+            >
+              <input
+                type="radio"
+                :value="false"
+                v-model="driveStore.settings.includeGelar"
+                class="radio-input-element"
+              />
+              <div class="radio-selection-content">
+                <span class="radio-selection-title">Tanpa Gelar</span>
+                <span class="badge-recommended">Rekomendasi</span>
+              </div>
+            </label>
+
+            <label
+              class="radio-selection-card"
+              :class="{ 'card-selected': driveStore.settings.includeGelar }"
+            >
+              <input
+                type="radio"
+                :value="true"
+                v-model="driveStore.settings.includeGelar"
+                class="radio-input-element"
+              />
+              <div class="radio-selection-content">
+                <span class="radio-selection-title">Sertakan Gelar</span>
+              </div>
+            </label>
+          </div>
+          <span class="field-caption">
+            <i class="fa-solid fa-circle-check icon-success"></i> Spasi di tengah nama tetap dipertahankan sesuai nama pegawai.
+          </span>
+        </div>
+
+      </div>
+
+      <!-- Tombol Simpan Pengaturan -->
+      <div class="settings-action-row">
+        <button
+          type="button"
+          class="btn btn-primary btn-save-settings"
+          @click="saveSettings"
+          :disabled="driveStore.isSaving"
+        >
+          <i v-if="driveStore.isSaving" class="fa-solid fa-spinner fa-spin"></i>
+          <i v-else class="fa-solid fa-floppy-disk"></i>
+          <span>{{ driveStore.isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Dokumen' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card 4: Aturan Sync Otomatis -->
+    <div class="drive-card" v-if="driveStore.isConnected">
+      <div class="drive-card-header">
+        <div class="card-title-group">
+          <i class="fa-solid fa-filter icon-accent-filter"></i>
+          <span>Aturan Filter Sinkronisasi Otomatis</span>
+        </div>
+      </div>
+
+      <p class="section-lead-text">
+        Tentukan kriteria pegawai yang akan otomatis disinkronkan ke Google Drive. Pegawai aktif yang memenuhi kriteria di bawah akan otomatis diproses.
       </p>
 
-      <!-- Rules -->
-      <div v-for="(rule, i) in localRules" :key="i" style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
-        <select v-model="rule.field" class="form-control" style="flex:0 0 180px;" @change="rule.value = ''">
-          <option value="">Pilih Kriteria...</option>
-          <option value="kelompok">Kelompok Pegawai</option>
-          <option value="jenisPppk">Jenis PPPK</option>
-          <option value="unorInduk">Unor Induk</option>
-        </select>
+      <!-- Daftar Baris Aturan -->
+      <div class="rules-list-container">
+        <div v-for="(rule, i) in localRules" :key="i" class="rule-item-row">
+          <div class="rule-field-wrap">
+            <select v-model="rule.field" class="form-control" @change="rule.value = ''">
+              <option value="">Pilih Kriteria...</option>
+              <option value="kelompok">Kelompok Pegawai</option>
+              <option value="jenisPppk">Jenis PPPK</option>
+              <option value="unorInduk">Unor Induk</option>
+            </select>
+          </div>
 
-        <select v-if="rule.field === 'kelompok'" v-model="rule.value" class="form-control" style="flex:1;">
-          <option value="Tenaga Guru">Tenaga Guru</option>
-          <option value="Tenaga Kesehatan">Tenaga Kesehatan</option>
-          <option value="Tenaga Teknis">Tenaga Teknis</option>
-        </select>
-        <select v-else-if="rule.field === 'jenisPppk'" v-model="rule.value" class="form-control" style="flex:1;">
-          <option value="PPPK">PPPK</option>
-          <option value="PPPK Penuh Waktu">PPPK Penuh Waktu</option>
-          <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
-        </select>
-        <select v-else-if="rule.field === 'unorInduk' && unorIndukOptions.length > 0" v-model="rule.value" class="form-control" style="flex:1;">
-          <option value="">Pilih Unor Induk...</option>
-          <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
-        </select>
-        <input v-else v-model="rule.value" class="form-control" placeholder="Nilai kriteria..." style="flex:1;">
+          <div class="rule-value-wrap">
+            <select v-if="rule.field === 'kelompok'" v-model="rule.value" class="form-control">
+              <option value="Tenaga Guru">Tenaga Guru</option>
+              <option value="Tenaga Kesehatan">Tenaga Kesehatan</option>
+              <option value="Tenaga Teknis">Tenaga Teknis</option>
+            </select>
+            <select v-else-if="rule.field === 'jenisPppk'" v-model="rule.value" class="form-control">
+              <option value="PPPK">PPPK</option>
+              <option value="PPPK Penuh Waktu">PPPK Penuh Waktu</option>
+              <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
+            </select>
+            <select v-else-if="rule.field === 'unorInduk' && unorIndukOptions.length > 0" v-model="rule.value" class="form-control">
+              <option value="">Pilih Unor Induk...</option>
+              <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
+            </select>
+            <input v-else v-model="rule.value" class="form-control" placeholder="Nilai kriteria..." />
+          </div>
 
-        <button class="btn btn-outline" style="color:#dc2626; border-color:#dc2626; flex-shrink:0;" @click="removeRule(i)" title="Hapus kriteria">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+          <button
+            type="button"
+            class="btn btn-outline btn-outline-danger btn-delete-rule"
+            @click="removeRule(i)"
+            title="Hapus kriteria ini"
+          >
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
       </div>
 
-      <button class="btn btn-outline" @click="addRule" style="margin-bottom:16px;">
-        <i class="fa-solid fa-plus"></i>&nbsp; Tambah Kriteria
+      <!-- Tombol Tambah Kriteria -->
+      <button type="button" class="btn btn-outline btn-add-rule" @click="addRule">
+        <i class="fa-solid fa-plus"></i>
+        <span>Tambah Kriteria Filter</span>
       </button>
 
-      <div v-if="previewCount !== null" style="padding:10px 14px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:8px; margin-bottom:16px; font-size:0.9rem;">
-        <i class="fa-solid fa-circle-info" style="color:#2563eb;"></i>&nbsp;
-        <span v-if="hasActiveRules">
-          Dengan aturan ini, <strong>{{ previewCount }}</strong> pegawai aktif memenuhi kriteria sinkronisasi.
-        </span>
-        <span v-else>
-          Belum ada filter khusus (seluruh <strong>{{ previewCount }}</strong> pegawai aktif siap disinkronkan).
-        </span>
+      <!-- Banner Pratinjau Kriteria -->
+      <div v-if="previewCount !== null" class="criteria-preview-box">
+        <i class="fa-solid fa-circle-info criteria-preview-icon"></i>
+        <div class="criteria-preview-text">
+          <span v-if="hasActiveRules">
+            Dengan aturan ini, sebanyak <strong>{{ previewCount }} pegawai aktif</strong> memenuhi kriteria sinkronisasi.
+          </span>
+          <span v-else>
+            Belum ada filter khusus (seluruh <strong>{{ previewCount }} pegawai aktif</strong> siap disinkronkan).
+          </span>
+        </div>
       </div>
-      <div v-else-if="pegawaiStore.isLoading" style="padding:10px 14px; background:rgba(100,100,100,0.08); border-radius:8px; margin-bottom:16px; font-size:0.9rem;">
-        <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Memuat data pegawai...
+      <div v-else-if="pegawaiStore.isLoading" class="criteria-preview-box criteria-loading">
+        <i class="fa-solid fa-spinner fa-spin criteria-preview-icon"></i>
+        <span>Memuat data pegawai...</span>
       </div>
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn btn-primary" @click="saveRules" :disabled="isSavingRules" style="background-color:var(--primary-color);">
+      <!-- Aksi Aturan Sync -->
+      <div class="rules-actions-row">
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="saveRules"
+          :disabled="isSavingRules"
+        >
           <i v-if="isSavingRules" class="fa-solid fa-spinner fa-spin"></i>
-          <i v-else class="fa-solid fa-floppy-disk"></i>&nbsp;
-          Simpan Aturan
+          <i v-else class="fa-solid fa-floppy-disk"></i>
+          <span>Simpan Aturan Filter</span>
         </button>
-        <button class="btn btn-outline" @click="syncAll" :disabled="isSyncingAll">
+
+        <button
+          type="button"
+          class="btn btn-outline btn-sync-all"
+          @click="syncAll"
+          :disabled="isSyncingAll"
+        >
           <i v-if="isSyncingAll" class="fa-solid fa-spinner fa-spin"></i>
-          <i v-else class="fa-solid fa-rotate"></i>&nbsp;
-          {{ isSyncingAll ? `Menyinkronkan ${syncProgress}...` : 'Sync Semua Sekarang' }}
+          <i v-else class="fa-solid fa-cloud-arrow-up"></i>
+          <span>{{ isSyncingAll ? `Menyinkronkan ${syncProgress}...` : 'Sync Semua Sekarang' }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Section D: Antrian Retry -->
-    <div class="settings-section-card" style="padding: 1.5rem;" v-if="driveStore.isConnected && queueItems.length > 0">
-      <h3 class="section-header">
-        <div>
-          <i class="fa-solid fa-clock-rotate-left"></i> Antrian Retry
-          <span style="background:#dc2626; color:white; border-radius:999px; padding:2px 8px; font-size:0.8rem; margin-left:8px;">{{ queueItems.length }}</span>
+    <!-- Card 5: Antrian Retry (Jika Ada Kegagalan) -->
+    <div class="drive-card" v-if="driveStore.isConnected && queueItems.length > 0">
+      <div class="drive-card-header">
+        <div class="card-title-group">
+          <i class="fa-solid fa-clock-rotate-left icon-accent-retry"></i>
+          <span>Antrian Retry Sinkronisasi</span>
+          <span class="badge-queue-count">{{ queueItems.length }}</span>
         </div>
-      </h3>
-      <div class="table-responsive" style="margin-bottom:16px;">
-        <table class="table" style="font-size:0.9rem;">
+      </div>
+
+      <div class="table-responsive queue-table-wrap">
+        <table class="table queue-table">
           <thead>
             <tr>
               <th>Pegawai</th>
-              <th>Error</th>
-              <th>Percobaan</th>
-              <th>Retry Berikutnya</th>
-              <th>Aksi</th>
+              <th>Pesan Kendala</th>
+              <th style="text-align:center;">Percobaan</th>
+              <th>Jadwal Coba Lagi</th>
+              <th style="text-align:center;">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in queueItems" :key="item.id">
-              <td><strong>{{ item.pegawaiNama }}</strong><br><small class="text-muted">{{ item.pegawaiNip }}</small></td>
-              <td style="color:#dc2626; font-size:0.82rem;">{{ item.errorMsg }}</td>
-              <td style="text-align:center;">{{ item.attemptCount }}</td>
-              <td style="font-size:0.82rem;">{{ formatDate(item.nextRetry) }}</td>
               <td>
-                <button class="btn btn-outline btn-sm" @click="retryItem(item)" title="Coba Lagi">
-                  <i class="fa-solid fa-rotate-right"></i>
-                </button>
-                <button class="btn btn-outline btn-sm" style="color:#dc2626; border-color:#dc2626; margin-left:4px;" @click="deleteQueueItem(item.id)" title="Hapus">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
+                <div class="queue-pegawai-name">{{ item.pegawaiNama }}</div>
+                <div class="queue-pegawai-nip">{{ item.pegawaiNip }}</div>
+              </td>
+              <td>
+                <span class="queue-error-msg">{{ item.errorMsg }}</span>
+              </td>
+              <td style="text-align:center;">
+                <span class="badge-attempt">{{ item.attemptCount }}x</span>
+              </td>
+              <td class="queue-time-cell">{{ formatDate(item.nextRetry) }}</td>
+              <td style="text-align:center;">
+                <div class="queue-actions-inline">
+                  <button class="btn btn-sm btn-outline" @click="retryItem(item)" title="Coba Lagi Sekarang">
+                    <i class="fa-solid fa-rotate-right"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline btn-outline-danger" @click="deleteQueueItem(item.id)" title="Hapus dari antrian">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <button class="btn btn-primary" @click="retryAll" style="background-color:var(--primary-color);">
-        <i class="fa-solid fa-rotate"></i>&nbsp; Coba Lagi Semua
-      </button>
+
+      <div class="queue-footer-row">
+        <button class="btn btn-primary" @click="retryAll">
+          <i class="fa-solid fa-rotate"></i>
+          <span>Coba Lagi Semua Antrian</span>
+        </button>
+      </div>
     </div>
 
   </div>
@@ -790,3 +934,741 @@ watch(() => driveStore.syncRules, (newRules) => {
   localRules.value = newRules.map(r => ({ ...r }))
 }, { deep: true })
 </script>
+
+<style scoped>
+.drive-sync-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-bottom: 40px;
+}
+
+/* Card Container */
+.drive-card {
+  background: var(--bg-secondary, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 16px;
+  padding: 1.6rem 1.85rem;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.drive-card:hover {
+  border-color: rgba(var(--primary-color-rgb, 16, 185, 129), 0.35);
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.06));
+}
+
+/* Card Header */
+.drive-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--border-color, #e5e7eb);
+}
+
+.card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.icon-accent-drive { color: #1eaa6e; font-size: 1.35rem; }
+.icon-accent-folder { color: #3b82f6; font-size: 1.25rem; }
+.icon-accent-sliders { color: #8b5cf6; font-size: 1.25rem; }
+.icon-accent-filter { color: #f59e0b; font-size: 1.25rem; }
+.icon-accent-retry { color: #ef4444; font-size: 1.25rem; }
+.icon-success { color: var(--success-color, #10B981); }
+
+/* Belum Terhubung State */
+.connect-prompt-box {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 24px;
+  background: var(--bg-primary, #f9fafb);
+  border: 1.5px dashed var(--border-color, #e5e7eb);
+  border-radius: 14px;
+}
+
+.connect-prompt-icon {
+  font-size: 3rem;
+  color: #1eaa6e;
+  flex-shrink: 0;
+  padding: 12px;
+  background: rgba(30, 170, 110, 0.1);
+  border-radius: 14px;
+}
+
+.connect-prompt-content h4 {
+  margin: 0 0 6px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.connect-prompt-content p {
+  margin: 0 0 16px 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.btn-connect {
+  padding: 10px 22px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Terhubung: Bar Akun */
+.account-card-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.account-profile-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drive-brand-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  color: #10B981;
+  flex-shrink: 0;
+}
+
+.account-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-status-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.status-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #10B981;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.account-email {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.account-action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.btn-outline-danger {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+.btn-outline-danger:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: #ef4444 !important;
+}
+
+/* Auto-Sync Row */
+.auto-sync-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  background: var(--bg-primary, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.auto-sync-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.auto-sync-caption {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.pill-active {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.pill-inactive {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-light);
+  background: rgba(100, 116, 139, 0.15);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* Switch Toggle Component */
+.switch-container {
+  cursor: pointer;
+  padding: 4px;
+  outline: none;
+}
+
+.switch-track {
+  width: 48px;
+  height: 26px;
+  border-radius: 14px;
+  background: var(--border-color, #d1d5db);
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.switch-track.switch-on {
+  background: var(--primary-color, #10B981);
+}
+
+.switch-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+}
+
+.switch-track.switch-on .switch-thumb {
+  transform: translateX(22px);
+}
+
+/* Scope Warning Box */
+.scope-warning-box {
+  margin-top: 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1.5px solid #ef4444;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.scope-warning-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.scope-warning-header i {
+  color: #ef4444;
+  font-size: 1.35rem;
+  margin-top: 2px;
+}
+
+.scope-warning-header h5 {
+  margin: 0 0 4px 0;
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.scope-warning-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* Folder Aktif Card */
+.active-folder-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  background: rgba(16, 185, 129, 0.07);
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.active-folder-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.folder-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #10B981;
+  flex-shrink: 0;
+}
+
+.folder-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.folder-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.folder-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-folder-active {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.16);
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.folder-id-tag {
+  font-size: 0.8rem;
+  font-family: monospace;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.active-folder-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Folder Selection Panel */
+.folder-selection-panel {
+  background: var(--bg-primary, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.panel-section-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.folder-action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.folder-action-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 9px 16px;
+}
+
+.manual-input-box {
+  border-top: 1px dashed var(--border-color, #e5e7eb);
+  padding-top: 14px;
+}
+
+.manual-input-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.manual-input-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.manual-input-field {
+  flex: 1;
+  min-width: 250px;
+  font-size: 0.88rem;
+}
+
+.btn-apply-manual {
+  white-space: nowrap;
+  font-weight: 600;
+  padding: 8px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 2-Kolom Settings Grid */
+.settings-two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 768px) {
+  .settings-two-col-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.setting-grid-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field-label-bold {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  display: block;
+}
+
+.field-caption {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.select-modern,
+.date-modern {
+  width: 100%;
+}
+
+/* Radio Selection Cards (Mode File & Format Nama) */
+.radio-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.radio-selection-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  background: var(--bg-secondary, #ffffff);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  min-height: 52px;
+}
+
+.radio-selection-card:hover {
+  border-color: var(--primary-color, #10B981);
+}
+
+.radio-selection-card.card-selected {
+  border-color: var(--primary-color, #10B981);
+  background: var(--primary-light, rgba(16, 185, 129, 0.08));
+}
+
+.radio-input-element {
+  accent-color: var(--primary-color, #10B981);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.radio-selection-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.radio-selection-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.radio-selection-desc {
+  font-size: 0.76rem;
+  color: var(--text-light);
+  line-height: 1.3;
+}
+
+.badge-recommended {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.settings-action-row {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.btn-save-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
+  background-color: var(--primary-color, #10B981);
+}
+
+/* Rules Section */
+.section-lead-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+
+.rules-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.rule-item-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rule-field-wrap {
+  flex: 0 0 190px;
+}
+
+@media (max-width: 600px) {
+  .rule-field-wrap {
+    flex: 1 1 100%;
+  }
+}
+
+.rule-value-wrap {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn-delete-rule {
+  flex-shrink: 0;
+  padding: 8px 12px;
+}
+
+.btn-add-rule {
+  margin-bottom: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  padding: 7px 14px;
+}
+
+/* Criteria Preview Box */
+.criteria-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.criteria-preview-icon {
+  color: #2563eb;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.criteria-loading {
+  background: rgba(100, 116, 139, 0.08);
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+.rules-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rules-actions-row .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 9px 18px;
+}
+
+.btn-sync-all {
+  border-color: var(--primary-color, #10B981);
+  color: var(--primary-color, #10B981);
+}
+
+.btn-sync-all:hover {
+  background: var(--primary-light, rgba(16, 185, 129, 0.1));
+}
+
+/* Retry Queue */
+.badge-queue-count {
+  background: #dc2626;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.queue-table-wrap {
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.queue-table {
+  margin-bottom: 0;
+  font-size: 0.88rem;
+}
+
+.queue-pegawai-name {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.queue-pegawai-nip {
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+
+.queue-error-msg {
+  color: #ef4444;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.badge-attempt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.queue-time-cell {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.queue-actions-inline {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.queue-footer-row {
+  display: flex;
+  justify-content: flex-start;
+}
+</style>

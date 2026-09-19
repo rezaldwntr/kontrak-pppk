@@ -51,6 +51,16 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
     1. **Tanpa Gelar (Rekomendasi)**: Contoh: `197407042025212030_ANA ERPINA.docx`
     2. **Sertakan Gelar**: Contoh: `197407042025212030_ANA ERPINA, S.Pd.docx` atau `197407042025212030_Dr. ANA ERPINA, Sp.A.docx`
   - Pengaturan tersimpan secara persisten ke Firestore (`config/drive_sync_settings`) pada atribut `includeGelar` dan berlaku otomatis saat proses sinkronisasi dokumen berjalan.
+### Penyempurnaan UI/UX Menu Google Drive & Pembersihan Teks Contoh Format Gelar
+- **Pembersihan Teks Contoh Format Penamaan Berkas**:
+  - Menghapus teks contoh penamaan panjang (`Contoh: 197407042025212030_...`) pada kartu pilihan format nama pegawai ("Tanpa Gelar" & "Sertakan Gelar"). Hal ini mencegah terjadinya teks patah (*text wrapping*) yang membuat tinggi kartu tidak seimbang di layar pengguna.
+  - Tampilan kartu format nama kini tampil ringkas, elegan, dan seimbang dengan penanda *badge* "Rekomendasi" yang proporsional.
+- **Redesain Menyeluruh Tata Letak (UI/UX) Halaman Google Drive**:
+  - **Arsitektur Kartu Modern**: Membungkus setiap bagian konfigurasi ke dalam komponen kartu (`drive-card`) dengan sudut melengkung 16px, efek bayangan lembut, dan tajuk berikon tematik (*branding icon accent*).
+  - **Status Koneksi & Auto-Sync Terpadu**: Menata ulang kartu akun terhubung dengan indikator status dot hijau, email pengguna yang jelas, tombol aksi yang terkelompok rapi ("Perbarui Izin" & "Putuskan"), serta kontrol sakelar *Auto-Sync* bergaya iOS yang intuitif.
+  - **Tata Letak Grid 2 Kolom Seimbang**: Mengorganisir form pengaturan dokumen ke dalam grid 2 kolom yang simetris (Bagian Dokumen, Tanggal Kontrak, Mode Pengelompokan File, dan Format Penamaan Berkas) yang otomatis adaptif (*responsive*) pada perangkat seluler/tablet.
+  - **Folder Tujuan & Manajemen Input Terstruktur**: Mempercantik kartu folder aktif dengan badge status, ID folder monospace, tombol cepat buka di Drive, dan integrasi input link manual yang teratur.
+  - **Dukungan Penuh Mode Gelap & Terang**: Menyematkan CSS scoped dengan variabel CSS global (`--bg-primary`, `--bg-secondary`, `--border-color`, `--primary-color`, dll) sehingga tampilan selalu tajam dan nyaman dilihat di tema terang maupun gelap.
 ## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
 
 ### Pembaruan UI/UX Menu Perpanjangan & Sidebar
