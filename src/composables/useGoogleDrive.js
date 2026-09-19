@@ -204,14 +204,17 @@ export function useGoogleDrive() {
       }
     }
 
-    // View 1 (Default): Drive Saya (My Drive)
-    const myDriveView = new google.picker.DocsView()
+    // View 1 (Default): Drive Saya (My Drive) - dimulai dari root dan tampilan list rapi
+    const myDriveView = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+      .setParent('root')
+      .setMode(google.picker.DocsViewMode.LIST)
       .setIncludeFolders(true)
       .setSelectFolderEnabled(true)
       .setMimeTypes('application/vnd.google-apps.folder')
 
     // View 2: Drive Bersama (Shared Drives) jika ada
     const sharedDriveView = new google.picker.DocsView()
+      .setMode(google.picker.DocsViewMode.LIST)
       .setIncludeFolders(true)
       .setSelectFolderEnabled(true)
       .setEnableDrives(true)

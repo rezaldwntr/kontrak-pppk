@@ -2,6 +2,25 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.6.0] - 2026-09-19 (Staging)
+
+### Integrasi Sinkronisasi Dokumen Google Drive & Optimalisasi Google Picker
+- **Tampilan Google Picker Rapi & Terstruktur**:
+  - Mengonfigurasi DocsView dengan .setParent('root') agar hanya memuat folder tingkat utama di "Drive Saya" (*My Drive*). Hal ini mencegah pemindaian rekursif ke ribuan folder sistem/chunk backup yang tidak diinginkan (seperti folder angka/kode hash 67, de, e0, dll).
+  - Mengubah mode tampilan dari Grid kartu menjadi Tabel/Daftar vertikal (google.picker.DocsViewMode.LIST), sehingga tampilan daftar folder terlihat teratur, bersih, dan identik dengan antarmuka native Google Drive asli.
+  - Mendukung penjelajahan multi-drive: tab utama "Drive Saya" dan tab "Drive Bersama" (*Shared Drives*).
+- **Fleksibilitas Pemilihan Folder Google Drive**:
+  - Menyediakan 3 opsi terpadu untuk menentukan folder tujuan:
+    1. **Google Picker**: Memilih langsung melalui modal visual Google Drive.
+    2. **Tempel Link Folder**: Mendukung input URL Google Drive secara manual dengan ekstraksi ID folder otomatis.
+    3. **Buat Folder Otomatis**: Membuat folder baru di root Google Drive tanpa perlu berpindah tab.
+- **Pembaruan Izin & Keamanan OAuth2 (Google Scopes)**:
+  - Memperluas cakupan scope Google OAuth mencakup drive, drive.file, userinfo.email, dan openid dengan include_granted_scopes: 'true'.
+  - Menambahkan banner peringatan otomatis (*scope check*) dan tombol "Perbarui Izin Akun" di UI jika akun Google belum memberikan hak akses penyimpanan file.
+- **Penyempurnaan Navigasi & UI**:
+  - Memindahkan menu **Google Drive Sync** langsung ke navigasi **Sidebar** utama agar mudah diakses.
+  - Membersihkan duplikasi header teks pada halaman integrasi Google Drive.
+  - Memodernisasi komponen filter di halaman Dashboard.
 ## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
 
 ### Pembaruan UI/UX Menu Perpanjangan & Sidebar
@@ -253,7 +272,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 
 - **Optimalisasi Menu Google Drive & Penyederhanaan Template Master (Kertas F4):**
   - **Menu Google Drive di Sidebar:** Memindahkan fitur integrasi Google Drive dari tab sub-menu Pengaturan menjadi menu utama mandiri di Sidebar navigasi (/drive -> GoogleDriveView.vue). Hal ini memberikan tata letak halaman yang lebih luas dan navigasi yang lebih cepat.
-  - **Penghapusan Opsi Kertas A4 & Standarisasi F4:** Menghapus seluruh pengaturan ukuran kertas A4 di seluruh modul aplikasi (Modal Unduh Kontrak, Modal Cetak, Pengaturan Google Drive, dan Pengaturan Template). Aplikasi kini distandarisasi menggunakan format F4 (Legal 33×21.5 cm) sebagai ukuran baku.
+  - **Penghapusan Opsi Kertas A4 & Standarisasi F4:** Menghapus seluruh pengaturan ukuran kertas A4 di seluruh modul aplikasi (Modal Unduh Kontrak, Modal Cetak, Pengaturan Google Drive, dan Pengaturan Template). Aplikasi kini distandarisasi menggunakan format F4 (Legal 33ï¿½21.5 cm) sebagai ukuran baku.
   - **Sistem 1 Upload Master Template Universal:** Mengubah halaman upload template di menu Pengaturan menjadi cukup 1 formulir upload master file .docx per kategori (PPPK Penuh Waktu dan PPPK Paruh Waktu). Sistem pembangkit dokumen Word kini secara cerdas membaca dan mempertahankan ukuran kertas serta margin asli dari file template Word yang diunggah. Dengan arsitektur ini, jika di kemudian hari instansi mengubah ukuran kertas atau margin, administrator cukup mengubah ukuran halaman langsung di Microsoft Word dan mengunggah 1 file tersebut tanpa perlu membuat atau memilih opsi ukuran terpisah di aplikasi.
   - **Kompatibilitas Template Fallback:** Menambahkan logika *fallback* cerdas pada pembacaan template di Firestore agar tetap kompatibel dan tidak *error* meskipun dokumen sebelumnya disimpan dengan format penamaan lama.
 
