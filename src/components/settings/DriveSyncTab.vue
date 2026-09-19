@@ -77,30 +77,43 @@
           </div>
         </div>
 
-        <!-- Input Link / ID Folder & Tombol Pilih Visual -->
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <div style="flex:1; min-width:240px;">
-            <input
-              type="text"
-              class="form-control"
-              v-model="manualFolderInput"
-              placeholder="Tempel URL folder (drive.google.com/...) atau Folder ID di sini..."
-              @keyup.enter="applyManualFolder"
-            />
-          </div>
-          <button type="button" class="btn btn-primary" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space:nowrap;" title="Terapkan link / ID folder yang ditempel">
-            <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
+        <!-- Tombol Utama: Pilih Folder via Google Picker -->
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" @click="openPicker" :disabled="isPickerLoading" style="padding: 9px 22px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-folder-open" v-if="!isPickerLoading"></i>
             <i class="fa-solid fa-spinner fa-spin" v-else></i>
-            &nbsp;Terapkan Link
+            <span>{{ isPickerLoading ? 'Membuka Google Picker...' : (driveStore.settings.folderId ? 'Ganti Folder (Google Picker)' : 'Pilih Folder') }}</span>
           </button>
-          <button type="button" class="btn btn-outline" @click="openPicker" :disabled="isPickerLoading" style="white-space:nowrap;" title="Pilih folder secara visual melalui Google Picker">
-            <i class="fa-solid fa-folder-open"></i>&nbsp;
-            {{ isPickerLoading ? 'Memuat...' : 'Pilih Folder Visual' }}
+          <button type="button" class="btn btn-link" @click="showManualInput = !showManualInput" style="font-size: 0.83rem; text-decoration: none; color: var(--text-muted); cursor: pointer; padding: 0;">
+            <i class="fa-solid fa-link"></i> {{ showManualInput ? 'Tutup input manual' : 'Atau tempel link manual' }}
           </button>
         </div>
-        <p class="form-text" style="margin-top: 6px; font-size: 0.8rem; color: var(--text-muted);">
-          Anda dapat langsung menyalin URL folder dari browser Google Drive (contoh: <code>drive.google.com/drive/folders/...</code>) lalu klik <strong>Terapkan Link</strong>, atau klik <strong>Pilih Folder Visual</strong>.
-        </p>
+
+        <!-- Opsi Cadangan / Solusi 2: Tempel Link Manual (jika Google Picker bermasalah) -->
+        <div v-if="showManualInput" style="margin-top: 12px; padding: 14px; background: var(--bg-secondary); border-radius: 8px; border: 1px dashed var(--border-color);">
+          <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+            Solusi Cadangan: Tempel Link Folder Google Drive
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:240px;">
+              <input
+                type="text"
+                class="form-control"
+                v-model="manualFolderInput"
+                placeholder="Tempel URL folder (drive.google.com/drive/folders/...) atau ID folder di sini..."
+                @keyup.enter="applyManualFolder"
+              />
+            </div>
+            <button type="button" class="btn btn-outline" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space:nowrap;">
+              <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
+              <i class="fa-solid fa-spinner fa-spin" v-else></i>
+              &nbsp;Terapkan
+            </button>
+          </div>
+          <p class="form-text" style="margin-top: 6px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0;">
+            Gunakan opsi ini jika jendela Google Picker mengalami kendala otentikasi akun di browser.
+          </p>
+        </div>
       </div>
 
       <!-- Bagian Dokumen -->
@@ -270,6 +283,7 @@ const isConnecting = ref(false)
 const isPickerLoading = ref(false)
 const manualFolderInput = ref('')
 const isValidatingFolder = ref(false)
+const showManualInput = ref(false)
 const isSavingRules = ref(false)
 const isSyncingAll = ref(false)
 const syncProgress = ref('')
@@ -391,22 +405,36 @@ function clearFolder() {
 async function openPicker() {
   isPickerLoading.value = true
   try {
-    await openFolderPicker(async ({ id, name }) => {
-      driveStore.settings.folderId = id
-      driveStore.settings.folderName = name
-      await driveStore.saveSettings()
-      isPickerLoading.value = false
-      customSwal.fire({
-        icon: 'success',
-        title: 'Folder Dipilih',
-        text: `Folder "${name}" berhasil dihubungkan!`,
-        timer: 2000,
-        showConfirmButton: false,
-      })
-    })
+    await openFolderPicker(
+      async ({ id, name }) => {
+        driveStore.settings.folderId = id
+        driveStore.settings.folderName = name
+        await driveStore.saveSettings()
+        isPickerLoading.value = false
+        customSwal.fire({
+          icon: 'success',
+          title: 'Folder Dipilih',
+          text: `Folder "${name}" berhasil dihubungkan!`,
+          timer: 2000,
+          showConfirmButton: false,
+        })
+      },
+      () => {
+        // Callback saat user klik Batal atau tutup popup Picker
+        isPickerLoading.value = false
+      },
+      () => {
+        // Callback saat jendela popup Picker sudah muncul di layar
+        isPickerLoading.value = false
+      }
+    )
   } catch (e) {
     isPickerLoading.value = false
-    customSwal.fire({ icon: 'error', title: 'Gagal membuka picker', text: e.message })
+    customSwal.fire({
+      icon: 'error',
+      title: 'Gagal membuka Google Picker',
+      text: e.message || 'Terjadi kesalahan saat memuat Google Picker.',
+    })
   }
 }
 

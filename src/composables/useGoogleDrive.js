@@ -181,7 +181,7 @@ export function useGoogleDrive() {
   }
 
   // Buka Google Picker untuk pilih folder
-  async function openFolderPicker(onSelected) {
+  async function openFolderPicker(onSelected, onCancel = null, onOpened = null) {
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY
     if (!apiKey || apiKey === 'REPLACE_WITH_YOUR_API_KEY') {
       throw new Error('API Key Google belum diatur. Harap periksa VITE_GOOGLE_API_KEY di environment variables.')
@@ -199,11 +199,15 @@ export function useGoogleDrive() {
       if (data.action === google.picker.Action.PICKED) {
         const folder = data.docs[0]
         onSelected({ id: folder.id, name: folder.name })
+      } else if (data.action === google.picker.Action.CANCEL) {
+        if (onCancel) onCancel()
       }
     }
 
-    const view = new google.picker.DocsView(google.picker.ViewId.FOLDERS)
+    const view = new google.picker.DocsView()
+      .setIncludeFolders(true)
       .setSelectFolderEnabled(true)
+      .setEnableDrives(true)
       .setMimeTypes('application/vnd.google-apps.folder')
 
     const origin = window.location.protocol + '//' + window.location.host
@@ -212,6 +216,7 @@ export function useGoogleDrive() {
 
     const builder = new google.picker.PickerBuilder()
       .addView(view)
+      .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
       .setOAuthToken(token)
       .setDeveloperKey(apiKey)
       .setOrigin(origin)
@@ -224,6 +229,7 @@ export function useGoogleDrive() {
 
     const picker = builder.build()
     picker.setVisible(true)
+    if (onOpened) onOpened()
   }
 
   return {
