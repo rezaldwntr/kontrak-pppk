@@ -22,23 +22,6 @@
           </div>
         </div>
 
-        <!-- Pilih ukuran kertas -->
-        <div class="form-group" style="margin-bottom: 18px;">
-          <label style="font-weight: bold; margin-bottom: 10px; display: block;">Ukuran Kertas</label>
-          <div class="options-container">
-            <label class="paper-option" :class="{ active: selectedPaper === 'f4' }" @click="selectedPaper = 'f4'">
-              <i class="fa-solid fa-file-alt"></i>
-              <span>F4 / Legal</span>
-              <small class="text-muted">33 × 21.5 cm</small>
-            </label>
-            <label class="paper-option" :class="{ active: selectedPaper === 'a4' }" @click="selectedPaper = 'a4'">
-              <i class="fa-solid fa-file"></i>
-              <span>A4</span>
-              <small class="text-muted">29.7 × 21 cm</small>
-            </label>
-          </div>
-        </div>
-
         <!-- Mode Ekspor (Hanya untuk lebih dari 1 pegawai) -->
         <div v-if="items.length > 1" class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Format Output (Batch)</label>

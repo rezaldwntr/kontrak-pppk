@@ -9,8 +9,8 @@ const SCOPES = [
 ].join(' ')
 
 export function getRedirectUri() {
-  if (typeof window === 'undefined') return 'https://kontrak-pppk.vercel.app/settings'
-  return `${window.location.origin}/settings`
+  if (typeof window === 'undefined') return 'https://kontrak-pppk.vercel.app/drive'
+  return `${window.location.origin}/drive`
 }
 
 export function useGoogleAuth() {

@@ -213,8 +213,21 @@ async function loadTemplate(templateKey) {
   const snap = await getDoc(docRef)
   if (!snap.exists()) throw new Error('Template belum diunggah. Silakan unggah template di menu Pengaturan terlebih dahulu.')
   const data = snap.data()
-  if (!data[templateKey]) throw new Error(`Template "${templateKey}" belum diunggah. Silakan unggah template di menu Pengaturan terlebih dahulu.`)
-  return data[templateKey] // base64 string
+  
+  let templateData = data[templateKey]
+  if (!templateData) {
+    if (templateKey.includes('paruh')) {
+      templateData = data.template_paruh_f4 || data.template_paruh || data.template_paruh_a4
+    } else {
+      templateData = data.template_f4 || data.template_reguler || data.template || data.template_a4
+    }
+  }
+
+  if (!templateData) {
+    const label = templateKey.includes('paruh') ? 'PPPK Paruh Waktu' : 'PPPK Penuh Waktu'
+    throw new Error(`Template untuk "${label}" belum diunggah. Silakan unggah template di menu Pengaturan terlebih dahulu.`)
+  }
+  return templateData // base64 string
 }
 
 /**
@@ -461,7 +474,7 @@ async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak =
 function getTemplateKey(item, paperSize = 'f4') {
   const jenis = (item['JENIS PPPK'] || '').toLowerCase()
   const isParuh = jenis.includes('paruh')
-  return isParuh ? `template_paruh_${paperSize}` : `template_${paperSize}`
+  return isParuh ? 'template_paruh_f4' : 'template_f4'
 }
 
 /**

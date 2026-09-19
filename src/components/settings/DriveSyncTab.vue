@@ -64,19 +64,6 @@
         </div>
       </div>
 
-      <!-- Ukuran Kertas -->
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label style="font-weight:bold; margin-bottom:8px; display:block;">Ukuran Kertas</label>
-        <div style="display:flex; gap:12px;">
-          <label v-for="opt in paperOptions" :key="opt.value"
-            style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 16px; border:1.5px solid var(--border-color); border-radius:8px; flex:1;"
-            :style="driveStore.settings.paperSize === opt.value ? 'border-color:#2563eb; background:rgba(37,99,235,0.05)' : ''">
-            <input type="radio" :value="opt.value" v-model="driveStore.settings.paperSize" style="accent-color:#2563eb;">
-            <span>{{ opt.label }}</span>
-          </label>
-        </div>
-      </div>
-
       <!-- Bagian Dokumen -->
       <div class="form-group" style="margin-bottom: 16px;">
         <label style="font-weight:bold; margin-bottom:8px; display:block;">Bagian Dokumen</label>
@@ -248,11 +235,6 @@ const syncProgress = ref('')
 const queueItems = ref([])
 
 const localRules = ref([])
-
-const paperOptions = [
-  { value: 'f4', label: 'F4 / Legal (33.0 × 21.5 cm)' },
-  { value: 'a4', label: 'A4 (29.7 × 21.0 cm)' },
-]
 
 const mergeModeOptions = [
   { value: 'individual', label: 'Per Pegawai', desc: '1 file per pegawai, dikelompokkan dalam folder Unor' },

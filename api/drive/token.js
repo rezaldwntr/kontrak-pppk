@@ -5,7 +5,7 @@
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
-const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://kontrak-pppk.vercel.app/settings'
+const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://kontrak-pppk.vercel.app/drive'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')

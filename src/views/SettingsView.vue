@@ -1,28 +1,5 @@
 <template>
   <div>
-    <!-- Tab Navigation -->
-    <div style="display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); overflow-x: auto;">
-      <button
-        class="pppk-tab-item"
-        :class="{ active: activeTab === 'umum' }"
-        @click="activeTab = 'umum'"
-        style="background:none; border:none; cursor:pointer;"
-      >
-        <i class="fa-solid fa-gear"></i> Pengaturan Umum
-      </button>
-      <button
-        class="pppk-tab-item"
-        :class="{ active: activeTab === 'drive' }"
-        @click="activeTab = 'drive'"
-        style="background:none; border:none; cursor:pointer;"
-      >
-        <i class="fa-brands fa-google-drive"></i> Google Drive
-      </button>
-    </div>
-
-    <!-- Tab: Pengaturan Umum -->
-    <div v-if="activeTab === 'umum'">
-
     <div class="settings-section-card" style="padding: 1.5rem; margin-bottom: 20px;">
       <h3 class="section-header">
         <div><i class="fa-solid fa-user-tie"></i> Pengaturan Pihak Pertama</div>
@@ -51,85 +28,46 @@
           <div><i class="fa-solid fa-file-word"></i> Template Perjanjian Kerja (DOCX)</div>
         </h3>
       
-      <!-- PPPK Penuh Waktu -->
-      <div style="margin-bottom: 10px;">
-        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-          <span style="background: rgba(30,170,110,0.15); color: #1eaa6e; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem;">PPPK Penuh Waktu</span>
-        </div>
-        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          <!-- Card 1 -->
-          <div class="template-card">
-            <h4><i class="fa-regular fa-file-word" style="color: var(--primary-color);"></i> Template PPPK (Kertas F4)</h4>
-            <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Penuh Waktu.</p>
-            <div v-if="availableTemplates.template_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
-              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_f4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <div class="upload-wrapper">
-              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_f4')" id="upload-f4" hidden>
-              <label for="upload-f4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_f4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
-              </label>
-            </div>
-            <div v-if="uploadStatus.template_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+      <!-- Grid 2 Template Master (Kertas F4) -->
+      <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
+        <!-- Card 1: PPPK Penuh Waktu -->
+        <div class="template-card">
+          <div style="margin-bottom: 12px;">
+            <span style="background: rgba(30,170,110,0.15); color: #1eaa6e; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem; font-weight: 700;">PPPK Penuh Waktu</span>
           </div>
-          <!-- Card 2 -->
-          <div class="template-card">
-            <h4><i class="fa-regular fa-file-word" style="color: var(--primary-color);"></i> Template PPPK (Kertas A4)</h4>
-            <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Penuh Waktu.</p>
-            <div v-if="availableTemplates.template_a4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
-              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_a4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <div class="upload-wrapper">
-              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_a4')" id="upload-a4" hidden>
-              <label for="upload-a4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_a4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
-              </label>
-            </div>
-            <div v-if="uploadStatus.template_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+          <h4><i class="fa-regular fa-file-word" style="color: var(--primary-color);"></i> Template Kontrak PPPK (Penuh Waktu)</h4>
+          <p class="text-muted">Master dokumen Word (.docx) ukuran kertas F4 (33×21.5 cm). Cukup unggah 1 file ini untuk seluruh pembuatan dokumen kontrak penuh waktu.</p>
+          <div v-if="availableTemplates.template_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
+            <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_f4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
           </div>
+          <div class="upload-wrapper">
+            <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_f4')" id="upload-f4" hidden>
+            <label for="upload-f4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
+              <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_f4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
+            </label>
+          </div>
+          <div v-if="uploadStatus.template_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
         </div>
-      </div>
 
-      <!-- PPPK Paruh Waktu -->
-      <div>
-        <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 14px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-          <span style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem;">PPPK Paruh Waktu</span>
-        </div>
-        <div class="settings-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-          <!-- Card 3 -->
-          <div class="template-card">
-            <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Paruh Waktu (F4)</h4>
-            <p class="text-muted">Ukuran kertas F4/Legal (33×21.5 cm) untuk PPPK Paruh Waktu.</p>
-            <div v-if="availableTemplates.template_paruh_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
-              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_paruh_f4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <div class="upload-wrapper">
-              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_f4')" id="upload-pf4" hidden>
-              <label for="upload-pf4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_paruh_f4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
-              </label>
-            </div>
-            <div v-if="uploadStatus.template_paruh_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+        <!-- Card 2: PPPK Paruh Waktu -->
+        <div class="template-card">
+          <div style="margin-bottom: 12px;">
+            <span style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 6px; padding: 3px 10px; font-size: 0.85rem; font-weight: 700;">PPPK Paruh Waktu</span>
           </div>
-          <!-- Card 4 -->
-          <div class="template-card">
-            <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Paruh Waktu (A4)</h4>
-            <p class="text-muted">Ukuran kertas A4 (29.7×21 cm) untuk PPPK Paruh Waktu.</p>
-            <div v-if="availableTemplates.template_paruh_a4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
-              <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_paruh_a4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <div class="upload-wrapper">
-              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_a4')" id="upload-pa4" hidden>
-              <label for="upload-pa4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
-                <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_paruh_a4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
-              </label>
-            </div>
-            <div v-if="uploadStatus.template_paruh_a4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
+          <h4><i class="fa-regular fa-file-word" style="color: #d97706;"></i> Template Kontrak PPPK (Paruh Waktu)</h4>
+          <p class="text-muted">Master dokumen Word (.docx) ukuran kertas F4 (33×21.5 cm). Cukup unggah 1 file ini untuk seluruh pembuatan dokumen kontrak paruh waktu.</p>
+          <div v-if="availableTemplates.template_paruh_f4" style="background: rgba(30,170,110,0.1); border: 1px solid rgba(30,170,110,0.3); padding: 12px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="color: #1eaa6e; font-weight: bold; font-size: 0.9rem;"><i class="fa-solid fa-check-circle"></i> Template Terunggah</div>
+            <button class="btn btn-icon-only btn-sm btn-danger" @click="handleDeleteTemplate('template_paruh_f4')" title="Hapus Template" style="background-color: transparent; color: #dc2626; border-color: rgba(220, 38, 38, 0.3);"><i class="fa-solid fa-trash"></i></button>
           </div>
+          <div class="upload-wrapper">
+            <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_paruh_f4')" id="upload-pf4" hidden>
+            <label for="upload-pf4" class="btn btn-outline" style="width: 100%; text-align: center; display: block; cursor: pointer;">
+              <i class="fa-solid fa-upload"></i> {{ availableTemplates.template_paruh_f4 ? 'Ganti File .docx' : 'Pilih File .docx' }}
+            </label>
+          </div>
+          <div v-if="uploadStatus.template_paruh_f4" class="status-text success"><i class="fa-solid fa-check"></i> Tersimpan</div>
         </div>
       </div>
       
@@ -254,14 +192,6 @@
         </div>
       </div>
     </div>
-
-    </div> <!-- end umum tab -->
-
-    <!-- Tab: Google Drive -->
-    <div v-if="activeTab === 'drive'">
-      <DriveSyncTab />
-    </div>
-
   </div>
 </template>
 
@@ -271,11 +201,8 @@ import { db } from '../services/firebase'
 import { doc, setDoc, getDoc, updateDoc, deleteField } from 'firebase/firestore'
 import { useAuthStore } from '../stores/authStore'
 import { customSwal } from '../utils/swal'
-import DriveSyncTab from '../components/settings/DriveSyncTab.vue'
 
 const authStore = useAuthStore()
-const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-const activeTab = ref(urlParams && urlParams.has('code') ? 'drive' : 'umum')
 
 // --- State Pihak Pertama ---
 const pihakPertama = reactive({
@@ -328,15 +255,11 @@ const isUploading = ref(false)
 const errorMsg = ref('')
 const uploadStatus = reactive({
   template_f4: false,
-  template_a4: false,
-  template_paruh_f4: false,
-  template_paruh_a4: false
+  template_paruh_f4: false
 })
 const availableTemplates = reactive({
   template_f4: false,
-  template_a4: false,
-  template_paruh_f4: false,
-  template_paruh_a4: false
+  template_paruh_f4: false
 })
 
 const loadTemplatesStatus = async () => {
@@ -345,10 +268,8 @@ const loadTemplatesStatus = async () => {
     const docSnap = await getDoc(docRef)
     if (docSnap.exists()) {
       const data = docSnap.data()
-      availableTemplates.template_f4 = !!data.template_f4
-      availableTemplates.template_a4 = !!data.template_a4
-      availableTemplates.template_paruh_f4 = !!data.template_paruh_f4
-      availableTemplates.template_paruh_a4 = !!data.template_paruh_a4
+      availableTemplates.template_f4 = !!(data.template_f4 || data.template_reguler || data.template)
+      availableTemplates.template_paruh_f4 = !!(data.template_paruh_f4 || data.template_paruh)
     }
   } catch (error) {
     console.error("Failed to load templates status", error)

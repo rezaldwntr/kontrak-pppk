@@ -31,6 +31,10 @@
         <i class="fa-solid fa-clock-rotate-left"></i>
         <span>Riwayat Perpanjangan</span>
       </router-link>
+      <router-link to="/drive" class="menu-item" active-class="active" v-if="authStore.user" title="Google Drive">
+        <i class="fa-brands fa-google-drive"></i>
+        <span>Google Drive</span>
+      </router-link>
       <router-link to="/settings" class="menu-item" active-class="active" v-if="authStore.user" title="Pengaturan">
         <i class="fa-solid fa-gear"></i>
         <span>Pengaturan</span>
