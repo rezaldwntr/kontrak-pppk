@@ -274,7 +274,8 @@ import { customSwal } from '../utils/swal'
 import DriveSyncTab from '../components/settings/DriveSyncTab.vue'
 
 const authStore = useAuthStore()
-const activeTab = ref('umum')
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+const activeTab = ref(urlParams && urlParams.has('code') ? 'drive' : 'umum')
 
 // --- State Pihak Pertama ---
 const pihakPertama = reactive({

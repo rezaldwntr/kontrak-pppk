@@ -398,14 +398,21 @@ onMounted(async () => {
   // Cek OAuth callback
   const urlParams = new URLSearchParams(window.location.search)
   const code = urlParams.get('code')
-  if (code && window.location.pathname.includes('settings')) {
+  const oauthError = urlParams.get('error')
+
+  if (oauthError) {
+    window.history.replaceState({}, '', window.location.pathname)
+    customSwal.fire({ icon: 'warning', title: 'Otorisasi Dibatalkan', text: `Google: ${oauthError}` })
+  } else if (code) {
     try {
+      customSwal.fire({ title: 'Menghubungkan...', html: 'Memproses otorisasi Google Drive...', allowOutsideClick: false, didOpen: () => customSwal.showLoading() })
       await handleOAuthCallback(code)
       // Bersihkan URL
       window.history.replaceState({}, '', window.location.pathname)
       await driveStore.loadSettings()
-      customSwal.fire({ icon: 'success', title: 'Google Drive terhubung!', timer: 2000, showConfirmButton: false })
+      customSwal.fire({ icon: 'success', title: 'Google Drive terhubung!', text: `Akun: ${driveStore.connectedEmail}`, timer: 2500, showConfirmButton: false })
     } catch (err) {
+      window.history.replaceState({}, '', window.location.pathname)
       customSwal.fire({ icon: 'error', title: 'Koneksi gagal', text: err.message })
     }
   }

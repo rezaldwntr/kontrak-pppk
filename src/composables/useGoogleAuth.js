@@ -2,21 +2,45 @@ import { useDriveStore } from '../stores/driveStore'
 import { db } from '../services/firebase'
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+const ENV_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 const SCOPES = [
   'https://www.googleapis.com/auth/drive',
   'https://www.googleapis.com/auth/userinfo.email',
 ].join(' ')
 
-const REDIRECT_URI = `${window.location.origin}/api/drive/token`
+export function getRedirectUri() {
+  if (typeof window === 'undefined') return 'https://kontrak-pppk.vercel.app/settings'
+  return `${window.location.origin}/settings`
+}
 
 export function useGoogleAuth() {
   const driveStore = useDriveStore()
 
-  function buildOAuthUrl(state = '') {
+  async function resolveClientId() {
+    if (ENV_CLIENT_ID) return ENV_CLIENT_ID
+
+    try {
+      const res = await fetch('/api/drive/token?action=config')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.clientId) return data.clientId
+      }
+    } catch (e) {
+      console.warn('Could not fetch clientId from server:', e)
+    }
+    return ''
+  }
+
+  async function buildOAuthUrl(state = '') {
+    const clientId = await resolveClientId()
+    if (!clientId) {
+      throw new Error('Google Client ID belum diatur. Harap tambahkan VITE_GOOGLE_CLIENT_ID di Vercel Environment Variables.')
+    }
+
+    const redirectUri = getRedirectUri()
     const params = new URLSearchParams({
-      client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
+      client_id: clientId,
+      redirect_uri: redirectUri,
       response_type: 'code',
       scope: SCOPES,
       access_type: 'offline',
@@ -26,16 +50,20 @@ export function useGoogleAuth() {
     return `https://accounts.google.com/o/oauth2/v2/auth?${params}`
   }
 
-  function startOAuthFlow() {
-    // Simpan state untuk verifikasi
-    const state = Math.random().toString(36).substring(2)
-    sessionStorage.setItem('drive_oauth_state', state)
-    // Redirect ke Google
-    window.location.href = buildOAuthUrl(state)
+  async function startOAuthFlow() {
+    try {
+      const state = Math.random().toString(36).substring(2)
+      sessionStorage.setItem('drive_oauth_state', state)
+      const url = await buildOAuthUrl(state)
+      window.location.href = url
+    } catch (err) {
+      alert(err.message)
+    }
   }
 
   async function handleOAuthCallback(code) {
-    const res = await fetch(`/api/drive/token?action=exchange&code=${encodeURIComponent(code)}`)
+    const redirectUri = getRedirectUri()
+    const res = await fetch(`/api/drive/token?action=exchange&code=${encodeURIComponent(code)}&redirectUri=${encodeURIComponent(redirectUri)}`)
     if (!res.ok) {
       const err = await res.json()
       throw new Error(err.error || 'Failed to exchange token')

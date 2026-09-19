@@ -3,9 +3,9 @@
 // Tidak menggunakan firebase-admin. Frontend (authenticated) yang menulis ke Firestore.
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI
+const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://kontrak-pppk.vercel.app/settings'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -18,8 +18,10 @@ export default async function handler(req, res) {
 
   try {
     if (action === 'exchange') {
-      const { code } = req.query
+      const { code, redirectUri } = req.query
       if (!code) return res.status(400).json({ error: 'Missing code parameter' })
+
+      const finalRedirectUri = redirectUri || DEFAULT_REDIRECT_URI
 
       const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
         method: 'POST',
@@ -28,7 +30,7 @@ export default async function handler(req, res) {
           code,
           client_id: CLIENT_ID,
           client_secret: CLIENT_SECRET,
-          redirect_uri: REDIRECT_URI,
+          redirect_uri: finalRedirectUri,
           grant_type: 'authorization_code',
         }),
       })
@@ -97,6 +99,10 @@ export default async function handler(req, res) {
       }
       return res.status(200).json({ success: true })
 
+    } else if (action === 'config') {
+      return res.status(200).json({
+        clientId: CLIENT_ID || '',
+      })
     } else {
       return res.status(400).json({ error: 'Unknown action' })
     }
