@@ -50,20 +50,25 @@
         <div><i class="fa-solid fa-sliders"></i> Pengaturan Dokumen Default</div>
       </h3>
 
-      <!-- Folder -->
-      <div class="form-group" style="margin-bottom: 20px;">
-        <label style="font-weight:bold; margin-bottom:8px; display:block;">Folder Tujuan Google Drive</label>
+      <!-- Folder Tujuan Google Drive (Solusi 2: Link/ID & Otomatis) -->
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 0.95rem;">
+          <i class="fa-solid fa-folder-tree" style="color: #2563eb; margin-right: 6px;"></i>
+          Folder Tujuan Google Drive
+        </label>
 
-        <!-- Status Folder Terpilih -->
-        <div v-if="driveStore.settings.folderId" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(30, 170, 110, 0.08); border: 1.5px solid #1eaa6e; border-radius: 8px; margin-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
-            <i class="fa-solid fa-folder-check" style="font-size: 1.3rem; color: #1eaa6e; flex-shrink: 0;"></i>
+        <!-- Status Folder Terpilih (Aktif) -->
+        <div v-if="driveStore.settings.folderId" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: rgba(30, 170, 110, 0.08); border: 1.5px solid #1eaa6e; border-radius: 10px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 14px; overflow: hidden;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(30, 170, 110, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i class="fa-solid fa-folder-check" style="font-size: 1.4rem; color: #1eaa6e;"></i>
+            </div>
             <div style="min-width: 0;">
-              <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 {{ driveStore.settings.folderName || 'Folder Google Drive' }}
               </div>
-              <div style="font-size: 0.78rem; font-family: monospace; color: var(--text-muted);">
-                ID: {{ driveStore.settings.folderId }}
+              <div style="font-size: 0.8rem; font-family: monospace; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <span>ID: {{ driveStore.settings.folderId }}</span>
               </div>
             </div>
           </div>
@@ -71,48 +76,55 @@
             <a :href="'https://drive.google.com/drive/folders/' + driveStore.settings.folderId" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka folder di Google Drive">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
-            <button type="button" class="btn btn-sm btn-outline" @click="clearFolder" title="Lepas / Ganti Folder" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
+            <button type="button" class="btn btn-sm btn-outline" @click="clearFolder" title="Ganti / Lepas Folder" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
         </div>
 
-        <!-- Tombol Utama: Pilih Folder via Google Picker -->
-        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" @click="openPicker" :disabled="isPickerLoading" style="padding: 9px 22px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-folder-open" v-if="!isPickerLoading"></i>
-            <i class="fa-solid fa-spinner fa-spin" v-else></i>
-            <span>{{ isPickerLoading ? 'Membuka Google Picker...' : (driveStore.settings.folderId ? 'Ganti Folder (Google Picker)' : 'Pilih Folder') }}</span>
-          </button>
-          <button type="button" class="btn btn-link" @click="showManualInput = !showManualInput" style="font-size: 0.83rem; text-decoration: none; color: var(--text-muted); cursor: pointer; padding: 0;">
-            <i class="fa-solid fa-link"></i> {{ showManualInput ? 'Tutup input manual' : 'Atau tempel link manual' }}
-          </button>
-        </div>
-
-        <!-- Opsi Cadangan / Solusi 2: Tempel Link Manual (jika Google Picker bermasalah) -->
-        <div v-if="showManualInput" style="margin-top: 12px; padding: 14px; background: var(--bg-secondary); border-radius: 8px; border: 1px dashed var(--border-color);">
-          <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
-            Solusi Cadangan: Tempel Link Folder Google Drive
+        <!-- Formulir Hubungkan Folder (Solusi 2) -->
+        <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
+              <i class="fa-solid fa-link" style="margin-right: 4px;"></i> Hubungkan Folder Google Drive:
+            </span>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-sm btn-outline" @click="createNewDriveFolder" :disabled="isValidatingFolder" title="Buat folder baru otomatis di root Google Drive">
+                <i class="fa-solid fa-folder-plus"></i>&nbsp;Buat Folder Otomatis
+              </button>
+              <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline" title="Buka Google Drive di tab baru">
+                <i class="fa-brands fa-google-drive"></i>&nbsp;Buka Drive
+              </a>
+            </div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <div style="flex:1; min-width:240px;">
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 260px;">
               <input
                 type="text"
                 class="form-control"
                 v-model="manualFolderInput"
-                placeholder="Tempel URL folder (drive.google.com/drive/folders/...) atau ID folder di sini..."
+                placeholder="Tempel Link Folder (drive.google.com/drive/folders/...) atau ID Folder"
                 @keyup.enter="applyManualFolder"
+                :disabled="isValidatingFolder"
+                style="font-size: 0.88rem;"
               />
             </div>
-            <button type="button" class="btn btn-outline" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space:nowrap;">
+            <button type="button" class="btn btn-primary" @click="applyManualFolder" :disabled="isValidatingFolder || !manualFolderInput.trim()" style="white-space: nowrap; padding: 8px 18px; font-weight: 600;">
               <i class="fa-solid fa-check" v-if="!isValidatingFolder"></i>
               <i class="fa-solid fa-spinner fa-spin" v-else></i>
-              &nbsp;Terapkan
+              &nbsp;Hubungkan Folder
             </button>
           </div>
-          <p class="form-text" style="margin-top: 6px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0;">
-            Gunakan opsi ini jika jendela Google Picker mengalami kendala otentikasi akun di browser.
-          </p>
+
+          <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <p style="margin: 0; font-size: 0.78rem; color: var(--text-muted);">
+              <i class="fa-solid fa-circle-info"></i> Buka folder tujuan di Google Drive, salin link dari address bar browser, lalu tempel di atas. Atau klik <strong>Buat Folder Otomatis</strong>.
+            </p>
+            <button type="button" class="btn btn-link" @click="openPicker" :disabled="isPickerLoading" style="font-size: 0.76rem; color: var(--text-muted); text-decoration: none; padding: 0;" title="Buka popup Google Picker jika ingin mencoba lagi">
+              <i class="fa-solid fa-window-restore"></i> {{ isPickerLoading ? 'Membuka...' : 'Coba Google Picker' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -275,7 +287,7 @@ import { customSwal } from '../../utils/swal'
 
 const driveStore = useDriveStore()
 const { startOAuthFlow, handleOAuthCallback, disconnectDrive } = useGoogleAuth()
-const { openFolderPicker, getFolderInfo } = useGoogleDrive()
+const { openFolderPicker, getFolderInfo, createFolder } = useGoogleDrive()
 const { shouldSync, syncEmployee, addToQueue } = useDriveSync()
 const pegawaiStore = usePegawaiStore()
 
@@ -400,6 +412,46 @@ function clearFolder() {
   driveStore.settings.folderId = ''
   driveStore.settings.folderName = ''
   driveStore.saveSettings()
+}
+
+async function createNewDriveFolder() {
+  const { value: folderName } = await customSwal.fire({
+    title: 'Buat Folder di Google Drive',
+    input: 'text',
+    inputLabel: 'Nama Folder Baru:',
+    inputValue: 'KONTRAK PPPK',
+    showCancelButton: true,
+    confirmButtonText: 'Buat & Hubungkan',
+    cancelButtonText: 'Batal',
+    inputValidator: (val) => {
+      if (!val || !val.trim()) return 'Nama folder tidak boleh kosong'
+    }
+  })
+
+  if (!folderName) return
+
+  isValidatingFolder.value = true
+  try {
+    const newFolderId = await createFolder(folderName.trim(), 'root')
+    driveStore.settings.folderId = newFolderId
+    driveStore.settings.folderName = folderName.trim()
+    await driveStore.saveSettings()
+    customSwal.fire({
+      icon: 'success',
+      title: 'Folder Berhasil Dibuat!',
+      text: `Folder "${folderName.trim()}" berhasil dibuat di Google Drive dan terhubung sebagai folder tujuan.`,
+      timer: 2500,
+      showConfirmButton: false,
+    })
+  } catch (err) {
+    customSwal.fire({
+      icon: 'error',
+      title: 'Gagal Membuat Folder',
+      text: err.message || 'Terjadi kesalahan saat membuat folder di Google Drive.',
+    })
+  } finally {
+    isValidatingFolder.value = false
+  }
 }
 
 async function openPicker() {
