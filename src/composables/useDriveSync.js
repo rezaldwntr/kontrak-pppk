@@ -2,22 +2,24 @@ import { useDriveStore } from '../stores/driveStore'
 import { useGoogleDrive } from './useGoogleDrive'
 import { db } from '../services/firebase'
 import { collection, addDoc, updateDoc, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
-import { getKelompokPegawai } from '../utils/pppkLogic'
+import { getKelompokPegawai, parseDate } from '../utils/pppkLogic'
 import { downloadSingleContract } from '../utils/docxGenerator'
 
 export function useDriveSync() {
   const driveStore = useDriveStore()
   const { getTargetFolder, upsertFile } = useGoogleDrive()
 
-  // Evaluasi apakah pegawai memenuhi sync rules
-  function shouldSync(item) {
-    if (!driveStore.isEnabled || !driveStore.isConnected) return false
-    if (!driveStore.syncRules || driveStore.syncRules.length === 0) return false
+  // Evaluasi apakah pegawai memenuhi aturan kriteria tertentu
+  function matchRules(item, rules = null, logic = 'AND') {
+    const activeRules = rules !== null ? rules : (driveStore.syncRules || [])
+    if (!activeRules || activeRules.length === 0) return true
 
-    const rules = driveStore.syncRules
-    const logic = driveStore.syncRulesLogic || 'AND'
+    const validRules = activeRules.filter(r => r && r.field && r.value)
+    if (validRules.length === 0) return true
 
-    const results = rules.map(rule => {
+    const ruleLogic = logic || driveStore.syncRulesLogic || 'AND'
+
+    const results = validRules.map(rule => {
       switch (rule.field) {
         case 'kelompok':
           return getKelompokPegawai(item) === rule.value
@@ -34,11 +36,20 @@ export function useDriveSync() {
         case 'jenisPppk':
           return (item['JENIS PPPK'] || 'PPPK') === rule.value
         default:
-          return false
+          return true
       }
     })
 
-    return logic === 'AND' ? results.every(Boolean) : results.some(Boolean)
+    return ruleLogic === 'AND' ? results.every(Boolean) : results.some(Boolean)
+  }
+
+  // Evaluasi apakah pegawai memenuhi auto-sync saat trigger save data
+  function shouldSync(item) {
+    if (!driveStore.isEnabled || !driveStore.isConnected) return false
+    if (!driveStore.syncRules || driveStore.syncRules.length === 0) return false
+    const validRules = driveStore.syncRules.filter(r => r.field && r.value)
+    if (validRules.length === 0) return false
+    return matchRules(item, validRules, driveStore.syncRulesLogic)
   }
 
   // Generate nama file
@@ -55,12 +66,10 @@ export function useDriveSync() {
     return parts[0] || 'Umum'
   }
 
-  // Parse tanggal dari string YYYY-MM-DD
+  // Parse tanggal dari string
   function parseDateInput(str) {
     if (!str) return null
-    const [y, m, d] = str.split('-').map(Number)
-    if (!y || !m || !d) return null
-    return new Date(y, m - 1, d)
+    return parseDate(str)
   }
 
   // Sync satu pegawai ke Drive
@@ -136,5 +145,5 @@ export function useDriveSync() {
     }
   }
 
-  return { shouldSync, syncEmployee, addToQueue, processQueue, getUnorInduk, getFileName }
+  return { shouldSync, matchRules, syncEmployee, addToQueue, processQueue, getUnorInduk, getFileName }
 }

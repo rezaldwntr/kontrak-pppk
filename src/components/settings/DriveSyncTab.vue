@@ -252,8 +252,16 @@
       </button>
 
       <div v-if="previewCount !== null" style="padding:10px 14px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:8px; margin-bottom:16px; font-size:0.9rem;">
-        <i class="fa-solid fa-circle-info" style="color:#2563eb;"></i>
-        Dengan aturan ini, <strong>{{ previewCount }}</strong> pegawai aktif akan otomatis disinkronkan.
+        <i class="fa-solid fa-circle-info" style="color:#2563eb;"></i>&nbsp;
+        <span v-if="hasActiveRules">
+          Dengan aturan ini, <strong>{{ previewCount }}</strong> pegawai aktif memenuhi kriteria sinkronisasi.
+        </span>
+        <span v-else>
+          Belum ada filter khusus (seluruh <strong>{{ previewCount }}</strong> pegawai aktif siap disinkronkan).
+        </span>
+      </div>
+      <div v-else-if="pegawaiStore.isLoading" style="padding:10px 14px; background:rgba(100,100,100,0.08); border-radius:8px; margin-bottom:16px; font-size:0.9rem;">
+        <i class="fa-solid fa-spinner fa-spin"></i>&nbsp; Memuat data pegawai...
       </div>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -330,7 +338,7 @@ import { customSwal } from '../../utils/swal'
 const driveStore = useDriveStore()
 const { startOAuthFlow, handleOAuthCallback, disconnectDrive } = useGoogleAuth()
 const { openFolderPicker, getFolderInfo, createFolder } = useGoogleDrive()
-const { shouldSync, syncEmployee, addToQueue } = useDriveSync()
+const { shouldSync, matchRules, syncEmployee, addToQueue } = useDriveSync()
 const pegawaiStore = usePegawaiStore()
 
 const isConnecting = ref(false)
@@ -351,21 +359,16 @@ const mergeModeOptions = [
 ]
 
 const previewCount = computed(() => {
-  if (localRules.value.length === 0 || !pegawaiStore.pppkData.length) return null
+  if (!pegawaiStore.pppkData.length) return null
   const tempRules = localRules.value.filter(r => r.field && r.value)
-  if (tempRules.length === 0) return null
   return pegawaiStore.pppkData.filter(item => {
     if (getStatusPppk(item) !== 'Aktif') return false
-    return tempRules.every(rule => {
-      if (rule.field === 'kelompok') return getKelompokPegawai(item) === rule.value
-      if (rule.field === 'jenisPppk') return (item['JENIS PPPK'] || 'PPPK') === rule.value
-      if (rule.field === 'unorInduk') {
-        const unorNama = item['UNOR NAMA'] || ''
-        return unorNama.split('/')[0].trim() === rule.value
-      }
-      return false
-    })
+    return matchRules(item, tempRules, driveStore.syncRulesLogic)
   }).length
+})
+
+const hasActiveRules = computed(() => {
+  return localRules.value.some(r => r.field && r.value)
 })
 
 function formatDate(ts) {
@@ -582,25 +585,102 @@ async function openPicker() {
 }
 
 async function syncAll() {
-  const candidates = pegawaiStore.pppkData.filter(item =>
-    getStatusPppk(item) === 'Aktif' && shouldSync(item)
-  )
-  if (candidates.length === 0) {
-    return customSwal.fire({ icon: 'info', title: 'Tidak ada pegawai', text: 'Tidak ada pegawai yang memenuhi aturan sync.' })
+  if (!driveStore.isConnected) {
+    return customSwal.fire({
+      icon: 'warning',
+      title: 'Belum Terhubung',
+      text: 'Silakan hubungkan Google Drive terlebih dahulu.'
+    })
   }
+
+  if (!driveStore.settings.folderId) {
+    return customSwal.fire({
+      icon: 'warning',
+      title: 'Folder Belum Dipilih',
+      text: 'Silakan pilih atau buat folder tujuan Google Drive terlebih dahulu.'
+    })
+  }
+
+  // Jika data pegawai belum termuat di store, tunggu proses load
+  if (pegawaiStore.isLoading || pegawaiStore.pppkData.length === 0) {
+    customSwal.fire({
+      title: 'Memuat data pegawai...',
+      text: 'Mohon tunggu sebentar...',
+      allowOutsideClick: false,
+      didOpen: () => customSwal.showLoading()
+    })
+    if (pegawaiStore.pppkData.length === 0) {
+      pegawaiStore.loadData()
+    }
+    const startTime = Date.now()
+    while ((pegawaiStore.isLoading || pegawaiStore.pppkData.length === 0) && Date.now() - startTime < 12000) {
+      await new Promise(r => setTimeout(r, 250))
+    }
+    customSwal.close()
+  }
+
+  // Gunakan aturan yang valid dari formulir layar
+  const validRules = localRules.value.filter(r => r.field && r.value)
+  if (JSON.stringify(validRules) !== JSON.stringify(driveStore.syncRules)) {
+    await driveStore.saveSyncRules(validRules)
+  }
+
+  const candidates = pegawaiStore.pppkData.filter(item =>
+    getStatusPppk(item) === 'Aktif' && matchRules(item, validRules, driveStore.syncRulesLogic)
+  )
+
+  if (candidates.length === 0) {
+    return customSwal.fire({
+      icon: 'info',
+      title: 'Tidak ada pegawai',
+      text: validRules.length > 0
+        ? 'Tidak ada pegawai aktif yang memenuhi kriteria aturan sync yang dipilih.'
+        : 'Tidak ada data pegawai aktif yang ditemukan.'
+    })
+  }
+
+  const confirmResult = await customSwal.fire({
+    title: 'Mulai Sinkronisasi?',
+    html: `Ditemukan <b>${candidates.length} pegawai aktif</b> yang memenuhi kriteria.<br>Dokumen akan dibuat dan diunggah ke folder Google Drive. Lanjutkan?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Mulai Sync',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: 'var(--primary-color)',
+  })
+
+  if (!confirmResult.isConfirmed) return
 
   isSyncingAll.value = true
   let done = 0
+  let failed = 0
   for (const item of candidates) {
     syncProgress.value = `${++done}/${candidates.length}`
     try {
       await syncEmployee(item)
     } catch (err) {
+      failed++
       await addToQueue(item, err)
     }
   }
   isSyncingAll.value = false
-  customSwal.fire({ icon: 'success', title: 'Sync selesai!', text: `${done} dokumen berhasil disinkronkan.`, timer: 2000, showConfirmButton: false })
+  syncProgress.value = ''
+
+  if (failed > 0) {
+    customSwal.fire({
+      icon: 'warning',
+      title: 'Sync Selesai dengan Catatan',
+      text: `${done - failed} dokumen berhasil disinkronkan, ${failed} dokumen masuk ke Antrian Retry karena kendala jaringan atau batas API Google.`,
+    })
+  } else {
+    customSwal.fire({
+      icon: 'success',
+      title: 'Sync Selesai!',
+      text: `Seluruh ${done} dokumen pegawai berhasil disinkronkan ke Google Drive.`,
+      timer: 2500,
+      showConfirmButton: false
+    })
+  }
 }
 
 async function retryItem(item) {
@@ -626,6 +706,9 @@ async function deleteQueueItem(id) {
 
 // Listen ke sync queue
 onMounted(async () => {
+  if (pegawaiStore.pppkData.length === 0) {
+    pegawaiStore.loadData()
+  }
   await driveStore.loadSettings()
 
   // Init localRules dari store

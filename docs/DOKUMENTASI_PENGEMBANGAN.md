@@ -21,6 +21,11 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - Memindahkan menu **Google Drive Sync** langsung ke navigasi **Sidebar** utama agar mudah diakses.
   - Membersihkan duplikasi header teks pada halaman integrasi Google Drive.
   - Memodernisasi komponen filter di halaman Dashboard.
+- **Perbaikan Bug Sinkronisasi Massal & Pemuatan Data Pegawai**:
+  - **Pemuatan Data Otomatis di Menu Google Drive:** Memperbaiki masalah data pegawai kosong ([]) saat pengguna membuka langsung menu /drive, dengan memastikan pegawaiStore.loadData() dijalankan otomatis saat halaman dimuat.
+  - **Pemisahan Logika Auto-Sync & Manual Sync:** Memisahkan evaluasi shouldSync (hanya untuk trigger penyimpanan otomatis saat edit pegawai dengan syarat toggle aktif) dari fungsi kriteria aturan (matchRules). Tombol "Sync Semua Sekarang" kini dapat langsung berjalan menyinkronkan pegawai yang memenuhi filter tanpa terhalang toggle Auto-Sync yang belum diaktifkan.
+  - **Pratinjau Jumlah Pegawai Dinamis & Real-time:** Menghubungkan banner pratinjau previewCount langsung ke aturan lokal di layar secara interaktif sehingga pengguna langsung melihat berapa pegawai aktif yang terkena dampak aturan.
+  - **Auto-Save Aturan & Dialog Konfirmasi:** Otomatis menyimpan aturan lokal saat tombol "Sync Semua Sekarang" diklik dan menampilkan dialog konfirmasi jumlah total pegawai sebelum proses upload dimulai.
 ## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
 
 ### Pembaruan UI/UX Menu Perpanjangan & Sidebar
