@@ -2,6 +2,98 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.6.0] - 2026-09-19 (Staging)
+
+### Harmonisasi & Peningkatan Desain UI/UX Seluruh Menu (User-Friendly Overhaul)
+- **Header Global (`Header.vue`)**:
+  - Mengubah tombol aksi menjadi tombol berlabel teks yang jelas dan informatif (`Impor Data`, `Ekspor`, `Hapus Semua`), menggantikan tombol ikon gundul sebelumnya.
+  - Menambahkan garis pembatas visual (*divider*) sebelum tombol bahaya `Hapus Semua` untuk mencegah klik yang tidak disengaja.
+  - Tampilan responsif adaptif: teks label otomatis disembunyikan pada layar kecil/perangkat mobile untuk menjaga kerapian header.
+- **Dashboard Overview (`DashboardView.vue`)**:
+  - Menambahkan *empty state card* bertema modern dengan ikon informatif dan tombol "Reset Filter Dashboard" jika tidak ada data yang cocok dengan kriteria filter.
+  - Memperbaiki tata letak responsif pada kartu statistik dan bagan analitik.
+- **Tabel & Filter Data PPPK (`PegawaiTable.vue` & `PegawaiView.vue`)**:
+  - **Filter 2-Tier Terstruktur**:
+    - **Tier 1 (Pencarian & Kelompok Cepat)**: Kolom input pencarian dengan tombol hapus cepat (`x`), tombol chip cepat untuk kelompok pegawai (*Semua Kelompok*, *Guru*, *Kesehatan*, *Teknis*), pill total jumlah pegawai terpilih, serta tombol reset filter.
+    - **Tier 2 (Dimensi Spesifik)**: Dropdown teratur untuk *Jenis PPPK*, *Unor Induk*, *Unor Atasan*, *Status Kontrak*, *Status PPPK*, dan *Periode Perpanjangan*.
+  - **Segmented Pill Tab Bar**: Mengganti tab garis bawah lama dengan desain pill segmented yang modern, elevasi aktif, dan badge jumlah data yang kontras.
+  - **Batch Action Bar Mengambang (Sticky)**: Dilengkapi tombol berlabel teks yang jelas (`Perpanjang Massal`, `Unduh Kontrak`, `Hapus Data`) menggantikan tombol ikon sempit.
+  - **Tabel & Paginasi Modern**: Baris tabel berstatus seleksi yang jelas, cell teks rapi, serta bilah paginasi modern dengan indikator rentang data ("Menampilkan X - Y dari Z PPPK") dan tombol navigasi yang nyaman.
+  - **Penyempurnaan Tab Diberhentikan**: Tampilan tabel diberhentikan diselaraskan dengan tata letak tabel utama serta aksi edit keterangan inline yang intuitif.
+- **Perpanjangan Kontrak (`PerpanjanganView.vue`)**:
+  - Mengadopsi navigasi segmented pill tab bar yang seragam dan konsisten dengan menu Data PPPK.
+  - Menghilangkan *double-card nesting* agar tabel tampil bersih dan menyatu dengan kontainer utama.
+  - Menyelaraskan jarak dan pembungkus bagan distribusi OPD.
+- **Riwayat Perpanjangan (`RiwayatView.vue`)**:
+  - Menyatukan filter floating yang terpisah-pisah ke dalam satu kartu toolbar filter terpadu (`filter-panel-card`).
+  - Mengubah tombol ekspor ikon menjadi tombol berlabel `Ekspor Excel`.
+  - Mengubah kotak pembatalan massal menjadi bilah batch action modern dengan tombol `Batalkan Terpilih`.
+  - Memodernisasi tabel dengan badge TMT Baru (`badge-tmt-baru`), tombol aksi tabel terstandarisasi, dan bilah paginasi modern.
+- **Pengaturan Aplikasi (`SettingsView.vue`)**:
+  - Mengganti halaman pengaturan satu gulir panjang menjadi antarmuka 3 sub-tab segmented:
+    1. **Pihak Pertama**: Formulir bersih dengan panduan kolom dan tombol `Simpan Pihak Pertama`.
+    2. **Template Master Dokumen**: Kartu unggah master F4 Penuh Waktu dan Paruh Waktu dengan status terpasang, disertai tabel referensi tag template yang dilengkapi **kolom pencarian tag langsung** dan **tombol salin tag satu-klik** ke clipboard.
+    3. **Keamanan & Akun**: Kartu aksi ganti email dan password dengan tombol aksi berlabel jelas (`Ubah Email Akun` dan `Ubah Kata Sandi`).
+- **Sidebar Global (`Sidebar.vue`)**:
+  - Memperbarui tombol keluar (*logout*) agar menampilkan teks `Keluar` saat sidebar terbuka dan otomatis beralih ke ikon saat sidebar diciutkan (*collapsed*).
+
+### Integrasi Sinkronisasi Dokumen Google Drive & Optimalisasi Google Picker
+- **Tampilan Google Picker Rapi & Terstruktur**:
+  - Mengonfigurasi DocsView dengan .setParent('root') agar hanya memuat folder tingkat utama di "Drive Saya" (*My Drive*). Hal ini mencegah pemindaian rekursif ke ribuan folder sistem/chunk backup yang tidak diinginkan (seperti folder angka/kode hash 67, de, e0, dll).
+  - Mengubah mode tampilan dari Grid kartu menjadi Tabel/Daftar vertikal (google.picker.DocsViewMode.LIST), sehingga tampilan daftar folder terlihat teratur, bersih, dan identik dengan antarmuka native Google Drive asli.
+  - Mendukung penjelajahan multi-drive: tab utama "Drive Saya" dan tab "Drive Bersama" (*Shared Drives*).
+- **Fleksibilitas Pemilihan Folder Google Drive**:
+  - Menyediakan 3 opsi terpadu untuk menentukan folder tujuan:
+    1. **Google Picker**: Memilih langsung melalui modal visual Google Drive.
+    2. **Tempel Link Folder**: Mendukung input URL Google Drive secara manual dengan ekstraksi ID folder otomatis.
+    3. **Buat Folder Otomatis**: Membuat folder baru di root Google Drive tanpa perlu berpindah tab.
+- **Pembaruan Izin & Keamanan OAuth2 (Google Scopes)**:
+  - Memperluas cakupan scope Google OAuth mencakup drive, drive.file, userinfo.email, dan openid dengan include_granted_scopes: 'true'.
+  - Menambahkan banner peringatan otomatis (*scope check*) dan tombol "Perbarui Izin Akun" di UI jika akun Google belum memberikan hak akses penyimpanan file.
+- **Penyempurnaan Navigasi & UI**:
+  - Memindahkan menu **Google Drive Sync** langsung ke navigasi **Sidebar** utama agar mudah diakses.
+  - Membersihkan duplikasi header teks pada halaman integrasi Google Drive.
+  - Memodernisasi komponen filter di halaman Dashboard.
+- **Perbaikan Bug Sinkronisasi Massal & Pemuatan Data Pegawai**:
+  - **Pemuatan Data Otomatis di Menu Google Drive:** Memperbaiki masalah data pegawai kosong ([]) saat pengguna membuka langsung menu /drive, dengan memastikan pegawaiStore.loadData() dijalankan otomatis saat halaman dimuat.
+  - **Pemisahan Logika Auto-Sync & Manual Sync:** Memisahkan evaluasi shouldSync (hanya untuk trigger penyimpanan otomatis saat edit pegawai dengan syarat toggle aktif) dari fungsi kriteria aturan (matchRules). Tombol "Sync Semua Sekarang" kini dapat langsung berjalan menyinkronkan pegawai yang memenuhi filter tanpa terhalang toggle Auto-Sync yang belum diaktifkan.
+  - **Pratinjau Jumlah Pegawai Dinamis & Real-time:** Menghubungkan banner pratinjau previewCount langsung ke aturan lokal di layar secara interaktif sehingga pengguna langsung melihat berapa pegawai aktif yang terkena dampak aturan.
+  - **Auto-Save Aturan & Dialog Konfirmasi:** Otomatis menyimpan aturan lokal saat tombol "Sync Semua Sekarang" diklik dan menampilkan dialog konfirmasi jumlah total pegawai sebelum proses upload dimulai.
+### Penyempurnaan Pengelompokan Folder Google Drive & Perbaikan Klasifikasi Rumpun Pegawai
+- **Aturan Penamaan Subfolder Google Drive (Mode Per-Pegawai)**:
+  - **Standardisasi Unor Induk:** Mengganti parsing nama folder yang sebelumnya menggunakan unor kepanjangan (akibat pemisah /) menjadi **Unor Induk** yang bersih.
+  - **Pengecualian Khusus Sesuai Regulasi & Kebutuhan Pengarsipan:**
+    1. **Tenaga Guru:** Pegawai dengan rumpun Tenaga Guru otomatis dialihkan ke folder khusus **Guru** (tidak digabung ke Dinas Pendidikan).
+    2. **Rumah Sakit:** Pegawai pada unit organisasi yang memuat kata *Rumah Sakit* atau *RSUD* otomatis masuk ke folder **RUMAH SAKIT UMUM DAERAH PAMBALAH BATUNG** (tidak masuk ke Dinas Kesehatan).
+    3. **Puskesmas:** Seluruh unit Puskesmas otomatis disatukan ke dalam folder **Dinas Kesehatan** tanpa membuat subfolder pecahan untuk masing-masing Puskesmas.
+    4. **Kecamatan dan Kelurahan:** Seluruh unit Kecamatan dan Kelurahan otomatis disatukan ke dalam folder **KECAMATAN DAN KELURAHAN**.
+  - **Pencegahan Folder Ganda (Case-Insensitive Match):** Menambahkan pencocokan nama folder secara *case-insensitive* pada API Google Drive untuk mencegah terbentuknya folder duplikat jika sudah ada folder dengan penulisan huruf besar/kecil sebelumnya.
+- **Perbaikan Bug Klasifikasi Rumpun Pegawai (Guru, Kesehatan, Teknis)**:
+  - **Dukungan Penuh 30 Rumpun Nakes:** Memperbaiki fungsi getKelompokPegawai yang sebelumnya salah mengklasifikasikan tenaga kesehatan seperti *Nutrisionis*, *Terapis Gigi dan Mulut*, *Radiografer*, *Fisioterapis*, *Perekam Medis*, dsb. ke dalam *Tenaga Teknis*. Rumpun kini mengenali seluruh 30 standar jabatan fungsional kesehatan Permenpan-RB & Kemenkes.
+  - **Integrasi Menyeluruh:** Perbaikan rumpun pegawai ini secara otomatis memperbarui keakuratan filter di tabel Data PPPK, kartu statistik di Dashboard, aturan filter Google Drive Sync, serta tag KELOMPOK_PEGAWAI, FUNGSI_PEGAWAI, dan SASARAN_PELAYANAN pada template cetak Word dokumen kontrak.
+  - **Penyempurnaan UI Form Aturan Sync:** Dropdown Unor Induk pada form kriteria aturan sinkronisasi Google Drive kini otomatis terisi daftar pilihan OPD yang tersedia dari database, mencegah salah ketik nilai filter.
+### Standarisasi Huruf Besar Folder Dinas, Penataan Spasi Nama File & Opsi Gelar
+- **Standarisasi Huruf Besar Nama Folder (`DINAS KESEHATAN`)**:
+  - Mengubah output nama folder untuk unit Puskesmas menjadi huruf besar penuh: `DINAS KESEHATAN` (sebelumnya `Dinas Kesehatan`) serta memastikan seluruh penamaan folder Unor Induk default menggunakan `.toUpperCase()`.
+  - **Auto-Rename Folder Google Drive In-Place:** Menambahkan logika penyesuaian nama folder pada `getOrCreateFolder` di `useGoogleDrive.js`. Jika folder target sudah ada di Google Drive namun penulisannya masih huruf kecil/Title Case (misal `Dinas Kesehatan`), sistem secara otomatis mengirimkan permintaan `PATCH` ke Google Drive REST API untuk memperbarui nama folder menjadi `DINAS KESEHATAN` tanpa merusak ID folder maupun memindahkan file yang sudah ada di dalamnya.
+- **Pemeliharaan Spasi Nama Pegawai pada File Dokumen**:
+  - Menghapus konversi spasi menjadi underscore (`_`) pada nama pegawai di nama file dokumen kontrak Google Drive. Spasi asli antar kata pada nama pegawai tetap dipertahankan sesuai nama aslinya (contoh: `197407042025212030_ANA ERPINA.docx`, bukan `197407042025212030_ANA_ERPINA.docx`).
+  - Pembersihan nama file secara selektif hanya membuang karakter terlarang sistem berkas (`[\/\\:*?"<>|]`).
+- **Opsi Konfigurasi Gelar pada Penamaan File Dokumen**:
+  - Menambahkan pengaturan baru pada menu Google Drive: **Format Penamaan File Dokumen** dengan dua pilihan:
+    1. **Tanpa Gelar (Rekomendasi)**: Contoh: `197407042025212030_ANA ERPINA.docx`
+    2. **Sertakan Gelar**: Contoh: `197407042025212030_ANA ERPINA, S.Pd.docx` atau `197407042025212030_Dr. ANA ERPINA, Sp.A.docx`
+  - Pengaturan tersimpan secara persisten ke Firestore (`config/drive_sync_settings`) pada atribut `includeGelar` dan berlaku otomatis saat proses sinkronisasi dokumen berjalan.
+### Penyempurnaan UI/UX Menu Google Drive & Pembersihan Teks Contoh Format Gelar
+- **Pembersihan Teks Contoh Format Penamaan Berkas**:
+  - Menghapus teks contoh penamaan panjang (`Contoh: 197407042025212030_...`) pada kartu pilihan format nama pegawai ("Tanpa Gelar" & "Sertakan Gelar"). Hal ini mencegah terjadinya teks patah (*text wrapping*) yang membuat tinggi kartu tidak seimbang di layar pengguna.
+  - Tampilan kartu format nama kini tampil ringkas, elegan, dan seimbang dengan penanda *badge* "Rekomendasi" yang proporsional.
+- **Redesain Menyeluruh Tata Letak (UI/UX) Halaman Google Drive**:
+  - **Arsitektur Kartu Modern**: Membungkus setiap bagian konfigurasi ke dalam komponen kartu (`drive-card`) dengan sudut melengkung 16px, efek bayangan lembut, dan tajuk berikon tematik (*branding icon accent*).
+  - **Status Koneksi & Auto-Sync Terpadu**: Menata ulang kartu akun terhubung dengan indikator status dot hijau, email pengguna yang jelas, tombol aksi yang terkelompok rapi ("Perbarui Izin" & "Putuskan"), serta kontrol sakelar *Auto-Sync* bergaya iOS yang intuitif.
+  - **Tata Letak Grid 2 Kolom Seimbang**: Mengorganisir form pengaturan dokumen ke dalam grid 2 kolom yang simetris (Bagian Dokumen, Tanggal Kontrak, Mode Pengelompokan File, dan Format Penamaan Berkas) yang otomatis adaptif (*responsive*) pada perangkat seluler/tablet.
+  - **Folder Tujuan & Manajemen Input Terstruktur**: Mempercantik kartu folder aktif dengan badge status, ID folder monospace, tombol cepat buka di Drive, dan integrasi input link manual yang teratur.
+  - **Dukungan Penuh Mode Gelap & Terang**: Menyematkan CSS scoped dengan variabel CSS global (`--bg-primary`, `--bg-secondary`, `--border-color`, `--primary-color`, dll) sehingga tampilan selalu tajam dan nyaman dilihat di tema terang maupun gelap.
 ## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
 
 ### Pembaruan UI/UX Menu Perpanjangan & Sidebar
@@ -241,3 +333,53 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Pembaruan Tag Nama Pegawai:** Mengubah implementasi tag {{NAMA_PEGAWAI}} pada sistem *generate* dokumen Word (kontrak) dan tampilan tabel. Sebelumnya sistem secara otomatis menggabungkan *Gelar Depan* + *Nama* + *Gelar Belakang*. Kini tag dan tampilan tersebut diperbaiki hanya memunculkan *Nama Lengkap tanpa gelar* sesuai permintaan.
 
 - **Penambahan Filter Kelompok Pegawai:** Menambahkan opsi penyaringan (filter) baru pada tabel utama untuk menyortir data berdasarkan **Kelompok Pegawai** (Tenaga Guru, Tenaga Kesehatan, dan Tenaga Teknis). Filter ini akan mendeteksi otomatis secara cerdas dari nama jabatan masing-masing pegawai.
+
+- **Integrasi & Sinkronisasi Otomatis Google Drive (E-Kontrak PPPK):**
+  - **Koneksi Akun Pribadi (OAuth 2.0):** Menambahkan sistem integrasi dengan Google Drive menggunakan OAuth 2.0 (Authorization Code & auto-refresh token via backend serverless Vercel function). Administrator dapat menghubungkan akun Google pribadinya langsung dari menu Pengaturan.
+  - **Pemilih Folder Visual (Google Picker):** Mengintegrasikan Google Picker API agar administrator dapat memilih folder tujuan Google Drive secara visual melalui jendela popup.
+  - **Struktur Folder & Penamaan Standar:** Menyusun dokumen secara otomatis ke dalam folder hierarkis: [Folder Root] / [Bagian Dokumen: Kontrak | Isi Perjanjian | Tanda Tangan] / [Subfolder Unor Induk] / [NIP_Nama.docx].
+  - **Auto-Sync & Auto-Update Dinamis:** Menambahkan aturan filter kriteria otomatis (Kelompok Pegawai, Jenis PPPK, Unor Induk). Setiap kali data pegawai yang memenuhi kriteria disimpan lewat tombol Simpan di Detail Pegawai, dokumen perjanjian kerja di Google Drive akan otomatis dibuat atau diperbarui (update in-place). Jika file terhapus di Drive, sistem otomatis mengunggahnya kembali.
+  - **Antrian Retry (Retry Queue):** Jika proses upload ke Google Drive gagal karena masalah jaringan atau sesi, antrian kegagalan disimpan ke koleksi Firestore sync_queue dan dapat dicoba kembali secara otomatis maupun manual lewat tombol 'Coba Lagi'.
+  - **Simpan ke Google Drive dari Modal Unduh:** Menambahkan tombol langsung 'Simpan ke Drive' di jendela Unduh Perjanjian Kerja (DownloadContractModal.vue) agar admin dapat menyimpan 1 atau banyak dokumen kontrak langsung ke Drive dengan 1 kali klik.
+  - **Pembatasan Fitur Kontrak (Khusus Pegawai Aktif):** Tombol Unduh Kontrak, Cetak, dan Tab Kontrak & Gaji di modal detail kini disembunyikan untuk pegawai berstatus Pensiun atau Diberhentikan, sesuai aturan bisnis bahwa kontrak hanya berlaku bagi pegawai yang masih aktif.
+
+- **Optimalisasi Menu Google Drive & Penyederhanaan Template Master (Kertas F4):**
+  - **Menu Google Drive di Sidebar:** Memindahkan fitur integrasi Google Drive dari tab sub-menu Pengaturan menjadi menu utama mandiri di Sidebar navigasi (/drive -> GoogleDriveView.vue). Hal ini memberikan tata letak halaman yang lebih luas dan navigasi yang lebih cepat.
+  - **Penghapusan Opsi Kertas A4 & Standarisasi F4:** Menghapus seluruh pengaturan ukuran kertas A4 di seluruh modul aplikasi (Modal Unduh Kontrak, Modal Cetak, Pengaturan Google Drive, dan Pengaturan Template). Aplikasi kini distandarisasi menggunakan format F4 (Legal 33�21.5 cm) sebagai ukuran baku.
+  - **Sistem 1 Upload Master Template Universal:** Mengubah halaman upload template di menu Pengaturan menjadi cukup 1 formulir upload master file .docx per kategori (PPPK Penuh Waktu dan PPPK Paruh Waktu). Sistem pembangkit dokumen Word kini secara cerdas membaca dan mempertahankan ukuran kertas serta margin asli dari file template Word yang diunggah. Dengan arsitektur ini, jika di kemudian hari instansi mengubah ukuran kertas atau margin, administrator cukup mengubah ukuran halaman langsung di Microsoft Word dan mengunggah 1 file tersebut tanpa perlu membuat atau memilih opsi ukuran terpisah di aplikasi.
+  - **Kompatibilitas Template Fallback:** Menambahkan logika *fallback* cerdas pada pembacaan template di Firestore agar tetap kompatibel dan tidak *error* meskipun dokumen sebelumnya disimpan dengan format penamaan lama.
+
+- **Perbaikan UI Google Drive & Modernisasi Toolbar Filter Dashboard:**
+  - **Penghapusan Duplikasi Header Google Drive:** Memperbaiki tampilan halaman Google Drive Sync dengan menghapus elemen judul (.page-header) lokal di dalam GoogleDriveView.vue. Judul dan deskripsi halaman kini dirender secara terpusat oleh layout global Header.vue berdasarkan metadata rute, menghilangkan tampilan header ganda yang sebelumnya terjadi.
+  - **Modernisasi UI Filter Dashboard:** Menggantikan kontrol *dropdown select* konvensional pada Dashboard dengan komponen *Dashboard Filter Toolbar* modern berjenjang:
+    - **Tingkat Utama (Segmented Pills):** Tombol pil interaktif untuk jenis kepegawaian (*Semua Jenis*, *Penuh Waktu*, *Paruh Waktu*) dilengkapi efek *glow active* serta indikator *badge counter* jumlah pegawai secara *real-time*.
+    - **Tingkat Sekunder (Kelompok Chips):** Deretan *chip* filter untuk menyaring berdasarkan kelompok kepegawaian (*Semua*, *Tenaga Guru*, *Tenaga Kesehatan*, *Tenaga Teknis*) dengan ikon penjelas dan kalkulasi jumlah dinamis sesuai jenis PPPK yang sedang aktif.
+    - **Responsif & Kompatibilitas Tema:** Tampilan toolbar disesuaikan agar rapi dan adaptif pada perangkat seluler/layar sempit, serta mendukung penuh variabel warna tema terang dan gelap.
+- **Penyempurnaan Integrasi Folder Google Drive (Solusi Error 403 Google Picker & Opsi Tempel Link):**
+  - **Opsi Tempel Link / ID Folder Mandiri:** Menambahkan kolom input manual untuk menempelkan URL folder (misal drive.google.com/drive/folders/...) atau ID folder Google Drive secara langsung, disertai tombol *Terapkan Link*. Sistem secara otomatis memvalidasi ke Google Drive API (getFolderInfo), mengambil nama folder resmi, dan menyimpannya. Hal ini menjadi solusi praktis dan instan jika pengguna mengalami kendala sesi akun pada browser.
+  - **Status & Manajemen Folder Aktif:** Menampilkan kartu status folder terpilih dengan indikator visual, nama folder, ID folder, tombol pintasan untuk membuka folder langsung di tab baru Google Drive, dan tombol untuk melepas/mengganti folder.
+  - **Peningkatan Konfigurasi Google Picker:** Menambahkan parameter keamanan setOrigin dan setAppId (Google Cloud Project Number) pada pembuatan PickerBuilder untuk memenuhi standar komunikasi iframe lintas domain Google dan mencegah penolakan otentikasi.
+- **Penyempurnaan Integrasi Google Picker & Penataan Alur Pemilihan Folder:**
+  - **Optimalisasi Google Picker API:** Menyempurnakan konfigurasi openFolderPicker dengan DocsView (setIncludeFolders(true), setSelectFolderEnabled(true), setEnableDrives(true)) serta mengaktifkan fitur google.picker.Feature.SUPPORT_DRIVES agar mendukung pemilihan folder dari Google Drive pribadi maupun Shared Drive (Drive Bersama).
+  - **Responsivitas Status Tombol Picker:** Menambahkan penanganan status *loading* interaktif dengan callback onOpened dan onCancel. Tombol tidak lagi mengalami kendala status 'Memuat...' saat pengguna membatalkan atau menutup popup pemilihan folder.
+  - **Penataan UI Pemilihan Folder:** Menempatkan tombol **Pilih Folder** (Google Picker) sebagai tombol aksi utama yang dominan dan jelas di halaman Google Drive Sync, sementara opsi input manual (tempel link/ID) disembunyikan secara rapi di dalam toggle teks (*collapsible*) sebagai solusi cadangan jika terjadi masalah sesi pada browser.
+- **Peralihan ke Solusi 2 (Manajemen Folder Google Drive Mandiri & Handal):**
+  - **Latar Belakang:** Google Picker API mengalami kendala error 403 permanen pada peramban modern (seperti Chrome) akibat kebijakan keamanan pemblokiran *Third-Party Cookies (Tracking Protection)* pada dokumen iframe lintas-domain (docs.google.com/picker).
+  - **Pemberlakuan Solusi 2 sebagai Antarmuka Utama:** Mengubah bagian konfigurasi folder tujuan Google Drive agar tidak lagi bergantung pada popup iframe Google Picker:
+    - **Tempel Link / ID Folder:** Pengguna cukup menyalin URL folder dari address bar Google Drive lalu menempelkannya ke kolom formulir dan mengklik tombol *Hubungkan Folder*. Sistem langsung memvalidasi ke Google Drive REST API, mengambil nama folder, dan menyimpannya.
+    - **Fitur Buat Folder Otomatis:** Menambahkan tombol *Buat Folder Otomatis* yang memungkinkan pengguna membuat folder tujuan baru langsung di root Google Drive mereka melalui Google Drive REST API hanya dengan mengetikkan nama folder (misal: "KONTRAK PPPK"), tanpa perlu membuka tab Google Drive.
+    - **Tombol Pintasan Google Drive:** Menyediakan tombol cepat untuk membuka Google Drive di tab baru serta tautan langsung untuk meninjau folder yang sedang terhubung.
+- **Penyelesaian Masalah Insufficient Scopes & Pembaruan Izin OAuth Google Drive:**
+  - **Identifikasi Masalah:** Munculnya galat Google API 403 (Forbidden): Request had insufficient authentication scopes saat menghubungkan folder atau membuat folder baru di Drive disebabkan oleh token OAuth yang sebelumnya tersimpan tidak memiliki cakupan izin mengelola file Google Drive (pengguna belum mencentang kotak izin persetujuan Google Drive saat otentikasi awal).
+  - **Penambahan Cakupan & Parameter OAuth:** Memperluas daftar SCOPES pada useGoogleAuth.js dengan drive, drive.file, userinfo.email, dan openid serta menambahkan parameter include_granted_scopes: 'true' dan prompt: 'consent' agar Google selalu menampilkan seluruh kotak pilihan persetujuan izin secara lengkap kepada pengguna.
+  - **Pelacakan Status Scope di Store & Firestore:** Menyimpan data scope yang disetujui ke dalam dokumen Firestore drive_tokens dan memantaunya secara reaktif pada driveStore.js melalui hasDriveScope.
+  - **Banner Peringatan & Dialog Bantuan Interaktif:** Menambahkan tombol *Hubungkan Ulang (Perbarui Izin)* dan banner peringatan langsung di halaman Google Drive jika terdeteksi izin akun belum lengkap. Apabila operasi Drive gagal karena masalah cakupan otentikasi, sistem menampilkan dialog panduan yang menjelaskan cara mencentang izin Google Drive lengkap dengan tombol pintas untuk langsung menghubungkan ulang.
+- **Harmonisasi UI Pemilihan Folder Google Drive (Google Picker & Aksi Cepat):**
+  - Mengintegrasikan tombol **Pilih Folder (Google Picker)** sebagai tombol aksi utama berfitur lengkap bersama tombol cepat **Buat Folder Otomatis** dan tautan **Buka Drive**.
+  - Menyediakan formulir alternatif **Tempel Link / ID Folder Manual** di bagian bawah untuk fleksibilitas maksimal jika pengguna ingin menyalin link langsung dari browser.
+- **Perbaikan Tampilan Folder Google Picker (Menampilkan Tab 'Drive Saya'):**
+  - **Penyebab:** Pada konfigurasi sebelumnya, flag .setEnableDrives(true) dipasang pada satu-satunya tampilan DocsView. Hal ini menyebabkan Google Picker memprioritaskan hanya tab *Shared Drives* (Drive Bersama). Karena akun pengguna adalah akun personal (yang belum memiliki Shared Drive), tampilan picker menjadi kosong (*blank* dengan tulisan "No documents.").
+  - **Solusi:** Memisahkan tampilan menjadi dua DocsView:
+    - **View 1 (Utama/Default):** Menampilkan folder-folder dari **Drive Saya (My Drive)** pengguna.
+    - **View 2 (Sekunder):** Menampilkan **Drive Bersama (Shared Drives)** jika instansi menggunakan Shared Drive.
+    - Dengan perubahan ini, begitu dialog Google Picker terbuka, tab yang aktif pertama kali adalah seluruh folder yang ada di **Drive Saya** milik pengguna.

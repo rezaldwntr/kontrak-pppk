@@ -36,6 +36,12 @@ const routes = [
     meta: { requiresAuth: true, title: 'Riwayat Perpanjangan', subtitle: 'Catatan arsip kontrak sebelumnya' }
   },
   {
+    path: '/drive',
+    name: 'drive',
+    component: () => import('../views/GoogleDriveView.vue'),
+    meta: { requiresAuth: true, title: 'Google Drive Sync', subtitle: 'Integrasi dan sinkronisasi otomatis Google Drive' }
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('../views/SettingsView.vue'),

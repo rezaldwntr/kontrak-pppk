@@ -1,21 +1,24 @@
 <template>
   <div>
-    <!-- Tab Bar -->
-    <div class="pppk-tabs" style="display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--border-color);">
-      <router-link
-        v-for="tab in tabs"
-        :key="tab.key"
-        :to="`/perpanjangan/${tab.key}`"
-        class="pppk-tab-item"
-        :class="{ active: activeTab === tab.key }"
-      >
-        <i :class="tab.icon"></i>
-        <span>{{ tab.label }}</span>
-        <span class="tab-badge">{{ tabCounts[tab.key] }}</span>
-      </router-link>
+    <!-- Modern Segmented Tab Bar -->
+    <div class="pppk-tabs-wrapper">
+      <div class="pppk-segmented-tabs">
+        <router-link
+          v-for="tab in tabs"
+          :key="tab.key"
+          :to="`/perpanjangan/${tab.key}`"
+          class="tab-pill"
+          :class="{ active: activeTab === tab.key }"
+        >
+          <i :class="tab.icon"></i>
+          <span>{{ tab.label }}</span>
+          <span class="tab-pill-badge">{{ tabCounts[tab.key] }}</span>
+        </router-link>
+      </div>
     </div>
 
-    <div class="card" style="padding: 1.5rem;">
+    <!-- Table Section -->
+    <div class="perpanjangan-table-section">
       <PegawaiTable ref="tableRef" 
         :key="activeTab"
         :allowBatchExtend="true"
@@ -32,7 +35,8 @@
       />
     </div>
 
-    <div style="margin-top: 24px; margin-bottom: 24px;">
+    <!-- OPD Statistics Chart Card -->
+    <div class="chart-section-wrap" style="margin-top: 24px; margin-bottom: 24px;">
       <ChartCard :title="chartTitle" icon="fa-solid fa-building" chartType="horizontalBar" :chartData="unorChartData" :chartHeight="unorChartHeight" />
     </div>
 
@@ -268,3 +272,72 @@ const executeBatchExtend = async () => {
   }
 }
 </script>
+
+<style scoped>
+.pppk-tabs-wrapper {
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pppk-segmented-tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.04));
+  white-space: nowrap;
+}
+
+.tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-md, 8px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.tab-pill:hover {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.tab-pill.active {
+  color: #ffffff;
+  background: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.tab-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--bg-primary);
+  color: var(--text-light);
+  min-width: 20px;
+  transition: all 0.2s;
+}
+
+.tab-pill.active .tab-pill-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.perpanjangan-table-section {
+  display: flex;
+  flex-direction: column;
+}
+</style>

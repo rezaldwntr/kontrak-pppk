@@ -31,6 +31,10 @@
         <i class="fa-solid fa-clock-rotate-left"></i>
         <span>Riwayat Perpanjangan</span>
       </router-link>
+      <router-link to="/drive" class="menu-item" active-class="active" v-if="authStore.user" title="Google Drive">
+        <i class="fa-brands fa-google-drive"></i>
+        <span>Google Drive</span>
+      </router-link>
       <router-link to="/settings" class="menu-item" active-class="active" v-if="authStore.user" title="Pengaturan">
         <i class="fa-solid fa-gear"></i>
         <span>Pengaturan</span>
@@ -53,8 +57,16 @@
           <p>Kepegawaian</p>
         </div>
       </div>
-      <button class="btn btn-secondary btn-logout btn-icon-only" style="margin-top: 15px;" v-if="authStore.user" @click="handleLogout" title="Logout">
+      <button
+        class="btn btn-secondary btn-logout"
+        :class="{ 'btn-icon-only': collapsed }"
+        style="margin-top: 15px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;"
+        v-if="authStore.user"
+        @click="handleLogout"
+        title="Keluar dari Aplikasi"
+      >
         <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="logout-text">Keluar</span>
       </button>
     </div>
   </aside>

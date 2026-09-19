@@ -3,7 +3,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { db } from '../services/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { calculateContractPeriod, parseDate } from './pppkLogic'
+import { calculateContractPeriod, parseDate, getKelompokPegawai } from './pppkLogic'
 import { calculateGajiFromItem } from './gajiTable'
 
 // ===== Helper Functions =====
@@ -66,24 +66,17 @@ function formatRupiahFull(angka) {
 }
 
 function getFungsiPegawai(item) {
-  const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'PPPK Fungsional Guru'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker') || jabatan.includes('kesehatan')) return 'PPPK Fungsional Kesehatan'
+  const kelompok = getKelompokPegawai(item)
+  if (kelompok === 'Tenaga Guru') return 'PPPK Fungsional Guru'
+  if (kelompok === 'Tenaga Kesehatan') return 'PPPK Fungsional Kesehatan'
   return 'PPPK Fungsional Teknis'
 }
 
 function getSasaranPelayanan(item) {
-  const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'Anak Didik'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker')) return 'Pasien'
+  const kelompok = getKelompokPegawai(item)
+  if (kelompok === 'Tenaga Guru') return 'Anak Didik'
+  if (kelompok === 'Tenaga Kesehatan') return 'Pasien'
   return 'Masyarakat'
-}
-
-function getKelompokPegawai(item) {
-  const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'Tenaga Guru'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker') || jabatan.includes('gizi') || jabatan.includes('kesehatan')) return 'Tenaga Kesehatan'
-  return 'Tenaga Teknis'
 }
 
 function getNamaLengkap(item) {
@@ -213,8 +206,21 @@ async function loadTemplate(templateKey) {
   const snap = await getDoc(docRef)
   if (!snap.exists()) throw new Error('Template belum diunggah. Silakan unggah template di menu Pengaturan terlebih dahulu.')
   const data = snap.data()
-  if (!data[templateKey]) throw new Error(`Template "${templateKey}" belum diunggah. Silakan unggah template di menu Pengaturan terlebih dahulu.`)
-  return data[templateKey] // base64 string
+  
+  let templateData = data[templateKey]
+  if (!templateData) {
+    if (templateKey.includes('paruh')) {
+      templateData = data.template_paruh_f4 || data.template_paruh || data.template_paruh_a4
+    } else {
+      templateData = data.template_f4 || data.template_reguler || data.template || data.template_a4
+    }
+  }
+
+  if (!templateData) {
+    const label = templateKey.includes('paruh') ? 'PPPK Paruh Waktu' : 'PPPK Penuh Waktu'
+    throw new Error(`Template untuk "${label}" belum diunggah. Silakan unggah template di menu Pengaturan terlebih dahulu.`)
+  }
+  return templateData // base64 string
 }
 
 /**
@@ -461,7 +467,7 @@ async function generateDocx(item, templateBase64, pihakPertama, tanggalKontrak =
 function getTemplateKey(item, paperSize = 'f4') {
   const jenis = (item['JENIS PPPK'] || '').toLowerCase()
   const isParuh = jenis.includes('paruh')
-  return isParuh ? `template_paruh_${paperSize}` : `template_${paperSize}`
+  return isParuh ? 'template_paruh_f4' : 'template_f4'
 }
 
 /**
@@ -472,7 +478,7 @@ function getTemplateKey(item, paperSize = 'f4') {
  * @param {string}    documentPart   - 'full' | 'perjanjian' | 'tandatangan' | 'pisah'
  * @returns {{ hasSections: boolean }}
  */
-export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null, documentPart = 'full') {
+export async function downloadSingleContract(item, paperSize = 'f4', tanggalKontrak = null, documentPart = 'full', options = {}) {
   const templateKey = getTemplateKey(item, paperSize)
   const [templateBase64, pihakPertama] = await Promise.all([
     loadTemplate(templateKey),
@@ -483,6 +489,11 @@ export async function downloadSingleContract(item, paperSize = 'f4', tanggalKont
 
   if (documentPart !== 'full' && !result.hasSections) {
     throw new Error(`Template belum memiliki tag section lengkap: ${result.failReason || 'Tag tidak ditemukan'}. Silakan perbaiki template di menu Pengaturan.`)
+  }
+
+  // Jika returnBlob aktif, jangan trigger download dialog browser
+  if (options && options.returnBlob) {
+    return result
   }
 
   const namaBersih = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')

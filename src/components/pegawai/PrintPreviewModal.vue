@@ -7,21 +7,7 @@
       </div>
       <div class="modal-body">
         <div class="form-group" style="margin-bottom: 15px;">
-          <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">1. Pilih Ukuran Kertas / Template:</label>
-          <div style="display: flex; gap: 20px; font-size: 13px;">
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="radio" v-model="paperSize" value="f4">
-              <span>Template F4</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="radio" v-model="paperSize" value="a4">
-              <span>Template A4</span>
-            </label>
-          </div>
-        </div>
-        
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">2. Bagian Dokumen yang Dicetak:</label>
+          <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">1. Bagian Dokumen yang Dicetak:</label>
           <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
               <input type="radio" v-model="printScope" value="all">
@@ -39,7 +25,7 @@
         </div>
 
         <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
-          <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">3. Tanggal Pembuatan Kontrak (Tanggal Perjanjian):</label>
+          <label style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 13px;">2. Tanggal Pembuatan Kontrak (Tanggal Perjanjian):</label>
           <input type="date" v-model="tglKontrak" class="form-control" style="font-size: 13px; padding: 8px;">
         </div>
         
