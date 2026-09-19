@@ -240,6 +240,10 @@
           <option value="PPPK Penuh Waktu">PPPK Penuh Waktu</option>
           <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
         </select>
+        <select v-else-if="rule.field === 'unorInduk' && unorIndukOptions.length > 0" v-model="rule.value" class="form-control" style="flex:1;">
+          <option value="">Pilih Unor Induk...</option>
+          <option v-for="opt in unorIndukOptions" :key="opt" :value="opt">{{ opt }}</option>
+        </select>
         <input v-else v-model="rule.value" class="form-control" placeholder="Nilai kriteria..." style="flex:1;">
 
         <button class="btn btn-outline" style="color:#dc2626; border-color:#dc2626; flex-shrink:0;" @click="removeRule(i)" title="Hapus kriteria">
@@ -330,7 +334,7 @@ import { useGoogleAuth } from '../../composables/useGoogleAuth'
 import { useGoogleDrive } from '../../composables/useGoogleDrive'
 import { useDriveSync } from '../../composables/useDriveSync'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
-import { getStatusPppk, getKelompokPegawai } from '../../utils/pppkLogic'
+import { getStatusPppk, getKelompokPegawai, getUnorInduk } from '../../utils/pppkLogic'
 import { db } from '../../services/firebase'
 import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
 import { customSwal } from '../../utils/swal'
@@ -340,6 +344,12 @@ const { startOAuthFlow, handleOAuthCallback, disconnectDrive } = useGoogleAuth()
 const { openFolderPicker, getFolderInfo, createFolder } = useGoogleDrive()
 const { shouldSync, matchRules, syncEmployee, addToQueue } = useDriveSync()
 const pegawaiStore = usePegawaiStore()
+
+const unorIndukOptions = computed(() => {
+  if (!pegawaiStore.pppkData.length) return []
+  const types = new Set(pegawaiStore.pppkData.map(item => getUnorInduk(item['UNOR NAMA'] || item['UNIT KERJA'] || '')))
+  return Array.from(types).filter(t => t && t !== '-').sort()
+})
 
 const isConnecting = ref(false)
 const isPickerLoading = ref(false)

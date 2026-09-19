@@ -3,7 +3,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { db } from '../services/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { calculateContractPeriod, parseDate } from './pppkLogic'
+import { calculateContractPeriod, parseDate, getKelompokPegawai } from './pppkLogic'
 import { calculateGajiFromItem } from './gajiTable'
 
 // ===== Helper Functions =====
@@ -66,24 +66,17 @@ function formatRupiahFull(angka) {
 }
 
 function getFungsiPegawai(item) {
-  const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'PPPK Fungsional Guru'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker') || jabatan.includes('kesehatan')) return 'PPPK Fungsional Kesehatan'
+  const kelompok = getKelompokPegawai(item)
+  if (kelompok === 'Tenaga Guru') return 'PPPK Fungsional Guru'
+  if (kelompok === 'Tenaga Kesehatan') return 'PPPK Fungsional Kesehatan'
   return 'PPPK Fungsional Teknis'
 }
 
 function getSasaranPelayanan(item) {
-  const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'Anak Didik'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker')) return 'Pasien'
+  const kelompok = getKelompokPegawai(item)
+  if (kelompok === 'Tenaga Guru') return 'Anak Didik'
+  if (kelompok === 'Tenaga Kesehatan') return 'Pasien'
   return 'Masyarakat'
-}
-
-function getKelompokPegawai(item) {
-  const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'Tenaga Guru'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker') || jabatan.includes('gizi') || jabatan.includes('kesehatan')) return 'Tenaga Kesehatan'
-  return 'Tenaga Teknis'
 }
 
 function getNamaLengkap(item) {

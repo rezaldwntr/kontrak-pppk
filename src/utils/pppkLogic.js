@@ -167,9 +167,154 @@ export const getPegawaiCategory = (item) => {
     return "aktif";
 };
 
+/**
+ * Membersihkan nama unit organisasi dari suffix PEMERINTAH KABUPATEN HSU
+ */
+export const cleanUnorName = (unorNama) => {
+  if (!unorNama) return '-'
+  return String(unorNama).replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '').trim()
+}
+
+/**
+ * Mendapatkan Unor Atasan (unit kerja spesifik di bawah induk, misal: SD Negeri A, Puskesmas B, dsb)
+ */
+export const getUnorAtasan = (unorNama) => {
+  const cleaned = cleanUnorName(unorNama)
+  if (cleaned === '-') return '-'
+  const separator = cleaned.includes(' - ') ? ' - ' : (cleaned.includes('/') ? '/' : null)
+  if (!separator) return cleaned
+  const parts = cleaned.split(separator).map(s => s.trim()).filter(Boolean)
+  if (parts.length <= 1) return parts[0]
+  return parts.slice(0, parts.length - 1).join(' - ') || '-'
+}
+
+/**
+ * Mendapatkan Unor Induk (OPD utama, misal: DINAS PENDIDIKAN DAN KEBUDAYAAN, DINAS KESEHATAN, dsb)
+ */
+export const getUnorInduk = (unorNama) => {
+  const cleaned = cleanUnorName(unorNama)
+  if (cleaned === '-') return '-'
+  const separator = cleaned.includes(' - ') ? ' - ' : (cleaned.includes('/') ? '/' : null)
+  if (!separator) return cleaned
+  const parts = cleaned.split(separator).map(s => s.trim()).filter(Boolean)
+  return parts[parts.length - 1] || '-'
+}
+
+/**
+ * Mengelompokkan pegawai ke dalam 3 rumpun:
+ * - Tenaga Guru
+ * - Tenaga Kesehatan
+ * - Tenaga Teknis
+ */
 export function getKelompokPegawai(item) {
-  const jabatan = (item['JABATAN NAMA'] || item['JABATAN'] || '').toLowerCase()
-  if (jabatan.includes('guru')) return 'Tenaga Guru'
-  if (jabatan.includes('dokter') || jabatan.includes('perawat') || jabatan.includes('bidan') || jabatan.includes('apoteker') || jabatan.includes('gizi') || jabatan.includes('kesehatan') || jabatan.includes('sanitarian') || jabatan.includes('epidemiolog')) return 'Tenaga Kesehatan'
+  if (!item) return 'Tenaga Teknis'
+  const jabatan = String(item['JABATAN NAMA'] || item['JABATAN'] || '').toLowerCase().trim()
+
+  // 1. Tenaga Guru
+  if (
+    jabatan.includes('guru') ||
+    jabatan.includes('tutor') ||
+    jabatan.includes('pamong') ||
+    jabatan.includes('pengawas sekolah') ||
+    jabatan.includes('penilik') ||
+    jabatan.includes('widyaprada')
+  ) {
+    return 'Tenaga Guru'
+  }
+
+  // 2. Tenaga Kesehatan (30 Rumpun Jabatan Fungsional Kesehatan Permenpan-RB / Kemenkes)
+  const nakesKeywords = [
+    'dokter',
+    'perawat',
+    'bidan',
+    'apoteker',
+    'farmasi',
+    'nutrisionis',
+    'dietisien',
+    'gizi',
+    'terapis',
+    'gigi',
+    'sanitarian',
+    'sanitasi',
+    'epidemiolog',
+    'entomolog',
+    'radiografer',
+    'radioterapi',
+    'fisioterapis',
+    'fisioterapi',
+    'perekam medis',
+    'rekam medis',
+    'analis kesehatan',
+    'laboratorium kesehatan',
+    'laboratorium medik',
+    'pranata laboratorium',
+    'elektromedis',
+    'refraksionis',
+    'optisien',
+    'optometris',
+    'ortotis',
+    'prostetis',
+    'akupunktur',
+    'transfusi',
+    'kardiovaskuler',
+    'anestesi',
+    'fisikawan medis',
+    'psikolog klinis',
+    'adminkes',
+    'administrator kesehatan',
+    'promosi kesehatan',
+    'promkes',
+    'penyuluh kesehatan',
+    'pembimbing kesehatan kerja',
+    'tenaga kesehatan',
+    'medis'
+  ]
+
+  const isNakes = nakesKeywords.some(keyword => jabatan.includes(keyword))
+  if (isNakes) {
+    return 'Tenaga Kesehatan'
+  }
+
+  // 3. Tenaga Teknis
   return 'Tenaga Teknis'
+}
+
+/**
+ * Menentukan nama subfolder penyimpanan dokumen Google Drive untuk per-pegawai:
+ * Default: Unor Induk saja.
+ * PENGECUALIAN:
+ * 1. Jika Tenaga Guru -> masuk ke folder 'Guru' (bukan ke Dinas Pendidikan)
+ * 2. Jika Unit Organisasi mengandung 'Rumah Sakit' / 'RSUD' -> masuk ke folder 'RUMAH SAKIT UMUM DAERAH PAMBALAH BATUNG' (bukan ke Dinas Kesehatan)
+ * 3. Jika Unit Organisasi mengandung 'Puskesmas' -> masuk ke folder 'Dinas Kesehatan'
+ * 4. Jika Unit Organisasi mengandung 'Kecamatan' atau 'Kelurahan' -> masuk ke folder 'KECAMATAN DAN KELURAHAN'
+ */
+export function getDriveFolderName(item) {
+  if (!item) return 'Umum'
+  const unorNama = String(item['UNOR NAMA'] || item['UNIT KERJA'] || '')
+  const unorLower = unorNama.toLowerCase()
+  const kelompok = getKelompokPegawai(item)
+
+  // 1. Tenaga Guru -> folder 'Guru' (bukan ke Dinas Pendidikan)
+  if (kelompok === 'Tenaga Guru') {
+    return 'Guru'
+  }
+
+  // 2. Rumah Sakit -> folder 'RUMAH SAKIT UMUM DAERAH PAMBALAH BATUNG' (bukan ke Dinas Kesehatan)
+  if (unorLower.includes('rumah sakit') || unorLower.includes('rsud')) {
+    return 'RUMAH SAKIT UMUM DAERAH PAMBALAH BATUNG'
+  }
+
+  // 3. Puskesmas -> folder 'Dinas Kesehatan'
+  if (unorLower.includes('puskesmas')) {
+    return 'Dinas Kesehatan'
+  }
+
+  // 4. Kecamatan atau Kelurahan -> folder 'KECAMATAN DAN KELURAHAN'
+  if (unorLower.includes('kecamatan') || unorLower.includes('kelurahan')) {
+    return 'KECAMATAN DAN KELURAHAN'
+  }
+
+  // 5. Default: Unor Induk
+  const induk = getUnorInduk(unorNama)
+  return induk && induk !== '-' ? induk : 'Umum'
 }

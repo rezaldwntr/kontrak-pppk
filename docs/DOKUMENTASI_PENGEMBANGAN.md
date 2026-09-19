@@ -26,6 +26,19 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - **Pemisahan Logika Auto-Sync & Manual Sync:** Memisahkan evaluasi shouldSync (hanya untuk trigger penyimpanan otomatis saat edit pegawai dengan syarat toggle aktif) dari fungsi kriteria aturan (matchRules). Tombol "Sync Semua Sekarang" kini dapat langsung berjalan menyinkronkan pegawai yang memenuhi filter tanpa terhalang toggle Auto-Sync yang belum diaktifkan.
   - **Pratinjau Jumlah Pegawai Dinamis & Real-time:** Menghubungkan banner pratinjau previewCount langsung ke aturan lokal di layar secara interaktif sehingga pengguna langsung melihat berapa pegawai aktif yang terkena dampak aturan.
   - **Auto-Save Aturan & Dialog Konfirmasi:** Otomatis menyimpan aturan lokal saat tombol "Sync Semua Sekarang" diklik dan menampilkan dialog konfirmasi jumlah total pegawai sebelum proses upload dimulai.
+### Penyempurnaan Pengelompokan Folder Google Drive & Perbaikan Klasifikasi Rumpun Pegawai
+- **Aturan Penamaan Subfolder Google Drive (Mode Per-Pegawai)**:
+  - **Standardisasi Unor Induk:** Mengganti parsing nama folder yang sebelumnya menggunakan unor kepanjangan (akibat pemisah /) menjadi **Unor Induk** yang bersih.
+  - **Pengecualian Khusus Sesuai Regulasi & Kebutuhan Pengarsipan:**
+    1. **Tenaga Guru:** Pegawai dengan rumpun Tenaga Guru otomatis dialihkan ke folder khusus **Guru** (tidak digabung ke Dinas Pendidikan).
+    2. **Rumah Sakit:** Pegawai pada unit organisasi yang memuat kata *Rumah Sakit* atau *RSUD* otomatis masuk ke folder **RUMAH SAKIT UMUM DAERAH PAMBALAH BATUNG** (tidak masuk ke Dinas Kesehatan).
+    3. **Puskesmas:** Seluruh unit Puskesmas otomatis disatukan ke dalam folder **Dinas Kesehatan** tanpa membuat subfolder pecahan untuk masing-masing Puskesmas.
+    4. **Kecamatan dan Kelurahan:** Seluruh unit Kecamatan dan Kelurahan otomatis disatukan ke dalam folder **KECAMATAN DAN KELURAHAN**.
+  - **Pencegahan Folder Ganda (Case-Insensitive Match):** Menambahkan pencocokan nama folder secara *case-insensitive* pada API Google Drive untuk mencegah terbentuknya folder duplikat jika sudah ada folder dengan penulisan huruf besar/kecil sebelumnya.
+- **Perbaikan Bug Klasifikasi Rumpun Pegawai (Guru, Kesehatan, Teknis)**:
+  - **Dukungan Penuh 30 Rumpun Nakes:** Memperbaiki fungsi getKelompokPegawai yang sebelumnya salah mengklasifikasikan tenaga kesehatan seperti *Nutrisionis*, *Terapis Gigi dan Mulut*, *Radiografer*, *Fisioterapis*, *Perekam Medis*, dsb. ke dalam *Tenaga Teknis*. Rumpun kini mengenali seluruh 30 standar jabatan fungsional kesehatan Permenpan-RB & Kemenkes.
+  - **Integrasi Menyeluruh:** Perbaikan rumpun pegawai ini secara otomatis memperbarui keakuratan filter di tabel Data PPPK, kartu statistik di Dashboard, aturan filter Google Drive Sync, serta tag KELOMPOK_PEGAWAI, FUNGSI_PEGAWAI, dan SASARAN_PELAYANAN pada template cetak Word dokumen kontrak.
+  - **Penyempurnaan UI Form Aturan Sync:** Dropdown Unor Induk pada form kriteria aturan sinkronisasi Google Drive kini otomatis terisi daftar pilihan OPD yang tersedia dari database, mencegah salah ketik nilai filter.
 ## [v3.5.0] - 2026-09-01 RILIS KE PRODUCTION
 
 ### Pembaruan UI/UX Menu Perpanjangan & Sidebar

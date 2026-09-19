@@ -44,10 +44,27 @@ export function useGoogleDrive() {
     return data.id
   }
 
-  // Dapatkan atau buat folder
+  // Dapatkan atau buat folder (dengan pencocokan case-insensitive agar tidak duplikat)
   async function getOrCreateFolder(name, parentId) {
     const existing = await findItem(name, parentId, 'application/vnd.google-apps.folder')
     if (existing) return existing.id
+
+    // Fallback: periksa folder di parent secara case-insensitive agar tidak membuat folder ganda
+    try {
+      const headers = await authHeaders()
+      const listRes = await fetch(
+        `${DRIVE_API}/files?q=${encodeURIComponent(`'${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`)}&fields=files(id,name)`,
+        { headers }
+      )
+      const listData = await listRes.json()
+      if (listData.files && listData.files.length > 0) {
+        const match = listData.files.find(f => f.name.trim().toLowerCase() === name.trim().toLowerCase())
+        if (match) return match.id
+      }
+    } catch (e) {
+      console.warn('Case-insensitive folder check error:', e)
+    }
+
     return createFolder(name, parentId)
   }
 

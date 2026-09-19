@@ -2,7 +2,7 @@ import { useDriveStore } from '../stores/driveStore'
 import { useGoogleDrive } from './useGoogleDrive'
 import { db } from '../services/firebase'
 import { collection, addDoc, updateDoc, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
-import { getKelompokPegawai, parseDate } from '../utils/pppkLogic'
+import { getKelompokPegawai, parseDate, getUnorInduk as resolveUnorInduk, getUnorAtasan as resolveUnorAtasan, getDriveFolderName } from '../utils/pppkLogic'
 import { downloadSingleContract } from '../utils/docxGenerator'
 
 export function useDriveSync() {
@@ -24,14 +24,12 @@ export function useDriveSync() {
         case 'kelompok':
           return getKelompokPegawai(item) === rule.value
         case 'unorInduk': {
-          const unorNama = item['UNOR NAMA'] || ''
-          const parts = unorNama.split('/').map(s => s.trim())
-          return parts[0] === rule.value
+          const unorNama = item['UNOR NAMA'] || item['UNIT KERJA'] || ''
+          return resolveUnorInduk(unorNama) === rule.value
         }
         case 'unorAtasan': {
-          const unorNama = item['UNOR NAMA'] || ''
-          const parts = unorNama.split('/').map(s => s.trim())
-          return parts[parts.length - 1] === rule.value
+          const unorNama = item['UNOR NAMA'] || item['UNIT KERJA'] || ''
+          return resolveUnorAtasan(unorNama) === rule.value
         }
         case 'jenisPppk':
           return (item['JENIS PPPK'] || 'PPPK') === rule.value
@@ -59,11 +57,9 @@ export function useDriveSync() {
     return `${nip}_${nama}${suffix}.docx`
   }
 
-  // Dapatkan Unor Induk dari item
+  // Dapatkan folder tujuan Drive per pegawai
   function getUnorInduk(item) {
-    const unorNama = item['UNOR NAMA'] || ''
-    const parts = unorNama.split('/').map(s => s.trim())
-    return parts[0] || 'Umum'
+    return getDriveFolderName(item)
   }
 
   // Parse tanggal dari string
@@ -145,5 +141,5 @@ export function useDriveSync() {
     }
   }
 
-  return { shouldSync, matchRules, syncEmployee, addToQueue, processQueue, getUnorInduk, getFileName }
+  return { shouldSync, matchRules, syncEmployee, addToQueue, processQueue, getUnorInduk, getDriveFolderName, getFileName }
 }
