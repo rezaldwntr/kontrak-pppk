@@ -25,6 +25,31 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Tombol Header Global Terintegrasi (`Header.vue`)**:
   - Tombol aksi `Impor No. Kontrak` disematkan langsung di Header utama saat admin membuka menu **Data PPPK** maupun menu **Perpanjangan Kontrak**.
 
+### Harmonisasi & Peningkatan Desain UI/UX Seluruh Modal Dialog (Modal UX Overhaul)
+- **Modal Detail Pegawai (`DetailModal.vue`)**:
+  - Header diperbarui dengan badge ikon modern, status keaktifan PPPK, serta nama pegawai dan NIP yang jelas di sub-header.
+  - Tab navigasi internal dirombak menjadi **Segmented Pill Tabs** yang konsisten dengan ikon (`Personal`, `Kepegawaian`, `Jabatan & OPD`, `Kontrak & Gaji`).
+  - Mengganti seluruh tombol footer icon-only menjadi tombol aksi berlabel jelas (`Tutup`, `Cetak Kontrak`, `Simpan Perubahan`).
+- **Modal Perpanjangan Kontrak (`ExtendModal.vue`)**:
+  - Header dilengkapi badge ikon perpanjangan dan deskripsi mode (individu / massal).
+  - Pada mode individu: Menampilkan kartu ringkasan identitas pegawai terpilih (Nama, NIP, Golongan, Jenis PPPK).
+  - Pada mode massal: Dilengkapi panduan praktis penomoran kontrak serta tips impor massal via Excel.
+  - Tombol footer diperbarui menjadi tombol teks berlabel informatif (`Batal`, `Proses Perpanjangan (X Pegawai)`).
+- **Modal Unduh & Cetak Dokumen (`PrintPreviewModal.vue` & `DownloadContractModal.vue`)**:
+  - Mengganti input radio konvensional dengan **Kartu Pilihan Interaktif** berikon dan berpenjelasan detail (`Seluruh Halaman`, `Hanya Isi Perjanjian`, `Hanya Lembar Tanda Tangan`).
+  - Menampilkan ringkasan identitas pegawai yang sedang dicetak.
+  - Tombol aksi berlabel jelas (`Batal`, `Unduh Berkas Word (.docx)`).
+- **Modal Impor Data Pegawai (`ImportModal.vue`)**:
+  - Header modern dengan ikon badge dan panduan berkas.
+  - Opsi Jenis PPPK dan Metode Penggabungan Data diubah menjadi kartu seleksi yang mudah dipahami (`Tambah & Gabungkan Data`, `Tulis Ulang & Timpa Seluruh Data`).
+  - Tombol aksi footer lengkap dengan status proses (*Memproses Berkas...*).
+- **Modal Login & Verifikasi Keamanan (`LoginModal.vue` & `PasswordPromptModal.vue`)**:
+  - Menambahkan tombol tutup silang (`x`) di sudut atas modal login.
+  - Mengganti tombol submit ikon gundul menjadi tombol berlabel tegas: `Masuk ke Sistem` disertai indikator loading.
+  - Pada modal verifikasi keamanan: Menambahkan tombol *toggle* mata (*show/hide password*) untuk kenyamanan pengguna saat memasukkan kata sandi.
+- **Global Modal Styles (`styles.css`)**:
+  - Memperbarui gaya tombol tutup modal (`.close-btn`) dengan transisi halus dan latar melengkung saat di-hover.
+
 ## [v3.6.0] - 2026-09-19 (Staging)
 
 ### Harmonisasi & Peningkatan Desain UI/UX Seluruh Menu (User-Friendly Overhaul)

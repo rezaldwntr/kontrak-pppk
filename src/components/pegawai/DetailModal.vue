@@ -1,17 +1,52 @@
 <template>
   <div class="modal-backdrop open" v-if="isOpen" @click.self="emit('close')">
     <div class="modal-container" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-      <div class="modal-header">
-        <h3><i class="fa-solid fa-address-card"></i> Detail Data PPPK</h3>
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-header-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(45, 122, 241, 0.12); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fa-solid fa-address-card"></i>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">Detail Data PPPK</h3>
+              <span v-if="editForm['STATUS KEAKTIFAN PPPK']" class="badge" :style="{
+                background: editForm['STATUS KEAKTIFAN PPPK'] === 'Aktif' ? 'rgba(30, 170, 110, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                color: editForm['STATUS KEAKTIFAN PPPK'] === 'Aktif' ? '#1eaa6e' : '#ef4444',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: '700'
+              }">
+                {{ editForm['STATUS KEAKTIFAN PPPK'] }}
+              </span>
+            </div>
+            <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-muted);" v-if="editForm['NAMA']">
+              <strong>{{ editForm['NAMA'] }}</strong> · NIP: {{ editForm['NIP BARU'] || '-' }}
+            </p>
+          </div>
+        </div>
         <button class="close-btn" @click="emit('close')" aria-label="Tutup">&times;</button>
       </div>
       
-      <div class="modal-body">
-        <div class="modal-tabs" style="margin-bottom: 24px;">
-          <div class="tab-btn" :class="{ active: activeTab === 'personal' }" @click="activeTab = 'personal'">Personal</div>
-          <div class="tab-btn" :class="{ active: activeTab === 'kepegawaian' }" @click="activeTab = 'kepegawaian'">Kepegawaian</div>
-          <div class="tab-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">Jabatan & Kerja</div>
-          <div class="tab-btn" v-if="getStatusPppk(editForm) === 'Aktif'" :class="{ active: activeTab === 'kontrak' }" @click="activeTab = 'kontrak'">Kontrak & Gaji PPPK</div>
+      <div class="modal-body" style="padding: 20px 24px;">
+        <!-- Segmented Tab Pills -->
+        <div class="modal-tabs-segmented" style="display: flex; gap: 6px; background: var(--bg-primary); padding: 6px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 22px;">
+          <button type="button" class="tab-pill-btn" :class="{ active: activeTab === 'personal' }" @click="activeTab = 'personal'">
+            <i class="fa-solid fa-user"></i>
+            <span>Personal</span>
+          </button>
+          <button type="button" class="tab-pill-btn" :class="{ active: activeTab === 'kepegawaian' }" @click="activeTab = 'kepegawaian'">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Kepegawaian</span>
+          </button>
+          <button type="button" class="tab-pill-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">
+            <i class="fa-solid fa-briefcase"></i>
+            <span>Jabatan & OPD</span>
+          </button>
+          <button type="button" v-if="getStatusPppk(editForm) === 'Aktif'" class="tab-pill-btn" :class="{ active: activeTab === 'kontrak' }" @click="activeTab = 'kontrak'">
+            <i class="fa-solid fa-file-contract"></i>
+            <span>Kontrak & Gaji</span>
+          </button>
         </div>
 
         <!-- TAB 1: PERSONAL -->
@@ -277,16 +312,32 @@
         </div>
       </div>
       
-      <div class="modal-footer">
-        <button class="btn btn-outline btn-icon-only" @click="emit('close')" title="Batal">
-          <i class="fa-solid fa-xmark"></i>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border-color);">
+        <button class="btn btn-outline" @click="emit('close')">
+          Tutup
         </button>
-        <button class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSave" title="Simpan Perubahan">
-          <i class="fa-solid fa-floppy-disk"></i>
-        </button>
-        <button class="btn btn-primary btn-icon-only" v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" @click="emit('print', editForm)" title="Cetak / Unduh Kontrak">
-          <i class="fa-solid fa-print"></i>
-        </button>
+        <div style="display: flex; gap: 10px;">
+          <button 
+            type="button"
+            class="btn btn-outline" 
+            v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" 
+            @click="emit('print', editForm)"
+            title="Cetak atau unduh dokumen perjanjian kerja"
+          >
+            <i class="fa-solid fa-print" style="margin-right: 6px; color: var(--primary-color);"></i>
+            <span>Cetak Kontrak</span>
+          </button>
+          <button 
+            type="button"
+            class="btn btn-primary" 
+            style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" 
+            @click="handleSave"
+            title="Simpan perubahan data pegawai"
+          >
+            <i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>
+            <span>Simpan Perubahan</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -541,5 +592,29 @@ const handleSave = () => {
 </script>
 
 <style scoped>
-/* Scoped overrides if needed, relies on styles.css */
+.tab-pill-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-pill-btn:hover {
+  color: var(--text-dark);
+  background: rgba(0, 0, 0, 0.04);
+}
+.tab-pill-btn.active {
+  background: var(--bg-secondary, #ffffff);
+  color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
 </style>

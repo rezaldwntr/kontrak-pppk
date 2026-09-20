@@ -2,8 +2,18 @@
   <div v-if="isOpen" class="modal-backdrop open" style="z-index: 2000;">
     <div class="modal-container responsive-modal">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-file-word" style="color: #2563eb;"></i> Unduh Perjanjian Kerja</h3>
-        <button class="close-btn" @click="emit('close')"><i class="fa-solid fa-xmark"></i></button>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-header-icon" style="width: 38px; height: 38px; border-radius: 10px; background: rgba(37, 99, 235, 0.12); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+            <i class="fa-solid fa-file-word"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">Unduh Perjanjian Kerja</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
+              {{ items.length === 1 ? 'Generate dan unduh dokumen perjanjian kerja PPPK' : `Generate dokumen serentak untuk ${items.length} pegawai terpilih` }}
+            </p>
+          </div>
+        </div>
+        <button class="close-btn" @click="emit('close')" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
         <!-- Info pegawai -->
