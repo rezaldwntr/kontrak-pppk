@@ -9,6 +9,12 @@
     </div>
 
     <LoginModal />
+    <ImportNomorKontrakModal
+      v-if="pegawaiStore.showImportNomorKontrakModal"
+      :show="pegawaiStore.showImportNomorKontrakModal"
+      @close="pegawaiStore.showImportNomorKontrakModal = false"
+      @saved="pegawaiStore.showImportNomorKontrakModal = false"
+    />
   </div>
 </template>
 
@@ -16,12 +22,15 @@
 import { computed, onMounted, onUnmounted, watch, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/authStore'
+import { usePegawaiStore } from './stores/pegawaiStore'
 import Sidebar from './components/layout/Sidebar.vue'
 import Header from './components/layout/Header.vue'
 import LoginModal from './components/auth/LoginModal.vue'
+import ImportNomorKontrakModal from './components/pegawai/ImportNomorKontrakModal.vue'
 import { customSwal } from './utils/swal'
 
 const authStore = useAuthStore()
+const pegawaiStore = usePegawaiStore()
 const route = useRoute()
 const router = useRouter()
 const isSidebarCollapsed = ref(false)

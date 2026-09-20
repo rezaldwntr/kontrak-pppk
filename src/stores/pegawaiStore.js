@@ -3,6 +3,7 @@ import { db } from '../services/firebase'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import LZString from 'lz-string'
 import { initialMockData } from '../utils/mockData'
+import { toRoman, cleanNomorKontrakTag } from '../utils/pppkLogic'
 
 export const usePegawaiStore = defineStore('pegawai', {
   state: () => ({
@@ -11,6 +12,7 @@ export const usePegawaiStore = defineStore('pegawai', {
     isLoading: false,
     filterDashboard: 'all',
     showImportModal: false,
+    showImportNomorKontrakModal: false,
   }),
   actions: {
     async deleteAllPegawai() {
@@ -200,15 +202,41 @@ export const usePegawaiStore = defineStore('pegawai', {
               keterangan: isSingle ? 'Perpanjangan Individu' : 'Perpanjangan Otomatis'
             })
             
+            // Buat atau perbarui riwayat kontrak multi-periode
+            const currentHistory = Array.isArray(item.RIWAYAT_KONTRAK) ? [...item.RIWAYAT_KONTRAK] : []
+            if (currentHistory.length === 0) {
+              currentHistory.push({
+                periode: 1,
+                jenis: 'Kontrak Pertama (Awal)',
+                nomorKontrak: cleanNomorKontrakTag(item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || ''),
+                nomorSk: item['NOMOR SK CPNS'] || '',
+                tanggalSk: item['TANGGAL SK CPNS'] || '',
+                tmtAwal: item['TMT CPNS'] || oldTmt,
+                tmtAkhir: item['AKHIR KONTRAK AKTIF'] || ''
+              })
+            }
+            const nextPeriodNum = currentHistory.length + 1
+            const newNomorKontrak = isSingle ? cleanNomorKontrakTag(formData.nomorKontrakBaru || '') : ''
+            currentHistory.push({
+              periode: nextPeriodNum,
+              jenis: `Perpanjangan ${toRoman(nextPeriodNum - 1)}`,
+              nomorKontrak: newNomorKontrak,
+              nomorSk: isSingle ? (formData.nomorSk || '') : '',
+              tanggalSk: isSingle ? (formData.tanggalSk || '') : '',
+              tmtAwal: formData.newTmtDate,
+              tmtAkhir: (isSingle && formData.tanggalAkhir) ? formData.tanggalAkhir : ''
+            })
+
             const updatedItem = {
               ...item,
               'AWAL KONTRAK AKTIF': formData.newTmtDate,
-              'NOMOR KONTRAK AKTIF': isSingle ? (formData.nomorKontrakBaru || '') : '',
+              'NOMOR KONTRAK AKTIF': newNomorKontrak,
               'NOMOR SK PERPANJANGAN': isSingle ? (formData.nomorSk || '') : '',
               'TANGGAL SK PERPANJANGAN': isSingle ? (formData.tanggalSk || '') : '',
               STATUS_PERPANJANGAN: 'Selesai Diperpanjang',
               'STATUS KEAKTIFAN PPPK': 'Aktif',
-              FORCE_AKTIF: true
+              FORCE_AKTIF: true,
+              RIWAYAT_KONTRAK: currentHistory
             }
             
             if (isSingle && formData.gajiPokok) {
@@ -270,13 +298,19 @@ export const usePegawaiStore = defineStore('pegawai', {
           (p['NIP BARU'] && p['NIP BARU'] === historyItem.nip)
         )
         if (pIndex !== -1) {
-          this.pppkData[pIndex]['AWAL KONTRAK AKTIF'] = historyItem.kontrakLama
-          // Hapus flag FORCE_AKTIF dan STATUS_PERPANJANGAN agar status kembali dihitung otomatis
-          delete this.pppkData[pIndex]['FORCE_AKTIF']
-          delete this.pppkData[pIndex]['STATUS_PERPANJANGAN']
+          const emp = this.pppkData[pIndex]
+          emp['AWAL KONTRAK AKTIF'] = historyItem.kontrakLama
+          delete emp['FORCE_AKTIF']
+          delete emp['STATUS_PERPANJANGAN']
           
-          // Jika TMT Lama sudah habis (misal 2021-2025), maka tanpa FORCE_AKTIF
-          // tabel dan sistem akan otomatis mengembalikannya menjadi "Kontrak Habis"
+          // Revert riwayat kontrak terakhir
+          if (Array.isArray(emp.RIWAYAT_KONTRAK) && emp.RIWAYAT_KONTRAK.length > 1) {
+            emp.RIWAYAT_KONTRAK.pop()
+            const prev = emp.RIWAYAT_KONTRAK[emp.RIWAYAT_KONTRAK.length - 1]
+            emp['NOMOR KONTRAK AKTIF'] = prev?.nomorKontrak || ''
+            emp['NOMOR SK PERPANJANGAN'] = prev?.nomorSk || ''
+            emp['TANGGAL SK PERPANJANGAN'] = prev?.tanggalSk || ''
+          }
         }
 
         // Remove from history

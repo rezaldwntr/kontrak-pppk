@@ -2,6 +2,76 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.7.0] - 2026-09-20 (Production & Staging)
+
+### Fitur Impor Nomor Kontrak Massal & Riwayat Kontrak Multi-Periode (Contract Versioning)
+- **Impor Nomor Kontrak Massal via Excel (`ImportNomorKontrakModal.vue`)**:
+  - Menyediakan modal khusus untuk memperbarui nomor kontrak pegawai secara kolektif dalam hitungan detik.
+  - Format Excel sangat sederhana: cukup membutuhkan 2 kolom utama (`NIP` dan `NOMOR KONTRAK`), serta mendukung kolom opsional (`NOMOR SK` dan `TANGGAL SK`).
+  - Dilengkapi tombol **Unduh Format Contoh** (`downloadTemplateNomorKontrak`) yang langsung menghasilkan template file Excel siap pakai.
+  - Dropzone unggah file interaktif dengan drag-and-drop dan deteksi otomatis kolom fleksibel (`NIP`, `NIP BARU`, `NOMOR KONTRAK`, `NO KONTRAK`, `NOMOR PERJANJIAN`).
+  - Fitur **Pratinjau Cerdas (Smart Preview)**: Menampilkan statistik jumlah baris, NIP yang cocok, NIP yang tidak ditemukan di database, serta tabel pratinjau 5 baris pertama sebelum dieksekusi.
+- **Deteksi Target Periode Kontrak Fleksibel**:
+  - **Otomatis Sesuai Status Aktif Pegawai (Rekomendasi)**: Sistem secara otomatis mengevaluasi status masing-masing pegawai. Pegawai yang belum diperpanjang akan diperbarui nomor kontrak awalnya, sedangkan yang sudah diperpanjang akan masuk ke nomor kontrak perpanjangan aktifnya.
+  - **Khusus Kontrak Pertama (Awal)**: Dikhususkan untuk melengkapi nomor kontrak awal (periode 1) yang masih kosong di database.
+  - **Khusus Perpanjangan Kontrak Baru**: Dikhususkan untuk mengisi nomor kontrak baru bagi pegawai yang baru saja diproses perpanjangannya.
+- **Sistem Penyimpanan Riwayat Kontrak Multi-Periode (`RIWAYAT_KONTRAK`)**:
+  - Memastikan nomor kontrak lama (misal nomor 19) tidak hilang saat perpanjangan kontrak dilakukan ke nomor baru (misal nomor 27).
+  - Menyimpan array `RIWAYAT_KONTRAK` pada profil data pegawai yang mencakup nomor periode, jenis ("Kontrak Pertama", "Perpanjangan I", dst), nomor kontrak, nomor SK, tanggal SK, serta rentang TMT.
+  - Integrasi otomatis saat melakukan **Perpanjangan Massal maupun Individu** di `pegawaiStore.batchExtend` dan pemulihan otomatis saat pembatalan di `pegawaiStore.cancelExtension`.
+- **Pembaruan Tampilan Modal Detail Pegawai (`DetailModal.vue`)**:
+  - Pada Tab **Kontrak & Gaji**, ditambahkan tabel **Riwayat Kontrak & Perpanjangan** yang menampilkan riwayat lengkap seluruh periode kontrak pegawai, nomor kontrak masing-masing periode, rentang TMT, dan status badge (Aktif / Arsip).
+  - Sinkronisasi otomatis dua arah: pengeditan nomor kontrak aktif pada formulir modal langsung menyelaraskan entri kontrak aktif pada riwayat.
+- **Tombol Header Global Terintegrasi (`Header.vue`)**:
+  - Tombol aksi `Impor No. Kontrak` disematkan langsung di Header utama saat admin membuka menu **Data PPPK** maupun menu **Perpanjangan Kontrak**.
+
+### Standardisasi Format Nomor Kontrak (800.1.2.5/[No.Kontrak]/BKPSDM) & Integrasi Tag Dokumen Word
+- **Format Penomoran Baku (`800.1.2.5/<Nomor>/BKPSDM`)**:
+  - Seluruh tampilan aplikasi (tabel data pegawai, modal perpanjangan, modal detail profil, tabel riwayat perpanjangan multi-periode, dan pratinjau impor) kini menstandarkan penulisan nomor kontrak ke format resmi: `800.1.2.5/<Nomor>/BKPSDM`.
+  - Pada tabel pegawai (`PegawaiTable.vue`), nomor kontrak lengkap ditampilkan dengan ikon dokumen di bawah tanggal TMT jika pegawai sudah memiliki nomor kontrak.
+- **Kemudahan Impor Excel & Penginputan (Cukup Nomor Tengah Saja)**:
+  - Pada template Excel impor nomor kontrak (`downloadTemplateNomorKontrak`), kolom nomor kontrak diisi nomor intinya saja (contoh: `19` atau `27`).
+  - Sistem otomatis mengekstrak nomor tengah secara cerdas (`cleanNomorKontrakTag`), baik admin hanya memasukkan angka `19` maupun mem-paste format utuh `800.1.2.5/19/BKPSDM`.
+  - Pada formulir input modal (`DetailModal.vue` dan `ExtendModal.vue`), input didesain menggunakan input-group modern dengan awalan statis `800.1.2.5/` dan akhiran `/BKPSDM`, sehingga admin cukup mengetikkan nomor tengahnya tanpa khawatir salah format pemisah/garis miring.
+- **Injeksi Tag Dokumen Perjanjian Word (`{{NO_KONTRAK_BARU}}`) Tanpa Duplikasi**:
+  - Pada saat dokumen kontrak Word di-generate (`docxGenerator.js`), nilai yang disuntikkan ke tag `{{NO_KONTRAK_BARU}}` dipastikan **HANYA nomor tengahnya saja** (misal: `19`).
+  - Hal ini mencegah duplikasi teks format karena pada template berkas kontrak Word aslinya sudah tertulis teks statis `800.1.2.5/{{NO_KONTRAK_BARU}}/BKPSDM`.
+
+### Perbaikan Resolusi Kolom Golongan BKN/SIASN (`ExtendModal.vue`, `DetailModal.vue`, `pppkLogic.js`, `gajiTable.js`)
+- **Penyebab Tampilan "Golongan -"**:
+  - File data impor BKN/SIASN menyimpan golongan pada kolom `GOL AKHIR NAMA` (contoh: `"Golongan IX"` atau `"IX"`), `GOL RUANG`, `GOLONGAN AKHIR`, atau `GOL AKHIR ID`, sementara properti `GOLONGAN` kosong/tidak terdefinisi pada data mentah sebelum diedit manual.
+  - Komponen kartu pegawai pada Modal Perpanjangan (`ExtendModal.vue`) sebelumnya hanya membaca `currentPegawai['GOLONGAN']`, sehingga menghasilkan fallback `"Golongan -"`.
+- **Solusi & Standardisasi**:
+  - Menambahkan fungsi pembantu terpusat `getGolonganPegawai(item)` di `src/utils/pppkLogic.js` yang otomatis memeriksa semua kemungkinan alias kolom BKN (`GOLONGAN`, `GOL AKHIR NAMA`, `GOL RUANG`, `GOLONGAN AKHIR`, `GOL AKHIR ID`, `GOL AWAL NAMA`) dan menstandarisasi teks dengan awalan `"Golongan <Angka/Romawi>"`.
+  - Memperbarui `ExtendModal.vue` untuk memanggil `getGolonganPegawai(currentPegawai)` dan menampilkannya dalam format pill badge rapi serta menyertakan nama jabatan pegawai (`JABATAN NAMA`).
+  - Memperbarui `DetailModal.vue` agar saat modal dibuka, input Golongan otomatis terisi dengan resolusi BKN jika sebelumnya masih kosong atau bernilai `'-'`.
+  - Memperbarui `gajiTable.js` (`calculateGajiFromItem`) untuk mendukung seluruh variasi kolom BKN tersebut dalam kalkulasi MKG dan gaji pokok.
+
+### Harmonisasi & Peningkatan Desain UI/UX Seluruh Modal Dialog (Modal UX Overhaul)
+- **Modal Detail Pegawai (`DetailModal.vue`)**:
+  - Header diperbarui dengan badge ikon modern, status keaktifan PPPK, serta nama pegawai dan NIP yang jelas di sub-header.
+  - Tab navigasi internal dirombak menjadi **Segmented Pill Tabs** yang konsisten dengan ikon (`Personal`, `Kepegawaian`, `Jabatan & OPD`, `Kontrak & Gaji`).
+  - Mengganti seluruh tombol footer icon-only menjadi tombol aksi berlabel jelas (`Tutup`, `Cetak Kontrak`, `Simpan Perubahan`).
+- **Modal Perpanjangan Kontrak (`ExtendModal.vue`)**:
+  - Header dilengkapi badge ikon perpanjangan dan deskripsi mode (individu / massal).
+  - Pada mode individu: Menampilkan kartu ringkasan identitas pegawai terpilih (Nama, NIP, Golongan, Jenis PPPK).
+  - Pada mode massal: Dilengkapi panduan praktis penomoran kontrak serta tips impor massal via Excel.
+  - Tombol footer diperbarui menjadi tombol teks berlabel informatif (`Batal`, `Proses Perpanjangan (X Pegawai)`).
+- **Modal Unduh & Cetak Dokumen (`PrintPreviewModal.vue` & `DownloadContractModal.vue`)**:
+  - Mengganti input radio konvensional dengan **Kartu Pilihan Interaktif** berikon dan berpenjelasan detail (`Seluruh Halaman`, `Hanya Isi Perjanjian`, `Hanya Lembar Tanda Tangan`).
+  - Menampilkan ringkasan identitas pegawai yang sedang dicetak.
+  - Tombol aksi berlabel jelas (`Batal`, `Unduh Berkas Word (.docx)`).
+- **Modal Impor Data Pegawai (`ImportModal.vue`)**:
+  - Header modern dengan ikon badge dan panduan berkas.
+  - Opsi Jenis PPPK dan Metode Penggabungan Data diubah menjadi kartu seleksi yang mudah dipahami (`Tambah & Gabungkan Data`, `Tulis Ulang & Timpa Seluruh Data`).
+  - Tombol aksi footer lengkap dengan status proses (*Memproses Berkas...*).
+- **Modal Login & Verifikasi Keamanan (`LoginModal.vue` & `PasswordPromptModal.vue`)**:
+  - Menambahkan tombol tutup silang (`x`) di sudut atas modal login.
+  - Mengganti tombol submit ikon gundul menjadi tombol berlabel tegas: `Masuk ke Sistem` disertai indikator loading.
+  - Pada modal verifikasi keamanan: Menambahkan tombol *toggle* mata (*show/hide password*) untuk kenyamanan pengguna saat memasukkan kata sandi.
+- **Global Modal Styles (`styles.css`)**:
+  - Memperbarui gaya tombol tutup modal (`.close-btn`) dengan transisi halus dan latar melengkung saat di-hover.
+
 ## [v3.6.0] - 2026-09-19 (Staging)
 
 ### Harmonisasi & Peningkatan Desain UI/UX Seluruh Menu (User-Friendly Overhaul)
@@ -32,7 +102,7 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Pengaturan Aplikasi (`SettingsView.vue`)**:
   - Mengganti halaman pengaturan satu gulir panjang menjadi antarmuka 3 sub-tab segmented:
     1. **Pihak Pertama**: Formulir bersih dengan panduan kolom dan tombol `Simpan Pihak Pertama`.
-    2. **Template Master Dokumen**: Kartu unggah master F4 Penuh Waktu dan Paruh Waktu dengan status terpasang, disertai tabel referensi tag template yang dilengkapi **kolom pencarian tag langsung** dan **tombol salin tag satu-klik** ke clipboard.
+    2. **Template Master Dokumen**: Kartu unggah master F4 Penuh Waktu dan Paruh Waktu dengan status terpasang, disertai tabel referensi tag template yang dilengkapi **kolom pencarian tag langsung** dan **tombol salin tag satu-klik** ke clipboard. Memperbaiki masalah horizontal scroll pada tampilan layar ponsel/mobile (`overflow-x: auto !important` dan `min-width: 620px`), kolom SALIN dibuat mengambang (*sticky column*) di tepi kanan, serta teks tag kini dapat langsung diketuk (*tap-to-copy*) untuk menyalin instan.
     3. **Keamanan & Akun**: Kartu aksi ganti email dan password dengan tombol aksi berlabel jelas (`Ubah Email Akun` dan `Ubah Kata Sandi`).
 - **Sidebar Global (`Sidebar.vue`)**:
   - Memperbarui tombol keluar (*logout*) agar menampilkan teks `Keluar` saat sidebar terbuka dan otomatis beralih ke ikon saat sidebar diciutkan (*collapsed*).

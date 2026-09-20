@@ -3,7 +3,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { db } from '../services/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { calculateContractPeriod, parseDate, getKelompokPegawai } from './pppkLogic'
+import { calculateContractPeriod, parseDate, getKelompokPegawai, cleanNomorKontrakTag } from './pppkLogic'
 import { calculateGajiFromItem } from './gajiTable'
 
 // ===== Helper Functions =====
@@ -149,8 +149,8 @@ function buildTagData(item, pihakPertama, tanggalKontrak = null) {
     NAMA_BUPATI: (pihakPertama?.nama || '').toUpperCase(),
     JABATAN_BUPATI: pihakPertama?.jabatan || 'Bupati',
 
-    // Data Kontrak
-    NO_KONTRAK_BARU: item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || '',
+    // Data Kontrak (Hanya nilai tengah saja, misal: 19 atau 27)
+    NO_KONTRAK_BARU: cleanNomorKontrakTag(item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || ''),
 
     // Data Pegawai
     NAMA_PEGAWAI: getNamaLengkap(item),

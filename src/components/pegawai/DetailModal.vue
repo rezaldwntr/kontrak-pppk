@@ -1,17 +1,52 @@
 <template>
   <div class="modal-backdrop open" v-if="isOpen" @click.self="emit('close')">
     <div class="modal-container" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
-      <div class="modal-header">
-        <h3><i class="fa-solid fa-address-card"></i> Detail Data PPPK</h3>
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="modal-header-icon" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(45, 122, 241, 0.12); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fa-solid fa-address-card"></i>
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">Detail Data PPPK</h3>
+              <span v-if="editForm['STATUS KEAKTIFAN PPPK']" class="badge" :style="{
+                background: editForm['STATUS KEAKTIFAN PPPK'] === 'Aktif' ? 'rgba(30, 170, 110, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                color: editForm['STATUS KEAKTIFAN PPPK'] === 'Aktif' ? '#1eaa6e' : '#ef4444',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '0.72rem',
+                fontWeight: '700'
+              }">
+                {{ editForm['STATUS KEAKTIFAN PPPK'] }}
+              </span>
+            </div>
+            <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-muted);" v-if="editForm['NAMA']">
+              <strong>{{ editForm['NAMA'] }}</strong> · NIP: {{ editForm['NIP BARU'] || '-' }}
+            </p>
+          </div>
+        </div>
         <button class="close-btn" @click="emit('close')" aria-label="Tutup">&times;</button>
       </div>
       
-      <div class="modal-body">
-        <div class="modal-tabs" style="margin-bottom: 24px;">
-          <div class="tab-btn" :class="{ active: activeTab === 'personal' }" @click="activeTab = 'personal'">Personal</div>
-          <div class="tab-btn" :class="{ active: activeTab === 'kepegawaian' }" @click="activeTab = 'kepegawaian'">Kepegawaian</div>
-          <div class="tab-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">Jabatan & Kerja</div>
-          <div class="tab-btn" v-if="getStatusPppk(editForm) === 'Aktif'" :class="{ active: activeTab === 'kontrak' }" @click="activeTab = 'kontrak'">Kontrak & Gaji PPPK</div>
+      <div class="modal-body" style="padding: 20px 24px;">
+        <!-- Segmented Tab Pills -->
+        <div class="modal-tabs-segmented" style="display: flex; gap: 6px; background: var(--bg-primary); padding: 6px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 22px;">
+          <button type="button" class="tab-pill-btn" :class="{ active: activeTab === 'personal' }" @click="activeTab = 'personal'">
+            <i class="fa-solid fa-user"></i>
+            <span>Personal</span>
+          </button>
+          <button type="button" class="tab-pill-btn" :class="{ active: activeTab === 'kepegawaian' }" @click="activeTab = 'kepegawaian'">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Kepegawaian</span>
+          </button>
+          <button type="button" class="tab-pill-btn" :class="{ active: activeTab === 'jabatan' }" @click="activeTab = 'jabatan'">
+            <i class="fa-solid fa-briefcase"></i>
+            <span>Jabatan & OPD</span>
+          </button>
+          <button type="button" v-if="getStatusPppk(editForm) === 'Aktif'" class="tab-pill-btn" :class="{ active: activeTab === 'kontrak' }" @click="activeTab = 'kontrak'">
+            <i class="fa-solid fa-file-contract"></i>
+            <span>Kontrak & Gaji</span>
+          </button>
         </div>
 
         <!-- TAB 1: PERSONAL -->
@@ -200,7 +235,22 @@
           <div class="form-grid">
             <div class="form-group" style="grid-column: span 2;">
               <label>Nomor Kontrak Aktif <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Baru</span></label>
-              <input type="text" v-model="editForm['NOMOR KONTRAK AKTIF']" class="form-control">
+              <div style="display: flex; align-items: center;">
+                <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-right: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 6px 0 0 6px; user-select: none;">800.1.2.5/</span>
+                <input 
+                  type="text" 
+                  :value="editNomorKontrakTengah" 
+                  @input="handleNomorKontrakInput" 
+                  class="form-control" 
+                  style="border-radius: 0; text-align: center; font-weight: 700;" 
+                  placeholder="Nomor (misal: 19)"
+                >
+                <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 0 6px 6px 0; user-select: none;">/BKPSDM</span>
+              </div>
+              <small style="color: var(--text-muted); font-size: 0.76rem; display: block; margin-top: 4px;">
+                Format lengkap pada aplikasi: <strong style="color: var(--primary-color);">{{ formatNomorKontrakDisplay(editNomorKontrakTengah) }}</strong>
+                <span style="color: var(--text-muted); margin-left: 4px;">(Tag Word hanya mengisi: <code>{{ editNomorKontrakTengah || '-' }}</code>)</span>
+              </small>
             </div>
             <div class="form-group">
               <label>Awal Kontrak Aktif / TMT</label>
@@ -215,19 +265,94 @@
               <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" disabled>
             </div>
           </div>
+
+          <!-- Riwayat Kontrak & Perpanjangan -->
+          <div class="riwayat-kontrak-section" style="margin-top: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <label style="font-weight: 700; font-size: 0.88rem; color: var(--text-dark); margin: 0;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-color); margin-right: 6px;"></i>
+                Riwayat Kontrak & Perpanjangan
+              </label>
+              <span v-if="riwayatKontrakList.length > 0" style="font-size: 0.75rem; color: var(--text-muted);">
+                {{ riwayatKontrakList.length }} Periode Tercatat
+              </span>
+            </div>
+
+            <div v-if="riwayatKontrakList.length === 0" style="text-align: center; padding: 14px; background: var(--bg-secondary); border-radius: 6px; color: var(--text-muted); font-size: 0.82rem; border: 1px dashed var(--border-color);">
+              Belum ada riwayat perpanjangan (masih menggunakan periode kontrak awal).
+            </div>
+
+            <div v-else style="border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+                <thead style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                  <tr>
+                    <th style="padding: 8px 10px; text-align: left; font-weight: 700;">Periode</th>
+                    <th style="padding: 8px 10px; text-align: left; font-weight: 700;">Nomor Kontrak</th>
+                    <th style="padding: 8px 10px; text-align: left; font-weight: 700;">TMT Kontrak</th>
+                    <th style="padding: 8px 10px; text-align: center; font-weight: 700;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(rk, idx) in riwayatKontrakList" :key="idx" style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 8px 10px; font-weight: 600;">
+                      {{ rk.jenis || `Periode ${rk.periode}` }}
+                    </td>
+                    <td style="padding: 8px 10px; font-family: monospace; font-weight: 600; color: var(--text-dark);">
+                      {{ formatNomorKontrakDisplay(rk.nomorKontrak) }}
+                    </td>
+                    <td style="padding: 8px 10px; color: var(--text-muted); font-size: 0.75rem;">
+                      {{ rk.tmtAwal ? formatDateDisplay(rk.tmtAwal) : '-' }}
+                      <span v-if="rk.tmtAkhir"> s/d {{ formatDateDisplay(rk.tmtAkhir) }}</span>
+                    </td>
+                    <td style="padding: 8px 10px; text-align: center;">
+                      <span 
+                        class="badge" 
+                        :style="{
+                          background: idx === riwayatKontrakList.length - 1 ? 'rgba(30, 170, 110, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                          color: idx === riwayatKontrakList.length - 1 ? '#1eaa6e' : '#6b7280',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: '600'
+                        }"
+                      >
+                        {{ idx === riwayatKontrakList.length - 1 ? 'Aktif' : 'Arsip' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
       
-      <div class="modal-footer">
-        <button class="btn btn-outline btn-icon-only" @click="emit('close')" title="Batal">
-          <i class="fa-solid fa-xmark"></i>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border-color);">
+        <button class="btn btn-outline" @click="emit('close')">
+          Tutup
         </button>
-        <button class="btn btn-primary btn-icon-only" style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" @click="handleSave" title="Simpan Perubahan">
-          <i class="fa-solid fa-floppy-disk"></i>
-        </button>
-        <button class="btn btn-primary btn-icon-only" v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" @click="emit('print', editForm)" title="Cetak / Unduh Kontrak">
-          <i class="fa-solid fa-print"></i>
-        </button>
+        <div style="display: flex; gap: 10px;">
+          <button 
+            type="button"
+            class="btn btn-outline" 
+            v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" 
+            @click="emit('print', editForm)"
+            title="Cetak atau unduh dokumen perjanjian kerja"
+          >
+            <i class="fa-solid fa-print" style="margin-right: 6px; color: var(--primary-color);"></i>
+            <span>Cetak Kontrak</span>
+          </button>
+          <button 
+            type="button"
+            class="btn btn-primary" 
+            style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" 
+            @click="handleSave"
+            title="Simpan perubahan data pegawai"
+          >
+            <i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>
+            <span>Simpan Perubahan</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -236,7 +361,7 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { calculateContractPeriod, parseDate, getStatusPppk } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate, getStatusPppk, getGolonganPegawai, cleanNomorKontrakTag, formatNomorKontrakDisplay } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -248,6 +373,13 @@ const emit = defineEmits(['close', 'print', 'save'])
 const authStore = useAuthStore()
 const activeTab = ref('personal')
 const editForm = ref({})
+const editNomorKontrakTengah = ref('')
+
+const handleNomorKontrakInput = (e) => {
+  const cleaned = cleanNomorKontrakTag(e.target.value)
+  editNomorKontrakTengah.value = cleaned
+  editForm.value['NOMOR KONTRAK AKTIF'] = cleaned
+}
 const gajiInfo = ref({ golongan: '', mkg: 0, gaji: null })
 
 const formatDateToInput = (dateObj) => {
@@ -316,14 +448,17 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['STATUS KEAKTIFAN PPPK']) editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif'
     
     if (!editForm.value['JENIS JABATAN']) editForm.value['JENIS JABATAN'] = 'Jabatan Fungsional'
-    if (!editForm.value['TMT JABATAN']) editForm.value['TMT JABATAN'] = ''
-    if (!editForm.value['GOLONGAN']) editForm.value['GOLONGAN'] = editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || ''
+    if (!editForm.value['GOLONGAN'] || editForm.value['GOLONGAN'] === '-') {
+      const gol = getGolonganPegawai(editForm.value)
+      editForm.value['GOLONGAN'] = gol !== '-' ? gol : (editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || '')
+    }
     if (!editForm.value['INSTANSI INDUK']) editForm.value['INSTANSI INDUK'] = 'Pemerintah Kab. Hulu Sungai Utara'
     if (!editForm.value['TINGKAT PENDIDIKAN']) editForm.value['TINGKAT PENDIDIKAN'] = editForm.value['TINGKAT PENDIDIKAN NAMA'] || ''
     if (!editForm.value['PENDIDIKAN TERAKHIR']) editForm.value['PENDIDIKAN TERAKHIR'] = editForm.value['PENDIDIKAN NAMA'] || ''
     if (!editForm.value['TAHUN LULUS']) editForm.value['TAHUN LULUS'] = ''
     if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
-    if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
+    editNomorKontrakTengah.value = cleanNomorKontrakTag(editForm.value['NOMOR KONTRAK AKTIF'] || editForm.value['NO_KONTRAK'] || '')
+    editForm.value['NOMOR KONTRAK AKTIF'] = editNomorKontrakTengah.value
     
     // Hanya set AWAL KONTRAK AKTIF dari TMT CPNS jika belum ada (belum pernah diperpanjang)
     if (!editForm.value['AWAL KONTRAK AKTIF'] && tmtDate) {
@@ -424,13 +559,88 @@ const formatRupiahDisplay = (amount) => {
   return Number(amount).toLocaleString('id-ID')
 }
 
+// Format tanggal untuk tampilan tabel riwayat
+const formatDateDisplay = (dateStr) => {
+  if (!dateStr) return '-'
+  try {
+    const d = parseDate(dateStr)
+    if (!d || isNaN(d.getTime())) return dateStr
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch (e) {
+    return dateStr
+  }
+}
+
+// Computed daftar riwayat kontrak untuk tabel
+const riwayatKontrakList = computed(() => {
+  if (Array.isArray(editForm.value['RIWAYAT_KONTRAK']) && editForm.value['RIWAYAT_KONTRAK'].length > 0) {
+    return editForm.value['RIWAYAT_KONTRAK']
+  }
+  // Sintesis data periode 1 jika belum ada riwayat tersimpan
+  const tmtAwal = editForm.value['AWAL KONTRAK AKTIF'] || editForm.value['TMT CPNS']
+  const noKontrak = editForm.value['NOMOR KONTRAK AKTIF'] || editForm.value['NO_KONTRAK'] || ''
+  if (tmtAwal || noKontrak) {
+    return [{
+      periode: 1,
+      jenis: 'Kontrak Pertama (Awal)',
+      nomorKontrak: noKontrak,
+      tmtAwal: tmtAwal,
+      tmtAkhir: editForm.value['AKHIR KONTRAK AKTIF'] || ''
+    }]
+  }
+  return []
+})
+
 const handleSave = () => {
   recalculateMkgAndGaji()
+
+  // Sinkronisasi NOMOR KONTRAK AKTIF ke entri riwayat kontrak aktif
+  const noKontrak = cleanNomorKontrakTag(editNomorKontrakTengah.value || editForm.value['NOMOR KONTRAK AKTIF'] || '')
+  editForm.value['NOMOR KONTRAK AKTIF'] = noKontrak
+  if (Array.isArray(editForm.value['RIWAYAT_KONTRAK']) && editForm.value['RIWAYAT_KONTRAK'].length > 0) {
+    const lastIdx = editForm.value['RIWAYAT_KONTRAK'].length - 1
+    editForm.value['RIWAYAT_KONTRAK'][lastIdx].nomorKontrak = noKontrak
+  } else if (noKontrak) {
+    editForm.value['RIWAYAT_KONTRAK'] = [{
+      periode: 1,
+      jenis: 'Kontrak Pertama (Awal)',
+      nomorKontrak: noKontrak,
+      nomorSk: editForm.value['NOMOR SK CPNS'] || '',
+      tanggalSk: editForm.value['TANGGAL SK CPNS'] || '',
+      tmtAwal: editForm.value['AWAL KONTRAK AKTIF'] || editForm.value['TMT CPNS'] || '',
+      tmtAkhir: editForm.value['AKHIR KONTRAK AKTIF'] || ''
+    }]
+  }
+
   emit('save', { ...editForm.value })
   emit('close')
 }
 </script>
 
 <style scoped>
-/* Scoped overrides if needed, relies on styles.css */
+.tab-pill-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-pill-btn:hover {
+  color: var(--text-dark);
+  background: rgba(0, 0, 0, 0.04);
+}
+.tab-pill-btn.active {
+  background: var(--bg-secondary, #ffffff);
+  color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
 </style>
