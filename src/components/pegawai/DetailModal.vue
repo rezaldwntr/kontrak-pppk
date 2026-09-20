@@ -235,7 +235,22 @@
           <div class="form-grid">
             <div class="form-group" style="grid-column: span 2;">
               <label>Nomor Kontrak Aktif <span class="badge" style="background: rgba(30,170,110,0.2); color: #1eaa6e; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; margin-left: 4px;">Baru</span></label>
-              <input type="text" v-model="editForm['NOMOR KONTRAK AKTIF']" class="form-control">
+              <div style="display: flex; align-items: center;">
+                <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-right: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 6px 0 0 6px; user-select: none;">800.1.2.5/</span>
+                <input 
+                  type="text" 
+                  :value="editNomorKontrakTengah" 
+                  @input="handleNomorKontrakInput" 
+                  class="form-control" 
+                  style="border-radius: 0; text-align: center; font-weight: 700;" 
+                  placeholder="Nomor (misal: 19)"
+                >
+                <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 0 6px 6px 0; user-select: none;">/BKPSDM</span>
+              </div>
+              <small style="color: var(--text-muted); font-size: 0.76rem; display: block; margin-top: 4px;">
+                Format lengkap pada aplikasi: <strong style="color: var(--primary-color);">{{ formatNomorKontrakDisplay(editNomorKontrakTengah) }}</strong>
+                <span style="color: var(--text-muted); margin-left: 4px;">(Tag Word hanya mengisi: <code>{{ editNomorKontrakTengah || '-' }}</code>)</span>
+              </small>
             </div>
             <div class="form-group">
               <label>Awal Kontrak Aktif / TMT</label>
@@ -282,8 +297,8 @@
                     <td style="padding: 8px 10px; font-weight: 600;">
                       {{ rk.jenis || `Periode ${rk.periode}` }}
                     </td>
-                    <td style="padding: 8px 10px; font-family: monospace; color: var(--text-dark);">
-                      {{ rk.nomorKontrak || '-' }}
+                    <td style="padding: 8px 10px; font-family: monospace; font-weight: 600; color: var(--text-dark);">
+                      {{ formatNomorKontrakDisplay(rk.nomorKontrak) }}
                     </td>
                     <td style="padding: 8px 10px; color: var(--text-muted); font-size: 0.75rem;">
                       {{ rk.tmtAwal ? formatDateDisplay(rk.tmtAwal) : '-' }}
@@ -346,7 +361,7 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { calculateContractPeriod, parseDate, getStatusPppk, getGolonganPegawai } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate, getStatusPppk, getGolonganPegawai, cleanNomorKontrakTag, formatNomorKontrakDisplay } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -358,6 +373,13 @@ const emit = defineEmits(['close', 'print', 'save'])
 const authStore = useAuthStore()
 const activeTab = ref('personal')
 const editForm = ref({})
+const editNomorKontrakTengah = ref('')
+
+const handleNomorKontrakInput = (e) => {
+  const cleaned = cleanNomorKontrakTag(e.target.value)
+  editNomorKontrakTengah.value = cleaned
+  editForm.value['NOMOR KONTRAK AKTIF'] = cleaned
+}
 const gajiInfo = ref({ golongan: '', mkg: 0, gaji: null })
 
 const formatDateToInput = (dateObj) => {
@@ -435,7 +457,8 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['PENDIDIKAN TERAKHIR']) editForm.value['PENDIDIKAN TERAKHIR'] = editForm.value['PENDIDIKAN NAMA'] || ''
     if (!editForm.value['TAHUN LULUS']) editForm.value['TAHUN LULUS'] = ''
     if (!editForm.value['LOKASI KERJA']) editForm.value['LOKASI KERJA'] = editForm.value['LOKASI KERJA NAMA'] || ''
-    if (!editForm.value['NOMOR KONTRAK AKTIF']) editForm.value['NOMOR KONTRAK AKTIF'] = ''
+    editNomorKontrakTengah.value = cleanNomorKontrakTag(editForm.value['NOMOR KONTRAK AKTIF'] || editForm.value['NO_KONTRAK'] || '')
+    editForm.value['NOMOR KONTRAK AKTIF'] = editNomorKontrakTengah.value
     
     // Hanya set AWAL KONTRAK AKTIF dari TMT CPNS jika belum ada (belum pernah diperpanjang)
     if (!editForm.value['AWAL KONTRAK AKTIF'] && tmtDate) {
@@ -572,7 +595,8 @@ const handleSave = () => {
   recalculateMkgAndGaji()
 
   // Sinkronisasi NOMOR KONTRAK AKTIF ke entri riwayat kontrak aktif
-  const noKontrak = (editForm.value['NOMOR KONTRAK AKTIF'] || '').trim()
+  const noKontrak = cleanNomorKontrakTag(editNomorKontrakTengah.value || editForm.value['NOMOR KONTRAK AKTIF'] || '')
+  editForm.value['NOMOR KONTRAK AKTIF'] = noKontrak
   if (Array.isArray(editForm.value['RIWAYAT_KONTRAK']) && editForm.value['RIWAYAT_KONTRAK'].length > 0) {
     const lastIdx = editForm.value['RIWAYAT_KONTRAK'].length - 1
     editForm.value['RIWAYAT_KONTRAK'][lastIdx].nomorKontrak = noKontrak

@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx'
 import { db } from '../services/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import LZString from 'lz-string'
+import { cleanNomorKontrakTag } from './pppkLogic'
 
 export const exportToExcel = (data, filename = 'Data_Pegawai.xlsx') => {
   if (!data || data.length === 0) {
@@ -160,17 +161,17 @@ export const downloadTemplateNomorKontrak = () => {
   const sampleData = [
     {
       'NIP': '198507122023211005',
-      'NOMOR KONTRAK': '800.1.2/19/BKPSDM/2026',
-      'NOMOR SK': '800.1.2/05/BKPSDM/2026',
+      'NOMOR KONTRAK': '19',
+      'NOMOR SK': '800.1.2.5/05/BKPSDM',
       'TANGGAL SK': '2026-01-02',
-      'KETERANGAN (OPSIONAL)': 'Contoh - Baris ini bisa dihapus atau diganti data asli'
+      'KETERANGAN (OPSIONAL)': 'Cukup isi nomor tengah (misal: 19) -> otomatis ditampilkan 800.1.2.5/19/BKPSDM'
     },
     {
       'NIP': '199003152023212003',
-      'NOMOR KONTRAK': '800.1.2/27/BKPSDM/2026',
-      'NOMOR SK': '800.1.2/06/BKPSDM/2026',
+      'NOMOR KONTRAK': '27',
+      'NOMOR SK': '800.1.2.5/06/BKPSDM',
       'TANGGAL SK': '2026-01-02',
-      'KETERANGAN (OPSIONAL)': 'Contoh format'
+      'KETERANGAN (OPSIONAL)': 'Cukup isi nomor tengah saja (misal: 27)'
     }
   ]
 
@@ -258,7 +259,8 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
 
         jsonData.forEach((row, rowIdx) => {
           const rawNip = findRowValue(row, nipKeys)
-          const nomorKontrak = findRowValue(row, noKontrakKeys).replace(/^'/, '').trim()
+          const rawNomorKontrak = findRowValue(row, noKontrakKeys).replace(/^'/, '').trim()
+          const nomorKontrak = cleanNomorKontrakTag(rawNomorKontrak)
           const nomorSk = findRowValue(row, noSkKeys).replace(/^'/, '').trim()
           const tanggalSk = findRowValue(row, tglSkKeys).replace(/^'/, '').trim()
 

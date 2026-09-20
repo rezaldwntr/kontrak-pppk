@@ -52,7 +52,22 @@
           <div class="form-grid">
             <div class="form-group">
               <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">Nomor Kontrak Baru (Perpanjangan)</label>
-              <input type="text" v-model="nomorKontrakBaru" class="form-control" placeholder="Contoh: 800.1.2/27/BKPSDM/2026">
+              <div style="display: flex; align-items: center;">
+                <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-right: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 6px 0 0 6px; user-select: none;">800.1.2.5/</span>
+                <input 
+                  type="text" 
+                  :value="nomorKontrakBaru" 
+                  @input="nomorKontrakBaru = cleanNomorKontrakTag($event.target.value)" 
+                  class="form-control" 
+                  style="border-radius: 0; text-align: center; font-weight: 700;" 
+                  placeholder="Nomor (misal: 27)"
+                >
+                <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 0 6px 6px 0; user-select: none;">/BKPSDM</span>
+              </div>
+              <small style="color: var(--text-muted); font-size: 0.76rem; display: block; margin-top: 4px;">
+                Format lengkap: <strong style="color: var(--primary-color);">{{ formatNomorKontrakDisplay(nomorKontrakBaru) }}</strong>
+                <span style="color: var(--text-muted); margin-left: 4px;">(Tag Word hanya mengisi: <code>{{ nomorKontrakBaru || '-' }}</code>)</span>
+              </small>
             </div>
             <div class="form-group">
               <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">Nomor SK Perpanjangan</label>
@@ -134,7 +149,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
-import { calculateContractPeriod, parseDate, getGolonganPegawai } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate, getGolonganPegawai, cleanNomorKontrakTag, formatNomorKontrakDisplay } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -246,7 +261,7 @@ const handleSubmit = () => {
   if (!newTmtDate.value) return
   emit('submit', {
     newTmtDate: newTmtDate.value,
-    nomorKontrakBaru: nomorKontrakBaru.value,
+    nomorKontrakBaru: cleanNomorKontrakTag(nomorKontrakBaru.value),
     nomorSk: nomorSk.value,
     tanggalSk: tanggalSk.value,
     tanggalAkhir: tanggalAkhir.value,

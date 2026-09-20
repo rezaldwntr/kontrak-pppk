@@ -457,4 +457,44 @@ export function getGolonganPegawai(item) {
   return str.toLowerCase().startsWith('golongan') ? str : `Golongan ${str}`
 }
 
+/**
+ * Membersihkan nilai nomor kontrak untuk tag berkas Word (.docx)
+ * Mengambil HANYA bagian tengah / nomor intinya saja (misal: "19")
+ * Menghilangkan awalan "800.../" dan akhiran "/BKPSDM..." jika ada
+ * @param {string|number} raw - nilai nomor kontrak mentah
+ * @returns {string} nilai tengah saja
+ */
+export function cleanNomorKontrakTag(raw) {
+  if (raw === undefined || raw === null) return ''
+  const str = String(raw).trim()
+  if (!str || str === '-') return ''
+  
+  // Deteksi pola awalan "800.../" dan akhiran "/BKPSDM..."
+  // Contoh: "800.1.2.5/19/BKPSDM" -> "19"
+  // Contoh: "800.1.2/19/BKPSDM/2026" -> "19"
+  // Contoh: "800.1.2.5/ 27 /BKPSDM" -> "27"
+  const match = str.match(/^800[0-9.]*\s*\/\s*(.+?)\s*\/\s*BKPSDM.*$/i)
+  if (match && match[1]) {
+    return match[1].trim()
+  }
+  
+  return str
+}
+
+/**
+ * Memformat nomor kontrak untuk tampilan lengkap di antarmuka aplikasi
+ * Format baku: 800.1.2.5/<nomor>/BKPSDM
+ * @param {string|number} raw - nilai nomor kontrak
+ * @returns {string} format lengkap atau "-" jika kosong
+ */
+export function formatNomorKontrakDisplay(raw) {
+  if (raw === undefined || raw === null) return '-'
+  const str = String(raw).trim()
+  if (!str || str === '-') return '-'
+
+  const middle = cleanNomorKontrakTag(str)
+  if (!middle || middle === '-') return '-'
+
+  return `800.1.2.5/${middle}/BKPSDM`
+}
 

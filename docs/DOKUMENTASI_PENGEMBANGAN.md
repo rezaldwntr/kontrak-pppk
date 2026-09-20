@@ -25,6 +25,18 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Tombol Header Global Terintegrasi (`Header.vue`)**:
   - Tombol aksi `Impor No. Kontrak` disematkan langsung di Header utama saat admin membuka menu **Data PPPK** maupun menu **Perpanjangan Kontrak**.
 
+### Standardisasi Format Nomor Kontrak (800.1.2.5/[No.Kontrak]/BKPSDM) & Integrasi Tag Dokumen Word
+- **Format Penomoran Baku (`800.1.2.5/<Nomor>/BKPSDM`)**:
+  - Seluruh tampilan aplikasi (tabel data pegawai, modal perpanjangan, modal detail profil, tabel riwayat perpanjangan multi-periode, dan pratinjau impor) kini menstandarkan penulisan nomor kontrak ke format resmi: `800.1.2.5/<Nomor>/BKPSDM`.
+  - Pada tabel pegawai (`PegawaiTable.vue`), nomor kontrak lengkap ditampilkan dengan ikon dokumen di bawah tanggal TMT jika pegawai sudah memiliki nomor kontrak.
+- **Kemudahan Impor Excel & Penginputan (Cukup Nomor Tengah Saja)**:
+  - Pada template Excel impor nomor kontrak (`downloadTemplateNomorKontrak`), kolom nomor kontrak diisi nomor intinya saja (contoh: `19` atau `27`).
+  - Sistem otomatis mengekstrak nomor tengah secara cerdas (`cleanNomorKontrakTag`), baik admin hanya memasukkan angka `19` maupun mem-paste format utuh `800.1.2.5/19/BKPSDM`.
+  - Pada formulir input modal (`DetailModal.vue` dan `ExtendModal.vue`), input didesain menggunakan input-group modern dengan awalan statis `800.1.2.5/` dan akhiran `/BKPSDM`, sehingga admin cukup mengetikkan nomor tengahnya tanpa khawatir salah format pemisah/garis miring.
+- **Injeksi Tag Dokumen Perjanjian Word (`{{NO_KONTRAK_BARU}}`) Tanpa Duplikasi**:
+  - Pada saat dokumen kontrak Word di-generate (`docxGenerator.js`), nilai yang disuntikkan ke tag `{{NO_KONTRAK_BARU}}` dipastikan **HANYA nomor tengahnya saja** (misal: `19`).
+  - Hal ini mencegah duplikasi teks format karena pada template berkas kontrak Word aslinya sudah tertulis teks statis `800.1.2.5/{{NO_KONTRAK_BARU}}/BKPSDM`.
+
 ### Perbaikan Resolusi Kolom Golongan BKN/SIASN (`ExtendModal.vue`, `DetailModal.vue`, `pppkLogic.js`, `gajiTable.js`)
 - **Penyebab Tampilan "Golongan -"**:
   - File data impor BKN/SIASN menyimpan golongan pada kolom `GOL AKHIR NAMA` (contoh: `"Golongan IX"` atau `"IX"`), `GOL RUANG`, `GOLONGAN AKHIR`, atau `GOL AKHIR ID`, sementara properti `GOLONGAN` kosong/tidak terdefinisi pada data mentah sebelum diedit manual.
