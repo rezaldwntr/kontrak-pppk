@@ -346,7 +346,7 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { calculateContractPeriod, parseDate, getStatusPppk } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate, getStatusPppk, getGolonganPegawai } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -426,8 +426,10 @@ watch(() => props.isOpen, (newVal) => {
     if (!editForm.value['STATUS KEAKTIFAN PPPK']) editForm.value['STATUS KEAKTIFAN PPPK'] = 'Aktif'
     
     if (!editForm.value['JENIS JABATAN']) editForm.value['JENIS JABATAN'] = 'Jabatan Fungsional'
-    if (!editForm.value['TMT JABATAN']) editForm.value['TMT JABATAN'] = ''
-    if (!editForm.value['GOLONGAN']) editForm.value['GOLONGAN'] = editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || ''
+    if (!editForm.value['GOLONGAN'] || editForm.value['GOLONGAN'] === '-') {
+      const gol = getGolonganPegawai(editForm.value)
+      editForm.value['GOLONGAN'] = gol !== '-' ? gol : (editForm.value['GOL AKHIR NAMA'] || editForm.value['GOL RUANG'] || '')
+    }
     if (!editForm.value['INSTANSI INDUK']) editForm.value['INSTANSI INDUK'] = 'Pemerintah Kab. Hulu Sungai Utara'
     if (!editForm.value['TINGKAT PENDIDIKAN']) editForm.value['TINGKAT PENDIDIKAN'] = editForm.value['TINGKAT PENDIDIKAN NAMA'] || ''
     if (!editForm.value['PENDIDIKAN TERAKHIR']) editForm.value['PENDIDIKAN TERAKHIR'] = editForm.value['PENDIDIKAN NAMA'] || ''

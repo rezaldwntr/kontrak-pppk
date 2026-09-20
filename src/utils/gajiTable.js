@@ -493,7 +493,7 @@ export function calculateGajiFromItem(item) {
   }
 
   // Ambil dan normalisasi golongan
-  const golRaw = item['GOLONGAN'] || item['GOL AKHIR NAMA'] || item['GOL RUANG'] || ''
+  const golRaw = item['GOLONGAN'] || item['GOL AKHIR NAMA'] || item['GOL RUANG'] || item['GOLONGAN AKHIR'] || item['GOL AKHIR ID'] || item['GOL AWAL NAMA'] || ''
   const golongan = normalizeGolongan(golRaw)
 
   if (!golongan || !TABEL_GAJI[golongan]) {

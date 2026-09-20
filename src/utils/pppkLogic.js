@@ -444,3 +444,17 @@ export function getContractPeriodInfo(item) {
   }
 }
 
+/**
+ * Mendapatkan string golongan pegawai dengan fallback ke berbagai kemungkinan nama kolom BKN/SIASN
+ * @param {object} item - data pegawai
+ * @returns {string} e.g. "Golongan IX" atau "IX"
+ */
+export function getGolonganPegawai(item) {
+  if (!item) return '-'
+  const raw = item['GOLONGAN'] || item['GOL AKHIR NAMA'] || item['GOL RUANG'] || item['GOLONGAN AKHIR'] || item['GOL AKHIR ID'] || item['GOL AWAL NAMA'] || ''
+  if (!raw || raw === '-') return '-'
+  const str = String(raw).trim()
+  return str.toLowerCase().startsWith('golongan') ? str : `Golongan ${str}`
+}
+
+
