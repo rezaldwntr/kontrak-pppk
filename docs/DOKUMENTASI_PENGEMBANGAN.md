@@ -25,6 +25,16 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Tombol Header Global Terintegrasi (`Header.vue`)**:
   - Tombol aksi `Impor No. Kontrak` disematkan langsung di Header utama saat admin membuka menu **Data PPPK** maupun menu **Perpanjangan Kontrak**.
 
+### Perbaikan Resolusi Kolom Golongan BKN/SIASN (`ExtendModal.vue`, `DetailModal.vue`, `pppkLogic.js`, `gajiTable.js`)
+- **Penyebab Tampilan "Golongan -"**:
+  - File data impor BKN/SIASN menyimpan golongan pada kolom `GOL AKHIR NAMA` (contoh: `"Golongan IX"` atau `"IX"`), `GOL RUANG`, `GOLONGAN AKHIR`, atau `GOL AKHIR ID`, sementara properti `GOLONGAN` kosong/tidak terdefinisi pada data mentah sebelum diedit manual.
+  - Komponen kartu pegawai pada Modal Perpanjangan (`ExtendModal.vue`) sebelumnya hanya membaca `currentPegawai['GOLONGAN']`, sehingga menghasilkan fallback `"Golongan -"`.
+- **Solusi & Standardisasi**:
+  - Menambahkan fungsi pembantu terpusat `getGolonganPegawai(item)` di `src/utils/pppkLogic.js` yang otomatis memeriksa semua kemungkinan alias kolom BKN (`GOLONGAN`, `GOL AKHIR NAMA`, `GOL RUANG`, `GOLONGAN AKHIR`, `GOL AKHIR ID`, `GOL AWAL NAMA`) dan menstandarisasi teks dengan awalan `"Golongan <Angka/Romawi>"`.
+  - Memperbarui `ExtendModal.vue` untuk memanggil `getGolonganPegawai(currentPegawai)` dan menampilkannya dalam format pill badge rapi serta menyertakan nama jabatan pegawai (`JABATAN NAMA`).
+  - Memperbarui `DetailModal.vue` agar saat modal dibuka, input Golongan otomatis terisi dengan resolusi BKN jika sebelumnya masih kosong atau bernilai `'-'`.
+  - Memperbarui `gajiTable.js` (`calculateGajiFromItem`) untuk mendukung seluruh variasi kolom BKN tersebut dalam kalkulasi MKG dan gaji pokok.
+
 ### Harmonisasi & Peningkatan Desain UI/UX Seluruh Modal Dialog (Modal UX Overhaul)
 - **Modal Detail Pegawai (`DetailModal.vue`)**:
   - Header diperbarui dengan badge ikon modern, status keaktifan PPPK, serta nama pegawai dan NIP yang jelas di sub-header.

@@ -27,10 +27,12 @@
             </div>
             <div>
               <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-dark);">{{ currentPegawai['NAMA'] }}</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+              <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 3px;">
                 <span>NIP: {{ currentPegawai['NIP BARU'] }}</span>
                 <span>•</span>
-                <span>{{ currentPegawai['GOLONGAN'] || 'Golongan -' }}</span>
+                <span class="badge" style="background: rgba(45, 122, 241, 0.1); color: var(--primary-color); font-weight: 600; padding: 2px 7px; border-radius: 4px;">{{ getGolonganPegawai(currentPegawai) }}</span>
+                <span v-if="currentPegawai['JABATAN NAMA']">•</span>
+                <span v-if="currentPegawai['JABATAN NAMA']">{{ currentPegawai['JABATAN NAMA'] }}</span>
               </div>
             </div>
           </div>
@@ -132,7 +134,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
-import { calculateContractPeriod, parseDate } from '../../utils/pppkLogic'
+import { calculateContractPeriod, parseDate, getGolonganPegawai } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
