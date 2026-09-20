@@ -54,6 +54,16 @@
           </div>
         </div>
 
+        <!-- Notice Format Baku -->
+        <div style="background: rgba(45, 122, 241, 0.08); border-left: 3px solid var(--primary-color); padding: 9px 13px; border-radius: 6px; font-size: 0.8rem; color: var(--text-dark); margin-bottom: 14px;">
+          <div style="font-weight: 700; color: var(--primary-color); display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+            <i class="fa-solid fa-circle-info"></i> Format Nomor Kontrak: 800.1.2.5/[Nomor]/BKPSDM
+          </div>
+          <p style="margin: 0; font-size: 0.76rem; color: var(--text-muted); line-height: 1.4;">
+            Pada file Excel cukup masukkan <strong>nomor tengahnya saja</strong> (misal: <code>19</code> atau <code>27</code>). Di aplikasi otomatis ditampilkan format lengkap, dan tag dokumen Word hanya menggantikan nomor tengah.
+          </p>
+        </div>
+
         <!-- Template Download Banner -->
         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;">
           <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #2563eb;">
@@ -165,7 +175,12 @@
                         {{ pRow.periode }}
                       </span>
                     </td>
-                    <td style="padding: 6px 10px; color: #1eaa6e; font-weight: 600;">{{ pRow.nomorKontrak }}</td>
+                    <td style="padding: 6px 10px;">
+                      <span style="color: #1eaa6e; font-weight: 700; font-family: monospace;">{{ formatNomorKontrakDisplay(pRow.nomorKontrak) }}</span>
+                      <span style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-top: 1px;">
+                        Nilai berkas: <code>{{ cleanNomorKontrakTag(pRow.nomorKontrak) }}</code>
+                      </span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -204,6 +219,7 @@
 import { ref } from 'vue'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
 import { processImportNomorKontrak, downloadTemplateNomorKontrak } from '../../utils/exportImport'
+import { formatNomorKontrakDisplay, cleanNomorKontrakTag } from '../../utils/pppkLogic'
 
 const props = defineProps({
   show: Boolean

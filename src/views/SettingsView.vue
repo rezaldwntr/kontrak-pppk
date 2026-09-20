@@ -316,7 +316,7 @@ const searchTagQuery = ref('')
 const templateTags = [
   { category: 'Pihak Pertama', tag: '{{NAMA_BUPATI}}', desc: 'Nama Pihak Pertama — otomatis HURUF BESAR' },
   { category: 'Pihak Pertama', tag: '{{JABATAN_BUPATI}}', desc: 'Jabatan Pihak Pertama' },
-  { category: 'Data Kontrak', tag: '{{NO_KONTRAK_BARU}}', desc: 'Nomor Perjanjian Kontrak Aktif' },
+  { category: 'Data Kontrak', tag: '{{NO_KONTRAK_BARU}}', desc: 'Nomor Perjanjian Kontrak (bagian tengah saja, misal: 19 pada 800.1.2.5/19/BKPSDM)' },
   { category: 'Data Pegawai', tag: '{{NAMA_PEGAWAI}}', desc: 'Nama Lengkap PPPK (tanpa gelar)' },
   { category: 'Data Pegawai', tag: '{{NIP_BARU}}', desc: 'NIP Baru PPPK' },
   { category: 'Data Pegawai', tag: '{{ALAMAT}}', desc: 'Alamat tempat tinggal pegawai' },

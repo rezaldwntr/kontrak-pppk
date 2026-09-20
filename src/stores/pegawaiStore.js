@@ -3,7 +3,7 @@ import { db } from '../services/firebase'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import LZString from 'lz-string'
 import { initialMockData } from '../utils/mockData'
-import { toRoman } from '../utils/pppkLogic'
+import { toRoman, cleanNomorKontrakTag } from '../utils/pppkLogic'
 
 export const usePegawaiStore = defineStore('pegawai', {
   state: () => ({
@@ -208,7 +208,7 @@ export const usePegawaiStore = defineStore('pegawai', {
               currentHistory.push({
                 periode: 1,
                 jenis: 'Kontrak Pertama (Awal)',
-                nomorKontrak: item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || '',
+                nomorKontrak: cleanNomorKontrakTag(item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || ''),
                 nomorSk: item['NOMOR SK CPNS'] || '',
                 tanggalSk: item['TANGGAL SK CPNS'] || '',
                 tmtAwal: item['TMT CPNS'] || oldTmt,
@@ -216,7 +216,7 @@ export const usePegawaiStore = defineStore('pegawai', {
               })
             }
             const nextPeriodNum = currentHistory.length + 1
-            const newNomorKontrak = isSingle ? (formData.nomorKontrakBaru || '') : ''
+            const newNomorKontrak = isSingle ? cleanNomorKontrakTag(formData.nomorKontrakBaru || '') : ''
             currentHistory.push({
               periode: nextPeriodNum,
               jenis: `Perpanjangan ${toRoman(nextPeriodNum - 1)}`,

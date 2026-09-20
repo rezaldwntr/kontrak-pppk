@@ -199,7 +199,13 @@
                 <strong>{{ getNamaLengkap(item) }}</strong>
                 <span v-if="item['JENIS PPPK'] === 'PPPK Paruh Waktu'" class="badge-paruh-inline">Paruh Waktu</span>
               </td>
-              <td v-if="!isBupTab" class="cell-date">{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</td>
+              <td v-if="!isBupTab" class="cell-date">
+                <div>{{ formatIndoDate(item["AWAL KONTRAK AKTIF"] || item["TMT CPNS"]) }}</div>
+                <div v-if="item['NOMOR KONTRAK AKTIF'] || item['NO_KONTRAK']" style="font-size: 0.72rem; font-family: monospace; color: var(--primary-color); margin-top: 3px; font-weight: 600;">
+                  <i class="fa-solid fa-file-contract" style="margin-right: 3px;"></i>
+                  {{ formatNomorKontrakDisplay(item['NOMOR KONTRAK AKTIF'] || item['NO_KONTRAK']) }}
+                </div>
+              </td>
               <td v-if="!isBupTab" class="cell-date">
                 <span :class="calculateContractPeriod(item).statusText === 'Kontrak Hampir Habis' ? 'badge-warning-soft' : ''">
                   {{ calculateContractPeriod(item).endDateStr }}
@@ -318,7 +324,7 @@ const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const selectedIds = ref([])
 
-import { calculateContractPeriod, getStatusPppk, getKelompokPegawai } from '../../utils/pppkLogic';
+import { calculateContractPeriod, getStatusPppk, getKelompokPegawai, formatNomorKontrakDisplay } from '../../utils/pppkLogic';
 
 const handleSearch = () => {
   currentPage.value = 1
