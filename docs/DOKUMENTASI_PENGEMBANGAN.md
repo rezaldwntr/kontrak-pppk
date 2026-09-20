@@ -2,6 +2,29 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.7.0] - 2026-09-20 (Staging)
+
+### Fitur Impor Nomor Kontrak Massal & Riwayat Kontrak Multi-Periode (Contract Versioning)
+- **Impor Nomor Kontrak Massal via Excel (`ImportNomorKontrakModal.vue`)**:
+  - Menyediakan modal khusus untuk memperbarui nomor kontrak pegawai secara kolektif dalam hitungan detik.
+  - Format Excel sangat sederhana: cukup membutuhkan 2 kolom utama (`NIP` dan `NOMOR KONTRAK`), serta mendukung kolom opsional (`NOMOR SK` dan `TANGGAL SK`).
+  - Dilengkapi tombol **Unduh Format Contoh** (`downloadTemplateNomorKontrak`) yang langsung menghasilkan template file Excel siap pakai.
+  - Dropzone unggah file interaktif dengan drag-and-drop dan deteksi otomatis kolom fleksibel (`NIP`, `NIP BARU`, `NOMOR KONTRAK`, `NO KONTRAK`, `NOMOR PERJANJIAN`).
+  - Fitur **Pratinjau Cerdas (Smart Preview)**: Menampilkan statistik jumlah baris, NIP yang cocok, NIP yang tidak ditemukan di database, serta tabel pratinjau 5 baris pertama sebelum dieksekusi.
+- **Deteksi Target Periode Kontrak Fleksibel**:
+  - **Otomatis Sesuai Status Aktif Pegawai (Rekomendasi)**: Sistem secara otomatis mengevaluasi status masing-masing pegawai. Pegawai yang belum diperpanjang akan diperbarui nomor kontrak awalnya, sedangkan yang sudah diperpanjang akan masuk ke nomor kontrak perpanjangan aktifnya.
+  - **Khusus Kontrak Pertama (Awal)**: Dikhususkan untuk melengkapi nomor kontrak awal (periode 1) yang masih kosong di database.
+  - **Khusus Perpanjangan Kontrak Baru**: Dikhususkan untuk mengisi nomor kontrak baru bagi pegawai yang baru saja diproses perpanjangannya.
+- **Sistem Penyimpanan Riwayat Kontrak Multi-Periode (`RIWAYAT_KONTRAK`)**:
+  - Memastikan nomor kontrak lama (misal nomor 19) tidak hilang saat perpanjangan kontrak dilakukan ke nomor baru (misal nomor 27).
+  - Menyimpan array `RIWAYAT_KONTRAK` pada profil data pegawai yang mencakup nomor periode, jenis ("Kontrak Pertama", "Perpanjangan I", dst), nomor kontrak, nomor SK, tanggal SK, serta rentang TMT.
+  - Integrasi otomatis saat melakukan **Perpanjangan Massal maupun Individu** di `pegawaiStore.batchExtend` dan pemulihan otomatis saat pembatalan di `pegawaiStore.cancelExtension`.
+- **Pembaruan Tampilan Modal Detail Pegawai (`DetailModal.vue`)**:
+  - Pada Tab **Kontrak & Gaji**, ditambahkan tabel **Riwayat Kontrak & Perpanjangan** yang menampilkan riwayat lengkap seluruh periode kontrak pegawai, nomor kontrak masing-masing periode, rentang TMT, dan status badge (Aktif / Arsip).
+  - Sinkronisasi otomatis dua arah: pengeditan nomor kontrak aktif pada formulir modal langsung menyelaraskan entri kontrak aktif pada riwayat.
+- **Tombol Header Global Terintegrasi (`Header.vue`)**:
+  - Tombol aksi `Impor No. Kontrak` disematkan langsung di Header utama saat admin membuka menu **Data PPPK** maupun menu **Perpanjangan Kontrak**.
+
 ## [v3.6.0] - 2026-09-19 (Staging)
 
 ### Harmonisasi & Peningkatan Desain UI/UX Seluruh Menu (User-Friendly Overhaul)

@@ -215,6 +215,65 @@
               <input type="text" v-model="editForm['GAJI POKOK SAAT INI']" class="form-control" disabled>
             </div>
           </div>
+
+          <!-- Riwayat Kontrak & Perpanjangan -->
+          <div class="riwayat-kontrak-section" style="margin-top: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <label style="font-weight: 700; font-size: 0.88rem; color: var(--text-dark); margin: 0;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-color); margin-right: 6px;"></i>
+                Riwayat Kontrak & Perpanjangan
+              </label>
+              <span v-if="riwayatKontrakList.length > 0" style="font-size: 0.75rem; color: var(--text-muted);">
+                {{ riwayatKontrakList.length }} Periode Tercatat
+              </span>
+            </div>
+
+            <div v-if="riwayatKontrakList.length === 0" style="text-align: center; padding: 14px; background: var(--bg-secondary); border-radius: 6px; color: var(--text-muted); font-size: 0.82rem; border: 1px dashed var(--border-color);">
+              Belum ada riwayat perpanjangan (masih menggunakan periode kontrak awal).
+            </div>
+
+            <div v-else style="border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+                <thead style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                  <tr>
+                    <th style="padding: 8px 10px; text-align: left; font-weight: 700;">Periode</th>
+                    <th style="padding: 8px 10px; text-align: left; font-weight: 700;">Nomor Kontrak</th>
+                    <th style="padding: 8px 10px; text-align: left; font-weight: 700;">TMT Kontrak</th>
+                    <th style="padding: 8px 10px; text-align: center; font-weight: 700;">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(rk, idx) in riwayatKontrakList" :key="idx" style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 8px 10px; font-weight: 600;">
+                      {{ rk.jenis || `Periode ${rk.periode}` }}
+                    </td>
+                    <td style="padding: 8px 10px; font-family: monospace; color: var(--text-dark);">
+                      {{ rk.nomorKontrak || '-' }}
+                    </td>
+                    <td style="padding: 8px 10px; color: var(--text-muted); font-size: 0.75rem;">
+                      {{ rk.tmtAwal ? formatDateDisplay(rk.tmtAwal) : '-' }}
+                      <span v-if="rk.tmtAkhir"> s/d {{ formatDateDisplay(rk.tmtAkhir) }}</span>
+                    </td>
+                    <td style="padding: 8px 10px; text-align: center;">
+                      <span 
+                        class="badge" 
+                        :style="{
+                          background: idx === riwayatKontrakList.length - 1 ? 'rgba(30, 170, 110, 0.15)' : 'rgba(107, 114, 128, 0.15)',
+                          color: idx === riwayatKontrakList.length - 1 ? '#1eaa6e' : '#6b7280',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.7rem',
+                          fontWeight: '600'
+                        }"
+                      >
+                        {{ idx === riwayatKontrakList.length - 1 ? 'Aktif' : 'Arsip' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -424,8 +483,58 @@ const formatRupiahDisplay = (amount) => {
   return Number(amount).toLocaleString('id-ID')
 }
 
+// Format tanggal untuk tampilan tabel riwayat
+const formatDateDisplay = (dateStr) => {
+  if (!dateStr) return '-'
+  try {
+    const d = parseDate(dateStr)
+    if (!d || isNaN(d.getTime())) return dateStr
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch (e) {
+    return dateStr
+  }
+}
+
+// Computed daftar riwayat kontrak untuk tabel
+const riwayatKontrakList = computed(() => {
+  if (Array.isArray(editForm.value['RIWAYAT_KONTRAK']) && editForm.value['RIWAYAT_KONTRAK'].length > 0) {
+    return editForm.value['RIWAYAT_KONTRAK']
+  }
+  // Sintesis data periode 1 jika belum ada riwayat tersimpan
+  const tmtAwal = editForm.value['AWAL KONTRAK AKTIF'] || editForm.value['TMT CPNS']
+  const noKontrak = editForm.value['NOMOR KONTRAK AKTIF'] || editForm.value['NO_KONTRAK'] || ''
+  if (tmtAwal || noKontrak) {
+    return [{
+      periode: 1,
+      jenis: 'Kontrak Pertama (Awal)',
+      nomorKontrak: noKontrak,
+      tmtAwal: tmtAwal,
+      tmtAkhir: editForm.value['AKHIR KONTRAK AKTIF'] || ''
+    }]
+  }
+  return []
+})
+
 const handleSave = () => {
   recalculateMkgAndGaji()
+
+  // Sinkronisasi NOMOR KONTRAK AKTIF ke entri riwayat kontrak aktif
+  const noKontrak = (editForm.value['NOMOR KONTRAK AKTIF'] || '').trim()
+  if (Array.isArray(editForm.value['RIWAYAT_KONTRAK']) && editForm.value['RIWAYAT_KONTRAK'].length > 0) {
+    const lastIdx = editForm.value['RIWAYAT_KONTRAK'].length - 1
+    editForm.value['RIWAYAT_KONTRAK'][lastIdx].nomorKontrak = noKontrak
+  } else if (noKontrak) {
+    editForm.value['RIWAYAT_KONTRAK'] = [{
+      periode: 1,
+      jenis: 'Kontrak Pertama (Awal)',
+      nomorKontrak: noKontrak,
+      nomorSk: editForm.value['NOMOR SK CPNS'] || '',
+      tanggalSk: editForm.value['TANGGAL SK CPNS'] || '',
+      tmtAwal: editForm.value['AWAL KONTRAK AKTIF'] || editForm.value['TMT CPNS'] || '',
+      tmtAkhir: editForm.value['AKHIR KONTRAK AKTIF'] || ''
+    }]
+  }
+
   emit('save', { ...editForm.value })
   emit('close')
 }

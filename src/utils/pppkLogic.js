@@ -351,3 +351,96 @@ export function formatNamaFilePegawai(item, includeGelar = false) {
 
   return cleanNama || 'pegawai'
 }
+
+/**
+ * Konversi angka ke angka romawi (1 -> I, 2 -> II, dst)
+ */
+export function toRoman(num) {
+  const n = parseInt(num, 10)
+  if (isNaN(n) || n <= 0) return ''
+  const lookup = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 }
+  let roman = ''
+  let remaining = n
+  for (let i in lookup) {
+    while (remaining >= lookup[i]) {
+      roman += i
+      remaining -= lookup[i]
+    }
+  }
+  return roman
+}
+
+/**
+ * Mendapatkan informasi periode kontrak saat ini untuk seorang pegawai
+ * @param {object} item - data pegawai
+ * @returns {object} { periodeNumber, periodeLabel, isExtension }
+ */
+export function getContractPeriodInfo(item) {
+  if (!item) return { periodeNumber: 1, periodeLabel: 'Kontrak Pertama (Awal)', isExtension: false }
+
+  // 1. Cek jika sudah ada data tersimpan di RIWAYAT_KONTRAK
+  if (Array.isArray(item.RIWAYAT_KONTRAK) && item.RIWAYAT_KONTRAK.length > 0) {
+    const activeTmt = item['AWAL KONTRAK AKTIF'] || item['TMT CPNS'] || ''
+    // Cari yang cocok dengan TMT aktif
+    const match = item.RIWAYAT_KONTRAK.find(r => r.tmtAwal === activeTmt)
+    if (match && match.periode) {
+      const num = parseInt(match.periode, 10)
+      return {
+        periodeNumber: num,
+        periodeLabel: num === 1 ? 'Kontrak Pertama (Awal)' : `Perpanjangan ${toRoman(num - 1)}`,
+        isExtension: num > 1
+      }
+    }
+    // Jika tidak cocok spesifik, gunakan panjang riwayat
+    const count = item.RIWAYAT_KONTRAK.length
+    return {
+      periodeNumber: count,
+      periodeLabel: count === 1 ? 'Kontrak Pertama (Awal)' : `Perpanjangan ${toRoman(count - 1)}`,
+      isExtension: count > 1
+    }
+  }
+
+  // 2. Kalkulasi berdasarkan perbedaan AWAL KONTRAK AKTIF vs TMT CPNS
+  const tmtAwalStr = item['AWAL KONTRAK AKTIF'] || ''
+  const tmtCpnsStr = item['TMT CPNS'] || ''
+
+  if (!tmtAwalStr || tmtAwalStr === tmtCpnsStr) {
+    return {
+      periodeNumber: 1,
+      periodeLabel: 'Kontrak Pertama (Awal)',
+      isExtension: false
+    }
+  }
+
+  const d1 = parseDate(tmtCpnsStr)
+  const d2 = parseDate(tmtAwalStr)
+  const isParuhWaktu = item['JENIS PPPK'] === 'PPPK Paruh Waktu'
+  const contractYears = isParuhWaktu ? 1 : 5
+
+  if (d1 && d2 && d2.getTime() > d1.getTime()) {
+    const diffYears = (d2.getFullYear() - d1.getFullYear())
+    const extCount = Math.max(1, Math.round(diffYears / contractYears))
+    const pNum = 1 + extCount
+    return {
+      periodeNumber: pNum,
+      periodeLabel: `Perpanjangan ${toRoman(pNum - 1)}`,
+      isExtension: true
+    }
+  }
+
+  // Jika ada status perpanjangan selesai
+  if (item['STATUS_PERPANJANGAN'] === 'Selesai Diperpanjang') {
+    return {
+      periodeNumber: 2,
+      periodeLabel: 'Perpanjangan I',
+      isExtension: true
+    }
+  }
+
+  return {
+    periodeNumber: 1,
+    periodeLabel: 'Kontrak Pertama (Awal)',
+    isExtension: false
+  }
+}
+

@@ -16,17 +16,21 @@
         <span>Masuk</span>
       </button>
 
-      <template v-if="authStore.user && route.name === 'pegawai'">
-        <button class="btn btn-primary btn-header-action" id="btn-import-trigger" @click="pegawaiStore.showImportModal = true" title="Impor data dari berkas Excel/CSV">
+      <template v-if="authStore.user && (route.name === 'pegawai' || route.name === 'perpanjangan')">
+        <button v-if="route.name === 'pegawai'" class="btn btn-primary btn-header-action" id="btn-import-trigger" @click="pegawaiStore.showImportModal = true" title="Impor data profil dari berkas Excel/CSV">
           <i class="fa-solid fa-file-import"></i>
           <span>Impor Data</span>
         </button>
-        <button class="btn btn-outline btn-header-action" id="btn-export" @click="handleExport" title="Ekspor seluruh data ke format Excel">
+        <button class="btn btn-outline btn-header-action" id="btn-import-nomor-kontrak" @click="pegawaiStore.showImportNomorKontrakModal = true" title="Impor nomor kontrak secara massal via Excel">
+          <i class="fa-solid fa-file-contract"></i>
+          <span>Impor No. Kontrak</span>
+        </button>
+        <button v-if="route.name === 'pegawai'" class="btn btn-outline btn-header-action" id="btn-export" @click="handleExport" title="Ekspor seluruh data ke format Excel">
           <i class="fa-solid fa-file-export"></i>
           <span>Ekspor</span>
         </button>
-        <div class="header-action-divider"></div>
-        <button class="btn btn-outline btn-header-action btn-header-danger" id="btn-clear-all" @click="handleClearAll" title="Hapus seluruh data pegawai">
+        <div v-if="route.name === 'pegawai'" class="header-action-divider"></div>
+        <button v-if="route.name === 'pegawai'" class="btn btn-outline btn-header-action btn-header-danger" id="btn-clear-all" @click="handleClearAll" title="Hapus seluruh data pegawai">
           <i class="fa-solid fa-trash-can"></i>
           <span>Hapus Semua</span>
         </button>
