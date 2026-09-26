@@ -149,7 +149,14 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { usePegawaiStore } from '../../stores/pegawaiStore'
-import { calculateContractPeriod, parseDate, getGolonganPegawai, cleanNomorKontrakTag, formatNomorKontrakDisplay } from '../../utils/pppkLogic'
+import { 
+  calculateContractPeriod, 
+  parseDate, 
+  getGolonganPegawai, 
+  cleanNomorKontrakTag, 
+  formatNomorKontrakDisplay,
+  formatDateToInput 
+} from '../../utils/pppkLogic'
 import { calculateGajiFromItem, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -169,14 +176,6 @@ const gajiPokok = ref('')
 const isBup = ref(false)
 
 const currentPegawai = ref(null)
-
-const formatDateToInput = (dateObj) => {
-  if (!dateObj || isNaN(dateObj.getTime())) return ''
-  const y = dateObj.getFullYear()
-  const m = String(dateObj.getMonth() + 1).padStart(2, '0')
-  const d = String(dateObj.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
 
 const recalculate = () => {
   if (!currentPegawai.value || !newTmtDate.value) return

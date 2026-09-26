@@ -498,3 +498,37 @@ export function formatNomorKontrakDisplay(raw) {
   return `800.1.2.5/${middle}/BKPSDM`
 }
 
+/**
+ * Mendapatkan nama lengkap pegawai secara konsisten
+ */
+export const getNamaLengkap = (item) => {
+  if (!item) return ''
+  return (item['NAMA'] || '').trim()
+}
+
+/**
+ * Memformat objek Date ke string YYYY-MM-DD untuk input HTML type="date"
+ */
+export const formatDateToInput = (dateObj) => {
+  if (!dateObj || isNaN(dateObj.getTime())) return ''
+  const y = dateObj.getFullYear()
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0')
+  const d = String(dateObj.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/**
+ * Memformat tanggal ke bahasa Indonesia secara baku (misal: "17 Agustus 2026")
+ * @param {string|Date} raw - tanggal mentah
+ * @param {Object} options - opsi format, misal { month: 'short' | 'long' }
+ */
+export const formatIndoDate = (raw, options = { month: 'long' }) => {
+  if (!raw || raw === '-') return '-'
+  const d = parseDate(raw)
+  if (!d || isNaN(d.getTime())) return String(raw)
+  const mNamesLong = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+  const mNamesShort = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
+  const mNames = options && options.month === 'short' ? mNamesShort : mNamesLong
+  return `${d.getDate()} ${mNames[d.getMonth()]} ${d.getFullYear()}`
+}
+

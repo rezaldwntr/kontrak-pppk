@@ -57,13 +57,6 @@
       @submit="submitBatchExtend"
     />
 
-    <PrintPreviewModal
-      v-if="showPrintOptions"
-      :show="showPrintOptions"
-      :pegawai="selectedItem"
-      @close="showPrintOptions = false"
-    />
-    
     <PasswordPromptModal 
       :isOpen="showPasswordModal" 
       :description="passwordPromptDesc"
@@ -85,17 +78,14 @@ import { usePegawaiStore } from '../stores/pegawaiStore'
 import ChartCard from '../components/dashboard/ChartCard.vue'
 import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
-import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ExtendModal from '../components/pegawai/ExtendModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
-import { customSwal } from '../utils/swal'
-import { calculateContractPeriod } from '../utils/pppkLogic'
+import { calculateContractPeriod, getUnorAtasan, getUnorInduk } from '../utils/pppkLogic'
 
 const route = useRoute()
 const pegawaiStore = usePegawaiStore()
 const showDetail = ref(false)
-const showPrintOptions = ref(false)
 const showExtendModal = ref(false)
 const selectedItem = ref(null)
 const extendIds = ref([])
@@ -140,23 +130,6 @@ const filteredData = computed(() => {
     }
   })
 })
-
-const getUnorAtasan = (unorNama) => {
-  if (!unorNama) return '-'
-  let cleaned = unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
-  if (cleaned === '-') return '-'
-  const parts = cleaned.split(' - ')
-  if (parts.length <= 1) return parts[0]
-  return parts.slice(0, parts.length - 1).join(' - ') || '-'
-}
-
-const getUnorInduk = (unorNama) => {
-  if (!unorNama) return '-'
-  let cleaned = unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
-  if (cleaned === '-') return '-'
-  const parts = cleaned.split(' - ')
-  return parts[parts.length - 1] || '-'
-}
 
 const isSingleInduk = computed(() => {
   const uniqueInduk = new Set()
@@ -228,7 +201,8 @@ const handleView = (item) => {
 
 const handlePrint = (item) => {
   selectedItem.value = item
-  showPrintOptions.value = true
+  downloadItems.value = [item]
+  showDownloadModal.value = true
 }
 
 const handleBatchExtend = (selectedIds) => {

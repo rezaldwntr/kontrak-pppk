@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
-import DummyPageView from '../views/DummyPageView.vue'
 
 const routes = [
   {

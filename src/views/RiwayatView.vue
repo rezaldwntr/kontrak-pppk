@@ -179,6 +179,7 @@ import { useAuthStore } from '../stores/authStore'
 import { customSwal } from '../utils/swal'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import { exportToExcel } from '../utils/exportImport'
+import { formatIndoDate } from '../utils/pppkLogic'
 
 const pegawaiStore = usePegawaiStore()
 const authStore = useAuthStore()
@@ -351,15 +352,6 @@ const processBatchCancel = async (itemsToCancel) => {
       customSwal.fire({ icon: 'error', title: 'Gagal', text: e.message })
     }
   }
-}
-
-const formatIndoDate = (dateStr) => {
-  if (!dateStr || dateStr === '-') return '-'
-  const d = new Date(dateStr)
-  if (isNaN(d.getTime())) return dateStr
-  return d.toLocaleDateString('id-ID', {
-    day: '2-digit', month: 'long', year: 'numeric'
-  })
 }
 
 const formatDate = (isoString) => {

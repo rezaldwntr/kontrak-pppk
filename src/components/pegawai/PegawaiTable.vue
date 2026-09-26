@@ -323,8 +323,17 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const selectedIds = ref([])
-
-import { calculateContractPeriod, getStatusPppk, getKelompokPegawai, formatNomorKontrakDisplay } from '../../utils/pppkLogic';
+import { 
+  calculateContractPeriod, 
+  getStatusPppk, 
+  getKelompokPegawai, 
+  formatNomorKontrakDisplay,
+  cleanUnorName,
+  getUnorAtasan,
+  getUnorInduk,
+  getNamaLengkap,
+  formatIndoDate
+} from '../../utils/pppkLogic';
 
 const handleSearch = () => {
   currentPage.value = 1
@@ -413,55 +422,11 @@ const filteredData = computed(() => {
   })
 })
 
-const cleanUnorName = (unorNama) => {
-  if (!unorNama) return '-'
-  return unorNama.replace(/\s*-\s*PEMERINTAH KABUPATEN HULU SUNGAI UTARA$/i, '')
-}
-
-const getUnorAtasan = (unorNama) => {
-  const cleaned = cleanUnorName(unorNama)
-  if (cleaned === '-') return '-'
-  const parts = cleaned.split(' - ')
-  if (parts.length <= 1) return parts[0]
-  return parts.slice(0, parts.length - 1).join(' - ') || '-'
-}
-
-const getUnorInduk = (unorNama) => {
-  const cleaned = cleanUnorName(unorNama)
-  if (cleaned === '-') return '-'
-  const parts = cleaned.split(' - ')
-  return parts[parts.length - 1] || '-'
-}
-
-const getNamaLengkap = (item) => {
-  if (!item) return ''
-  return (item['NAMA'] || '').trim()
-}
-
-const formatIndoDate = (dateStr) => {
-    if (!dateStr) return "-";
-    let startDate = null;
-    const parts = String(dateStr).split(/[-/]/);
-    if (parts.length === 3) {
-        if (parts[0].length === 4) startDate = new Date(parts[0], parts[1]-1, parts[2]);
-        else if (parts[2].length === 4) startDate = new Date(parts[2], parts[1]-1, parts[0]);
-    }
-    if (!startDate || isNaN(startDate.getTime())) return String(dateStr);
-    
-    const y = startDate.getFullYear();
-    const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][startDate.getMonth()];
-    const d = startDate.getDate();
-    return `${d} ${mStr} ${y}`;
-}
-
 const getTmtPensiunStr = (rawDate) => {
   if (!rawDate || isNaN(rawDate.getTime())) return '-';
   const tmtPensiun = new Date(rawDate);
   tmtPensiun.setDate(tmtPensiun.getDate() + 1);
-  const y = tmtPensiun.getFullYear();
-  const mStr = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][tmtPensiun.getMonth()];
-  const d = tmtPensiun.getDate();
-  return `${d} ${mStr} ${y}`;
+  return formatIndoDate(tmtPensiun);
 }
 
 const baseData = computed(() => {
@@ -541,15 +506,21 @@ const unorIndukOptions = computed(() => {
   return Array.from(types).filter(t => t !== '-').sort()
 })
 
-const statusOptions = computed(() => {
-  const types = new Set(baseData.value.map(item => calculateContractPeriod(item).statusText))
-  return Array.from(types).sort()
+const allStatusOptions = computed(() => {
+  const contractStatusSet = new Set()
+  const pppkStatusSet = new Set()
+  for (const item of baseData.value) {
+    contractStatusSet.add(calculateContractPeriod(item).statusText)
+    pppkStatusSet.add(getStatusPppk(item))
+  }
+  return {
+    contractStatuses: Array.from(contractStatusSet).sort(),
+    pppkStatuses: Array.from(pppkStatusSet).sort()
+  }
 })
 
-const statusPppkOptions = computed(() => {
-  const types = new Set(baseData.value.map(item => getStatusPppk(item)))
-  return Array.from(types).sort()
-})
+const statusOptions = computed(() => allStatusOptions.value.contractStatuses)
+const statusPppkOptions = computed(() => allStatusOptions.value.pppkStatuses)
 
 const baseForPerpanjanganOptions = computed(() => {
   return baseData.value.filter(item => {
@@ -585,26 +556,19 @@ const perpanjanganOptions = computed(() => {
 
   const options = [];
   const sortedYears = Object.keys(groups).sort();
-  const mNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
   
   sortedYears.forEach(year => {
     const dates = Array.from(groups[year]).sort();
     if (dates.length === 1) {
-      const parts = dates[0].split('-');
-      const mName = mNames[parseInt(parts[1]) - 1];
-      const dNum = parseInt(parts[2]);
       options.push({
         value: dates[0],
-        label: `Perpanjangan Periode ${year} (${dNum} ${mName})`
+        label: `Perpanjangan Periode ${year} (${formatIndoDate(dates[0])})`
       });
     } else {
       dates.forEach((dateStr, idx) => {
-        const parts = dateStr.split('-');
-        const mName = mNames[parseInt(parts[1]) - 1];
-        const dNum = parseInt(parts[2]);
         options.push({
           value: dateStr,
-          label: `Perpanjangan Periode ${year} - Tahap ${idx + 1} (${dNum} ${mName})`
+          label: `Perpanjangan Periode ${year} - Tahap ${idx + 1} (${formatIndoDate(dateStr)})`
         });
       });
     }

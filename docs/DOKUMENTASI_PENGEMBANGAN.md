@@ -2,6 +2,33 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.8.0] - 2026-09-26 (Staging)
+
+### Pembersihan Kode, Eliminasi Duplikasi, dan Optimasi Sesuai Kaidah Ponytail Master Rules
+- **Pembersihan File Mati & Dead Routes (`ponytail-debt` & YAGNI)**:
+  - Menghapus berkas usang yang tidak terpakai: `src/utils/docx.js`, `src/components/HelloWorld.vue`, dan `src/views/DummyPageView.vue`.
+  - Menghapus impor tidak terpakai `DummyPageView` dari konfigurasi routing (`src/router/index.js`).
+- **Standarisasi Modul Cetak Dokumen Word & Pencopotan Library Bloat**:
+  - Menghapus berkas warisan `src/utils/docxPrinter.js` dan modal cetak lama `src/components/pegawai/PrintPreviewModal.vue`.
+  - Mengalihkan seluruh alur cetak dokumen (termasuk tombol Cetak di modal Detail) ke `DownloadContractModal.vue` yang menggunakan `docxGenerator.js`. Semua cetak kini otomatis mendukung format nomor kontrak baru `800.1.2.5/.../BKPSDM`, terbilang Indonesia, konfigurasi bupati dari database, dan integrasi Google Drive.
+  - Menghapus dependensi berat `docxtemplater` dari `package.json` karena seluruh penggantian tag dokumen kini menggunakan manipulasi XML string murni tanpa parser pihak ketiga.
+- **Konsolidasi Utilitas Murni (Pure Functions & KISS)**:
+  - Menyentralisasikan seluruh fungsi pembantu ke `src/utils/pppkLogic.js`:
+    - `parseDate`: Menghapus duplikasi `parseDateLocal` di `gajiTable.js` dan menggunakan `parseDate` dari `pppkLogic.js`.
+    - `cleanUnorName`, `getUnorAtasan`, `getUnorInduk`: Menghapus deklarasi lokal di `PegawaiTable.vue` dan `PerpanjanganView.vue`, beralih ke helper sentral yang mendukung pembagi `-` dan `/`.
+    - `formatDateToInput`: Menghapus kode duplikat konversi `Date` ke `YYYY-MM-DD` di `DetailModal.vue` dan `ExtendModal.vue`.
+    - `formatIndoDate`: Menghapus hardcode array bulan Indonesia di 4 file (`PegawaiTable.vue`, `RiwayatView.vue`, `DetailModal.vue`, `docxGenerator.js`), digantikan helper murni tunggal `formatIndoDate`.
+    - `getNamaLengkap`: Menghapus duplikasi ekstraksi nama di `PegawaiTable.vue`, `DownloadContractModal.vue`, dan `docxGenerator.js`.
+    - `formatRupiah`: Menghapus fungsi lokal `formatRupiahDisplay` di `DetailModal.vue` dan langsung memanfaatkan `formatRupiah` dari `gajiTable.js`.
+    - Mengganti deep copy lambat `JSON.parse(JSON.stringify(...))` di `DetailModal.vue` dengan native `structuredClone`.
+- **Penyatuan Penyimpanan Firestore (Chunking & Batas 50 Baris)**:
+  - Mengekspor helper `savePegawaiChunks(pppkData)` di `src/services/firebase.js` untuk menangani kompresi `LZString` dan pembagian chunk 250.000 karakter ke `pegawai_chunk_0..N`.
+  - Merampingkan method `batchExtend` (yang sebelumnya 106 baris) dan `cancelExtension` di `pegawaiStore.js` agar cukup memanggil `await this.saveAllPegawai()`.
+  - Menyederhanakan `saveImportedData` di `src/utils/exportImport.js` dengan memanggil `savePegawaiChunks`, mengeliminasi lebih dari 70 baris duplikasi kode penyimpanan database.
+- **Optimasi Performa Datar (Single-Pass Reducer / `ponytail-gain`)**:
+  - Di `DashboardView.vue`: Menggabungkan 3 pass perulangan `.filter()` terpisah (`warningCount`, `activeCount`, `expiredCount`) menjadi 1 kali perulangan `single-pass` tanpa mengubah tipe kembalian maupun struktur reaktivitas.
+  - Di `PegawaiTable.vue`: Menyatukan penghitungan opsi status kontrak dan status keaktifan PPPK ke dalam 1 iterasi tunggal, serta memanfaatkan `formatIndoDate` pada opsi filter perpanjangan.
+
 ## [v3.7.0] - 2026-09-20 (Production & Staging)
 
 ### Fitur Impor Nomor Kontrak Massal & Riwayat Kontrak Multi-Periode (Contract Versioning)

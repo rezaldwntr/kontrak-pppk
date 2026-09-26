@@ -174,24 +174,28 @@ const filteredData = computed(() => {
 
 const totalPegawai = computed(() => filteredData.value.length)
 
-const warningCount = computed(() => {
-  return filteredData.value.filter(item => {
-    return calculateContractPeriod(item).statusText === "Kontrak Hampir Habis"
-  }).length
+const contractCounts = computed(() => {
+  let warning = 0
+  let active = 0
+  let expired = 0
+
+  for (const item of filteredData.value) {
+    const s = calculateContractPeriod(item).statusText
+    if (s === 'Kontrak Hampir Habis') {
+      warning++
+    } else if (s === 'Kontrak Masih Berlaku') {
+      active++
+    } else if (s === 'Kontrak Habis' || s === 'Kontrak Habis (BUP)' || s === 'Meninggal') {
+      expired++
+    }
+  }
+
+  return { warning, active, expired }
 })
 
-const activeCount = computed(() => {
-  return filteredData.value.filter(item => {
-    return calculateContractPeriod(item).statusText === "Kontrak Masih Berlaku"
-  }).length
-})
-
-const expiredCount = computed(() => {
-  return filteredData.value.filter(item => {
-    const s = calculateContractPeriod(item).statusText;
-    return s === "Kontrak Habis" || s === "Kontrak Habis (BUP)" || s === "Meninggal"
-  }).length
-})
+const warningCount = computed(() => contractCounts.value.warning)
+const activeCount = computed(() => contractCounts.value.active)
+const expiredCount = computed(() => contractCounts.value.expired)
 
 // Data preparation for charts
 const jabatanChartData = computed(() => {

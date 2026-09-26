@@ -42,9 +42,38 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+import LZString from "lz-string";
+import { doc, setDoc } from "firebase/firestore";
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+/**
+ * Menyimpan data pegawai ke Firestore dengan kompresi LZString & chunking
+ * @param {Array} pppkData - Array data pegawai
+ */
+export async function savePegawaiChunks(pppkData) {
+  const dateNow = new Date().toISOString();
+  const pegawaiRef = doc(db, 'database', 'pegawai');
+  const pegawaiJson = JSON.stringify(pppkData);
+  const compressed = LZString.compressToUTF16(pegawaiJson);
+  const chunkSize = 250000;
+  const numChunks = Math.ceil(compressed.length / chunkSize);
+
+  for (let i = 0; i < numChunks; i++) {
+    const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
+    await setDoc(chunkRef, {
+      payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
+    });
+  }
+
+  await setDoc(pegawaiRef, {
+    compressed: true,
+    numChunks: numChunks,
+    lastUpdated: dateNow
+  });
+}
 
 export { auth, db };

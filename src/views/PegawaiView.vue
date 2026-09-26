@@ -125,13 +125,6 @@
     @save="handleSaveDetail"
   />
 
-  <PrintPreviewModal
-    v-if="showPrintOptions"
-    :show="showPrintOptions"
-    :pegawai="selectedItem"
-    @close="showPrintOptions = false"
-  />
-
   <ImportModal
     v-if="pegawaiStore.showImportModal"
     :show="pegawaiStore.showImportModal"
@@ -157,7 +150,6 @@ import { useRoute } from 'vue-router'
 import { usePegawaiStore } from '../stores/pegawaiStore'
 import PegawaiTable from '../components/pegawai/PegawaiTable.vue'
 import DetailModal from '../components/pegawai/DetailModal.vue'
-import PrintPreviewModal from '../components/pegawai/PrintPreviewModal.vue'
 import ImportModal from '../components/pegawai/ImportModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
@@ -172,7 +164,6 @@ const driveStore = useDriveStore()
 const route = useRoute()
 
 const showDetail = ref(false)
-const showPrintOptions = ref(false)
 const selectedItem = ref(null)
 const showPasswordModal = ref(false)
 const passwordPromptDesc = ref('')
@@ -302,7 +293,8 @@ const handleEdit = (item) => { console.log('Edit:', item) }
 
 const handlePrint = (item) => {
   selectedItem.value = item
-  showPrintOptions.value = true
+  downloadItems.value = [item]
+  showDownloadModal.value = true
 }
 
 const handleDelete = async (item) => {

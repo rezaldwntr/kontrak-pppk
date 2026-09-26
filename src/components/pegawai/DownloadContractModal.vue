@@ -155,6 +155,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { downloadSingleContract, downloadBatchContracts } from '../../utils/docxGenerator'
+import { getNamaLengkap } from '../../utils/pppkLogic'
 import { useDriveStore } from '../../stores/driveStore'
 import { useGoogleDrive } from '../../composables/useGoogleDrive'
 import { useDriveSync } from '../../composables/useDriveSync'
@@ -207,9 +208,6 @@ watch(() => props.isOpen, (v) => {
   }
 })
 
-function getNamaLengkap(item) {
-  return (item['NAMA'] || '').trim()
-}
 
 /**
  * Konversi string YYYY-MM-DD dari input date menjadi Date object lokal

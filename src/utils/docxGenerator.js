@@ -3,7 +3,14 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { db } from '../services/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { calculateContractPeriod, parseDate, getKelompokPegawai, cleanNomorKontrakTag } from './pppkLogic'
+import { 
+  calculateContractPeriod, 
+  parseDate, 
+  getKelompokPegawai, 
+  cleanNomorKontrakTag,
+  getNamaLengkap,
+  formatIndoDate
+} from './pppkLogic'
 import { calculateGajiFromItem } from './gajiTable'
 
 // ===== Helper Functions =====
@@ -42,17 +49,10 @@ function terbilang(n) {
 }
 
 const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
 function formatIndo(str) {
-  if (!str) return ''
-  if (str instanceof Date) {
-    if (isNaN(str.getTime())) return ''
-    return `${str.getDate()} ${BULAN[str.getMonth()]} ${str.getFullYear()}`
-  }
-  const d = parseDate(str)
-  if (!d || isNaN(d.getTime())) return ''
-  return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`
+  const res = formatIndoDate(str)
+  return res === '-' ? '' : res
 }
 
 function stripRupiah(str) {
@@ -77,11 +77,6 @@ function getSasaranPelayanan(item) {
   if (kelompok === 'Tenaga Guru') return 'Anak Didik'
   if (kelompok === 'Tenaga Kesehatan') return 'Pasien'
   return 'Masyarakat'
-}
-
-function getNamaLengkap(item) {
-  // Hanya kembalikan nama lengkap tanpa gelar depan/belakang sesuai permintaan
-  return (item['NAMA'] || '').trim()
 }
 
 /**

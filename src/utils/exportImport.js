@@ -1,7 +1,6 @@
 import * as XLSX from 'xlsx'
-import { db } from '../services/firebase'
+import { db, savePegawaiChunks } from '../services/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import LZString from 'lz-string'
 import { cleanNomorKontrakTag } from './pppkLogic'
 
 export const exportToExcel = (data, filename = 'Data_Pegawai.xlsx') => {
@@ -128,25 +127,8 @@ export const saveImportedData = async (newData, mode = 'append', currentData = [
       })
     }
 
-    // Save to Firestore (compress if large)
-    const jsonString = JSON.stringify(mergedData)
-    const compressed = LZString.compressToUTF16(jsonString)
-    const chunkSize = 250000;
-    const numChunks = Math.ceil(compressed.length / chunkSize);
-    
-    for (let i = 0; i < numChunks; i++) {
-      const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
-      await setDoc(chunkRef, {
-        payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
-      })
-    }
-
-    const docRef = doc(db, 'database', 'pegawai')
-    await setDoc(docRef, {
-      compressed: true,
-      numChunks: numChunks,
-      lastUpdated: new Date().toISOString()
-    })
+    // Save to Firestore (compress & chunked)
+    await savePegawaiChunks(mergedData)
     return mergedData
   } catch (error) {
     console.error("Save import error:", error)

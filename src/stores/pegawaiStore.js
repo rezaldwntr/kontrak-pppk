@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { db } from '../services/firebase'
+import { db, savePegawaiChunks } from '../services/firebase'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import LZString from 'lz-string'
 import { initialMockData } from '../utils/mockData'
@@ -154,31 +154,9 @@ export const usePegawaiStore = defineStore('pegawai', {
       }
     },
     async saveAllPegawai() {
-      const dateNow = new Date().toISOString()
-      const pegawaiRef = doc(db, 'database', 'pegawai')
-      
       // Jeda agar UI bisa merender animasi loading sebelum proses synchronous berat dimulai
       await new Promise(resolve => setTimeout(resolve, 50))
-      
-      const pegawaiJson = JSON.stringify(this.pppkData)
-      
-      await new Promise(resolve => setTimeout(resolve, 50))
-      const compressed = LZString.compressToUTF16(pegawaiJson)
-      const chunkSize = 250000;
-      const numChunks = Math.ceil(compressed.length / chunkSize);
-      
-      for (let i = 0; i < numChunks; i++) {
-        const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
-        await setDoc(chunkRef, {
-          payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
-        })
-      }
-      
-      await setDoc(pegawaiRef, {
-        compressed: true,
-        numChunks: numChunks,
-        lastUpdated: dateNow
-      })
+      await savePegawaiChunks(this.pppkData)
     },
     async batchExtend(selectedIds, formData) {
       this.isLoading = true
@@ -254,24 +232,7 @@ export const usePegawaiStore = defineStore('pegawai', {
         this.extensionHistory = [...historyEntries, ...this.extensionHistory]
         
         // Save to Firestore
-        const pegawaiRef = doc(db, 'database', 'pegawai')
-        const pegawaiJson = JSON.stringify(this.pppkData)
-        const compressed = LZString.compressToUTF16(pegawaiJson)
-        const chunkSize = 250000;
-        const numChunks = Math.ceil(compressed.length / chunkSize);
-        
-        for (let i = 0; i < numChunks; i++) {
-          const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
-          await setDoc(chunkRef, {
-            payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
-          })
-        }
-        
-        await setDoc(pegawaiRef, {
-          compressed: true,
-          numChunks: numChunks,
-          lastUpdated: dateNow
-        })
+        await this.saveAllPegawai()
         
         const historyRef = doc(db, 'database', 'riwayat')
         await setDoc(historyRef, {
@@ -317,19 +278,7 @@ export const usePegawaiStore = defineStore('pegawai', {
         this.extensionHistory.splice(index, 1)
 
         // Save Pegawai data
-        const pegawaiRef = doc(db, 'database', 'pegawai')
-        const pegawaiJson = JSON.stringify(this.pppkData)
-        const compressed = LZString.compressToUTF16(pegawaiJson)
-        const chunkSize = 250000;
-        const numChunks = Math.ceil(compressed.length / chunkSize);
-        
-        for (let i = 0; i < numChunks; i++) {
-          const chunkRef = doc(db, 'database', 'pegawai_chunk_' + i);
-          await setDoc(chunkRef, {
-            payload: compressed.substring(i * chunkSize, (i + 1) * chunkSize)
-          })
-        }
-        await setDoc(pegawaiRef, { compressed: true, numChunks, lastUpdated: dateNow })
+        await this.saveAllPegawai()
         
         // Save History
         const historyRef = doc(db, 'database', 'riwayat')

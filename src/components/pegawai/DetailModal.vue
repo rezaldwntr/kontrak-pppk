@@ -361,7 +361,16 @@
 <script setup>
 import { ref, watch, computed, nextTick } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
-import { calculateContractPeriod, parseDate, getStatusPppk, getGolonganPegawai, cleanNomorKontrakTag, formatNomorKontrakDisplay } from '../../utils/pppkLogic'
+import { 
+  calculateContractPeriod, 
+  parseDate, 
+  getStatusPppk, 
+  getGolonganPegawai, 
+  cleanNomorKontrakTag, 
+  formatNomorKontrakDisplay,
+  formatDateToInput,
+  formatIndoDate
+} from '../../utils/pppkLogic'
 import { calculateGajiFromItem, calculateMkg, normalizeGolongan, formatRupiah } from '../../utils/gajiTable'
 
 const props = defineProps({
@@ -382,17 +391,9 @@ const handleNomorKontrakInput = (e) => {
 }
 const gajiInfo = ref({ golongan: '', mkg: 0, gaji: null })
 
-const formatDateToInput = (dateObj) => {
-  if (!dateObj || isNaN(dateObj.getTime())) return ''
-  const y = dateObj.getFullYear()
-  const m = String(dateObj.getMonth() + 1).padStart(2, '0')
-  const d = String(dateObj.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.item) {
-    editForm.value = JSON.parse(JSON.stringify(props.item)) // Deep copy
+    editForm.value = typeof structuredClone === 'function' ? structuredClone(props.item) : JSON.parse(JSON.stringify(props.item))
     
     // Map legacy manual status
     const legacyStatus = editForm.value['STATUS KEAKTIFAN PPPK'];
@@ -549,27 +550,12 @@ const recalculateMkgAndGaji = () => {
 
   // Auto-fill Gaji Pokok Saat Ini dari tabel Perpres 11/2024
   if (result.gaji) {
-    editForm.value['GAJI POKOK SAAT INI'] = formatRupiahDisplay(result.gaji)
+    editForm.value['GAJI POKOK SAAT INI'] = formatRupiah(result.gaji)
   }
-}
-
-// Format rupiah untuk ditampilkan di template
-const formatRupiahDisplay = (amount) => {
-  if (!amount) return '-'
-  return Number(amount).toLocaleString('id-ID')
 }
 
 // Format tanggal untuk tampilan tabel riwayat
-const formatDateDisplay = (dateStr) => {
-  if (!dateStr) return '-'
-  try {
-    const d = parseDate(dateStr)
-    if (!d || isNaN(d.getTime())) return dateStr
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-  } catch (e) {
-    return dateStr
-  }
-}
+const formatDateDisplay = (dateStr) => formatIndoDate(dateStr, { month: 'short' })
 
 // Computed daftar riwayat kontrak untuk tabel
 const riwayatKontrakList = computed(() => {
