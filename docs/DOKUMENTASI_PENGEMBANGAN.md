@@ -30,6 +30,9 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - Di `PegawaiTable.vue`: Menyatukan penghitungan opsi status kontrak dan status keaktifan PPPK ke dalam 1 iterasi tunggal, serta memanfaatkan `formatIndoDate` pada opsi filter perpanjangan.
 - **Perbaikan Bug Notifikasi & Eksekusi Perpanjangan Kontrak (`PerpanjanganView.vue`)**:
   - Memperbaiki impor `customSwal` yang terlewat sehingga proses verifikasi modal password perpanjangan kontrak (individu maupun massal) dapat menampilkan dialog status proses loading dan mengeksekusi perpanjangan ke database dengan lancar tanpa error `ReferenceError: customSwal is not defined`.
+- **Perbaikan Bug Data Profil Pegawai Kosong pada Modal Detail (`DetailModal.vue`)**:
+  - Memperbaiki kegagalan inisialisasi data form saat membuka modal "Detail Data PPPK". Penggunaan `structuredClone(props.item)` sebelumnya menyebabkan JavaScript melempar `DOMException [DataCloneError]: #<Object> could not be cloned` karena objek reaktif Vue 3 berupa `Proxy` yang tidak dapat dikloning langsung oleh algoritma HTML Structured Clone bawaan browser.
+  - Mengembalikan metode kloning mendalam ke `JSON.parse(JSON.stringify(item))` dengan fallback `{ ...item }`, serta memperluas watcher reaktif ke tuple `[() => props.isOpen, () => props.item]` dengan `{ immediate: true }` sehingga data profil pegawai selalu terisi dengan andal.
 
 ## [v3.7.0] - 2026-09-20 (Production & Staging)
 

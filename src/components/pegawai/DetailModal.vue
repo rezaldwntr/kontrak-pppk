@@ -391,9 +391,13 @@ const handleNomorKontrakInput = (e) => {
 }
 const gajiInfo = ref({ golongan: '', mkg: 0, gaji: null })
 
-watch(() => props.isOpen, (newVal) => {
-  if (newVal && props.item) {
-    editForm.value = typeof structuredClone === 'function' ? structuredClone(props.item) : JSON.parse(JSON.stringify(props.item))
+watch([() => props.isOpen, () => props.item], ([isOpen, item]) => {
+  if (isOpen && item) {
+    try {
+      editForm.value = JSON.parse(JSON.stringify(item))
+    } catch {
+      editForm.value = { ...item }
+    }
     
     // Map legacy manual status
     const legacyStatus = editForm.value['STATUS KEAKTIFAN PPPK'];
