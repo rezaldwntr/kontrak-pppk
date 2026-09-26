@@ -28,6 +28,8 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Optimasi Performa Datar (Single-Pass Reducer / `ponytail-gain`)**:
   - Di `DashboardView.vue`: Menggabungkan 3 pass perulangan `.filter()` terpisah (`warningCount`, `activeCount`, `expiredCount`) menjadi 1 kali perulangan `single-pass` tanpa mengubah tipe kembalian maupun struktur reaktivitas.
   - Di `PegawaiTable.vue`: Menyatukan penghitungan opsi status kontrak dan status keaktifan PPPK ke dalam 1 iterasi tunggal, serta memanfaatkan `formatIndoDate` pada opsi filter perpanjangan.
+- **Perbaikan Bug Notifikasi & Eksekusi Perpanjangan Kontrak (`PerpanjanganView.vue`)**:
+  - Memperbaiki impor `customSwal` yang terlewat sehingga proses verifikasi modal password perpanjangan kontrak (individu maupun massal) dapat menampilkan dialog status proses loading dan mengeksekusi perpanjangan ke database dengan lancar tanpa error `ReferenceError: customSwal is not defined`.
 
 ## [v3.7.0] - 2026-09-20 (Production & Staging)
 

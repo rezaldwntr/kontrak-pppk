@@ -82,6 +82,7 @@ import ExtendModal from '../components/pegawai/ExtendModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
 import { calculateContractPeriod, getUnorAtasan, getUnorInduk } from '../utils/pppkLogic'
+import { customSwal } from '../utils/swal'
 
 const route = useRoute()
 const pegawaiStore = usePegawaiStore()
