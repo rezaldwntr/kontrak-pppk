@@ -2,7 +2,7 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
-## [v3.7.0] - 2026-09-20 (Staging)
+## [v3.7.0] - 2026-09-20 (Production & Staging)
 
 ### Fitur Impor Nomor Kontrak Massal & Riwayat Kontrak Multi-Periode (Contract Versioning)
 - **Impor Nomor Kontrak Massal via Excel (`ImportNomorKontrakModal.vue`)**:
