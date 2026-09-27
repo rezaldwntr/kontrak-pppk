@@ -33,6 +33,8 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Perbaikan Bug Data Profil Pegawai Kosong pada Modal Detail (`DetailModal.vue`)**:
   - Memperbaiki kegagalan inisialisasi data form saat membuka modal "Detail Data PPPK". Penggunaan `structuredClone(props.item)` sebelumnya menyebabkan JavaScript melempar `DOMException [DataCloneError]: #<Object> could not be cloned` karena objek reaktif Vue 3 berupa `Proxy` yang tidak dapat dikloning langsung oleh algoritma HTML Structured Clone bawaan browser.
   - Mengembalikan metode kloning mendalam ke `JSON.parse(JSON.stringify(item))` dengan fallback `{ ...item }`, serta memperluas watcher reaktif ke tuple `[() => props.isOpen, () => props.item]` dengan `{ immediate: true }` sehingga data profil pegawai selalu terisi dengan andal.
+- **Perbaikan Bug Google Drive Sync (`docxGenerator.js` & `useDriveSync.js`)**:
+  - Memperbaiki error `BULAN is not defined` saat proses sinkronisasi dokumen kontrak ke Google Drive. Variabel array konstanta `BULAN` terhapus saat refaktorisasi utilitas penanggalan sebelumnya, padahal masih digunakan untuk mengisi tag `{{KONTRAK_BULAN}}` pada pembuatan file Word. Konstanta `BULAN` telah dipulihkan pada `docxGenerator.js` sehingga seluruh file kontrak dapat dibuat dan disinkronkan ke Google Drive tanpa hambatan.
 
 ## [v3.7.0] - 2026-09-20 (Production & Staging)
 
