@@ -140,6 +140,7 @@
   <DownloadContractModal
     :isOpen="showDownloadModal"
     :items="downloadItems"
+    :initialDocType="downloadDocType"
     @close="showDownloadModal = false"
   />
 </template>
@@ -170,6 +171,7 @@ const passwordPromptDesc = ref('')
 let pendingAction = null
 const showDownloadModal = ref(false)
 const downloadItems = ref([])
+const downloadDocType = ref('kontrak')
 
 // Keterangan inline edit
 const editingKeteranganNip = ref(null)
@@ -250,13 +252,15 @@ const saveKeterangan = async (item) => {
   }
 }
 
-const handleDownload = (item) => {
+const handleDownload = (item, type = 'kontrak') => {
   downloadItems.value = [item]
+  downloadDocType.value = type
   showDownloadModal.value = true
 }
 
-const handleBatchDownload = (items) => {
+const handleBatchDownload = (items, type = 'kontrak') => {
   downloadItems.value = items
+  downloadDocType.value = type
   showDownloadModal.value = true
 }
 
@@ -291,9 +295,10 @@ const handleSaveDetail = async (updatedItem) => {
 
 const handleEdit = (item) => { console.log('Edit:', item) }
 
-const handlePrint = (item) => {
+const handlePrint = (item, type = 'kontrak') => {
   selectedItem.value = item
   downloadItems.value = [item]
+  downloadDocType.value = type
   showDownloadModal.value = true
 }
 

@@ -66,6 +66,7 @@
     <DownloadContractModal
       :isOpen="showDownloadModal"
       :items="downloadItems"
+      :initialDocType="downloadDocType"
       @close="showDownloadModal = false"
     />
   </div>
@@ -178,14 +179,17 @@ let pendingExtendData = null
 
 const showDownloadModal = ref(false)
 const downloadItems = ref([])
+const downloadDocType = ref('kontrak')
 
-const handleDownload = (item) => {
+const handleDownload = (item, type = 'kontrak') => {
   downloadItems.value = [item]
+  downloadDocType.value = type
   showDownloadModal.value = true
 }
 
-const handleBatchDownload = (items) => {
+const handleBatchDownload = (items, type = 'kontrak') => {
   downloadItems.value = items
+  downloadDocType.value = type
   showDownloadModal.value = true
 }
 
@@ -200,9 +204,10 @@ const handleView = (item) => {
   showDetail.value = true
 }
 
-const handlePrint = (item) => {
+const handlePrint = (item, type = 'kontrak') => {
   selectedItem.value = item
   downloadItems.value = [item]
+  downloadDocType.value = type
   showDownloadModal.value = true
 }
 

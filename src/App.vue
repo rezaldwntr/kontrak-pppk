@@ -15,6 +15,12 @@
       @close="pegawaiStore.showImportNomorKontrakModal = false"
       @saved="pegawaiStore.showImportNomorKontrakModal = false"
     />
+    <ImportNomorSkModal
+      v-if="pegawaiStore.showImportNomorSkModal"
+      :show="pegawaiStore.showImportNomorSkModal"
+      @close="pegawaiStore.showImportNomorSkModal = false"
+      @saved="pegawaiStore.showImportNomorSkModal = false"
+    />
   </div>
 </template>
 
@@ -27,6 +33,7 @@ import Sidebar from './components/layout/Sidebar.vue'
 import Header from './components/layout/Header.vue'
 import LoginModal from './components/auth/LoginModal.vue'
 import ImportNomorKontrakModal from './components/pegawai/ImportNomorKontrakModal.vue'
+import ImportNomorSkModal from './components/pegawai/ImportNomorSkModal.vue'
 import { customSwal } from './utils/swal'
 
 const authStore = useAuthStore()

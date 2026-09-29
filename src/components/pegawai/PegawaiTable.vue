@@ -140,11 +140,20 @@
         <button
           v-if="allowBatchDownload || !allowBatchExtend"
           class="btn btn-sm btn-primary btn-batch"
-          @click="emit('batchDownload', getSelectedItems())"
-          title="Unduh dokumen kontrak pegawai terpilih"
+          @click="emit('batchDownload', getSelectedItems(), 'kontrak')"
+          title="Unduh dokumen perjanjian kerja pegawai terpilih"
         >
-          <i class="fa-solid fa-download"></i>
+          <i class="fa-solid fa-file-contract"></i>
           <span>Unduh Kontrak ({{ selectedIds.length }})</span>
+        </button>
+        <button
+          v-if="allowBatchDownload || !allowBatchExtend"
+          class="btn btn-sm btn-batch btn-batch-sk"
+          @click="emit('batchDownload', getSelectedItems(), 'sk')"
+          title="Unduh dokumen Surat Keputusan (SK) pegawai terpilih"
+        >
+          <i class="fa-solid fa-file-shield"></i>
+          <span>Unduh SK ({{ selectedIds.length }})</span>
         </button>
         <button
           v-if="allowBatchDelete"
@@ -227,10 +236,18 @@
                   <button
                     class="btn btn-sm btn-primary btn-table-icon"
                     v-if="!allowBatchExtend && getStatusPppk(item) === 'Aktif'"
-                    @click="emit('download', item)"
+                    @click="emit('download', item, 'kontrak')"
                     title="Unduh Perjanjian Kerja"
                   >
-                    <i class="fa-solid fa-download"></i>
+                    <i class="fa-solid fa-file-contract"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-table-icon btn-table-icon-sk"
+                    v-if="!allowBatchExtend && getStatusPppk(item) === 'Aktif'"
+                    @click="emit('download', item, 'sk')"
+                    title="Unduh Surat Keputusan (SK)"
+                  >
+                    <i class="fa-solid fa-file-shield"></i>
                   </button>
                   <button
                     class="btn btn-sm btn-success btn-table-icon"
@@ -243,10 +260,18 @@
                   <button
                     class="btn btn-sm btn-primary btn-table-icon"
                     v-if="allowBatchExtend && getStatusPppk(item) === 'Aktif'"
-                    @click="emit('download', item)"
+                    @click="emit('download', item, 'kontrak')"
                     title="Unduh Perjanjian Kerja"
                   >
-                    <i class="fa-solid fa-download"></i>
+                    <i class="fa-solid fa-file-contract"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-table-icon btn-table-icon-sk"
+                    v-if="allowBatchExtend && getStatusPppk(item) === 'Aktif'"
+                    @click="emit('download', item, 'sk')"
+                    title="Unduh Surat Keputusan (SK)"
+                  >
+                    <i class="fa-solid fa-file-shield"></i>
                   </button>
                 </div>
               </td>
@@ -1080,5 +1105,27 @@ const getRowClass = (item) => {
     align-items: center;
     text-align: center;
   }
+}
+
+.btn-table-icon-sk {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.btn-table-icon-sk:hover {
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
+}
+
+.btn-batch-sk {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.btn-batch-sk:hover {
+  background: #f59e0b;
+  color: white;
+  border-color: #f59e0b;
 }
 </style>

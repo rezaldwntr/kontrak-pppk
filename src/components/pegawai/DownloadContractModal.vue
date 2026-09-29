@@ -3,15 +3,15 @@
     <div class="modal-container responsive-modal">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="modal-header-icon" style="width: 38px; height: 38px; border-radius: 10px; background: rgba(37, 99, 235, 0.12); color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
-            <i class="fa-solid fa-file-word"></i>
+          <div class="modal-header-icon" style="width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;" :style="docType === 'sk' ? 'background: rgba(245, 158, 11, 0.15); color: #d97706;' : 'background: rgba(37, 99, 235, 0.12); color: #2563eb;'">
+            <i :class="docType === 'sk' ? 'fa-solid fa-file-shield' : 'fa-solid fa-file-contract'"></i>
           </div>
           <div>
             <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">
               {{ docType === 'sk' ? 'Unduh Surat Keputusan (SK)' : 'Unduh Perjanjian Kerja' }}
             </h3>
             <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
-              {{ items.length === 1 ? (docType === 'sk' ? 'Generate dan unduh dokumen SK PPPK Paruh Waktu resmi' : 'Generate dan unduh dokumen perjanjian kerja PPPK') : (docType === 'sk' ? `Generate SK serentak untuk ${items.length} pegawai terpilih` : `Generate dokumen serentak untuk ${items.length} pegawai terpilih`) }}
+              {{ items.length === 1 ? (docType === 'sk' ? 'Generate dan unduh dokumen Surat Keputusan (SK) PPPK resmi' : 'Generate dan unduh dokumen perjanjian kerja PPPK') : (docType === 'sk' ? `Generate SK serentak untuk ${items.length} pegawai terpilih` : `Generate dokumen serentak untuk ${items.length} pegawai terpilih`) }}
             </p>
 
           </div>
@@ -70,8 +70,8 @@
               <small class="text-muted" style="font-size:11px">Scan menampilkan nomor NIP</small>
             </label>
           </div>
-          <div v-if="hasNonParuhWaktu" style="margin-top: 10px; font-size: 0.82rem; color: #b45309; background: rgba(245, 158, 11, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.25);">
-            <i class="fa-solid fa-circle-info"></i> Catatan: Template SK saat ini khusus untuk PPPK Paruh Waktu.
+          <div style="margin-top: 10px; font-size: 0.82rem; color: #1e40af; background: rgba(37, 99, 235, 0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(37, 99, 235, 0.2);">
+            <i class="fa-solid fa-circle-info"></i> SK berlaku untuk PPPK Penuh Waktu dan Paruh Waktu (klausul gaji/upah otomatis disesuaikan).
           </div>
         </div>
 
@@ -243,7 +243,8 @@ onMounted(async () => {
 
 const props = defineProps({
   isOpen: Boolean,
-  items: { type: Array, default: () => [] }
+  items: { type: Array, default: () => [] },
+  initialDocType: { type: String, default: 'kontrak' }
 })
 const emit = defineEmits(['close', 'success'])
 
@@ -284,7 +285,7 @@ watch(() => props.isOpen, (v) => {
     errorMsg.value = ''
     progress.value = 0
     isGenerating.value = false
-    docType.value = 'kontrak'
+    docType.value = props.initialDocType || 'kontrak'
     qrMode.value = 'url'
     tanggalSkStr.value = ''
     if (props.items.length === 1 && exportFormat.value === 'merged') {

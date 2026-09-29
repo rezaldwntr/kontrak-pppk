@@ -166,6 +166,40 @@
               <i class="fa-solid fa-circle-check"></i> Template Berhasil Diperbarui
             </div>
           </div>
+
+          <!-- Card 3: Template Surat Keputusan (SK) -->
+          <div class="template-card">
+            <div class="template-badge-wrap">
+              <span class="badge-status-sk">Universal (Penuh &amp; Paruh Waktu)</span>
+            </div>
+            <h4><i class="fa-regular fa-file-word" style="color: #6366f1;"></i> Template Surat Keputusan (SK)</h4>
+            <p class="text-muted">Master dokumen Word (.docx) Surat Keputusan Pengangkatan PPPK dilengkapi penempatan Barcode / QR Code BKN.</p>
+            
+            <div v-if="availableTemplates.template_sk" class="template-uploaded-alert">
+              <div class="uploaded-indicator">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Template Terpasang &amp; Aktif</span>
+              </div>
+              <button
+                class="btn btn-outline-danger btn-sm btn-table-icon"
+                @click="handleDeleteTemplate('template_sk')"
+                title="Hapus Master Template"
+              >
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+
+            <div class="upload-wrapper">
+              <input type="file" accept=".docx" @change="(e) => handleUpload(e, 'template_sk')" id="upload-sk" hidden>
+              <label for="upload-sk" class="btn btn-outline upload-btn-label">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>{{ availableTemplates.template_sk ? 'Ganti Template .docx' : 'Unggah File .docx' }}</span>
+              </label>
+            </div>
+            <div v-if="uploadStatus.template_sk" class="status-text success">
+              <i class="fa-solid fa-circle-check"></i> Template Berhasil Diperbarui
+            </div>
+          </div>
         </div>
 
         <div v-if="isUploading" class="upload-loading-banner">
@@ -338,7 +372,23 @@ const templateTags = [
   { category: 'Tanggal Penandatanganan Kontrak', tag: '{{KONTRAK_BULAN}}', desc: 'Bulan penandatanganan kontrak (contoh: AGUSTUS)' },
   { category: 'Tanggal Penandatanganan Kontrak', tag: '{{KONTRAK_TAHUN_TERBILANG}}', desc: 'Tahun penandatanganan — terbilang huruf besar (contoh: DUA RIBU DUA PULUH ENAM)' },
   { category: 'Pemisahan Halaman', tag: '{{#perjanjian}} ... {{/perjanjian}}', desc: 'Bungkus Halaman Isi Perjanjian dengan tag ini (khusus mode unduh Pisah)' },
-  { category: 'Pemisahan Halaman', tag: '{{#tandatangan}} ... {{/tandatangan}}', desc: 'Bungkus Halaman Tanda Tangan dengan tag ini (khusus mode unduh Pisah)' }
+  { category: 'Pemisahan Halaman', tag: '{{#tandatangan}} ... {{/tandatangan}}', desc: 'Bungkus Halaman Tanda Tangan dengan tag ini (khusus mode unduh Pisah)' },
+  { category: 'Dokumen SK', tag: '{{NOMOR_SK}}', desc: 'Nomor Surat Keputusan PPPK (format otomatis 800.1.2.5/[No]/BKPSDM)' },
+  { category: 'Dokumen SK', tag: '{{NAMA_LENGKAP}}', desc: 'Nama Lengkap PPPK beserta gelar' },
+  { category: 'Dokumen SK', tag: '{{NIP}}', desc: 'NIP Baru PPPK' },
+  { category: 'Dokumen SK', tag: '{{TEMPAT_TGL_LAHIR}}', desc: 'Tempat dan Tanggal Lahir (Format: Kota, DD Bulan YYYY)' },
+  { category: 'Dokumen SK', tag: '{{JENIS_KELAMIN}}', desc: 'Jenis Kelamin (Pria / Wanita)' },
+  { category: 'Dokumen SK', tag: '{{PENDIDIKAN_LULUS}}', desc: 'Pendidikan Terakhir dan Tahun Lulus (Format: Pendidikan Tahun YYYY)' },
+  { category: 'Dokumen SK', tag: '{{JABATAN_NAMA}}', desc: 'Nama Jabatan PPPK' },
+  { category: 'Dokumen SK', tag: '{{GOLONGAN}}', desc: 'Golongan PPPK (contoh: IX)' },
+  { category: 'Dokumen SK', tag: '{{GAJI}}', desc: 'Gaji/Upah: "AKAN DICANTUMKAN DALAM PERJANJIAN KERJA" (Paruh Waktu) atau nominal Rupiah (Penuh Waktu)' },
+  { category: 'Dokumen SK', tag: '{{UNOR_NAMA}}', desc: 'Unit Organisasi / Penempatan (sumber: UNOR NAMA)' },
+  { category: 'Dokumen SK', tag: '{{TMT_AWAL}}', desc: 'Tanggal Mulai Berlaku SK (Format: DD Bulan YYYY)' },
+  { category: 'Dokumen SK', tag: '{{TMT_AKHIR}}', desc: 'Tanggal Berakhir Masa Hubungan Perjanjian Kerja SK (Format: DD Bulan YYYY)' },
+  { category: 'Dokumen SK', tag: '{{TANGGAL_SK}}', desc: 'Tanggal Penetapan SK Bupati (Format: DD Bulan YYYY)' },
+  { category: 'Dokumen SK', tag: '{{NAMA_BUPATI}}', desc: 'Nama Bupati / Pejabat yang menetapkan' },
+  { category: 'Dokumen SK', tag: '{{JABATAN_BUPATI}}', desc: 'Jabatan Bupati / Pejabat yang menetapkan' },
+  { category: 'Dokumen SK', tag: '{{QR_CODE}}', desc: 'Posisi Barcode / QR Code validasi BKN (Bisa juga gunakan {{BARCODE}} atau MERGEBARCODE)' }
 ]
 
 const filteredTags = computed(() => {
@@ -418,11 +468,13 @@ const isUploading = ref(false)
 const errorMsg = ref('')
 const uploadStatus = reactive({
   template_f4: false,
-  template_paruh_f4: false
+  template_paruh_f4: false,
+  template_sk: false
 })
 const availableTemplates = reactive({
   template_f4: false,
-  template_paruh_f4: false
+  template_paruh_f4: false,
+  template_sk: false
 })
 
 const loadTemplatesStatus = async () => {
@@ -433,6 +485,7 @@ const loadTemplatesStatus = async () => {
       const data = docSnap.data()
       availableTemplates.template_f4 = !!(data.template_f4 || data.template_reguler || data.template)
       availableTemplates.template_paruh_f4 = !!(data.template_paruh_f4 || data.template_paruh)
+      availableTemplates.template_sk = !!(data.template_sk || data.template_sk_paruh)
     }
   } catch (error) {
     console.error("Failed to load templates status", error)
@@ -751,6 +804,15 @@ const handleChangePassword = async () => {
 .badge-status-paruh {
   background: rgba(245, 158, 11, 0.15);
   color: #d97706;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.badge-status-sk {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
   border-radius: 6px;
   padding: 3px 10px;
   font-size: 0.78rem;

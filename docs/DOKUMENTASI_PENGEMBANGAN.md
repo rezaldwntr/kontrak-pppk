@@ -522,3 +522,42 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
     - **View 1 (Utama/Default):** Menampilkan folder-folder dari **Drive Saya (My Drive)** pengguna.
     - **View 2 (Sekunder):** Menampilkan **Drive Bersama (Shared Drives)** jika instansi menggunakan Shared Drive.
     - Dengan perubahan ini, begitu dialog Google Picker terbuka, tab yang aktif pertama kali adalah seluruh folder yang ada di **Drive Saya** milik pengguna.
+
+### Pembaruan Fitur Surat Keputusan (SK) & Impor Nomor SK (29 September 2026)
+- **Pemisahan Aksi Unduh Dokumen (Perjanjian Kerja vs SK):**
+  - **Tabel Pegawai:** Memisahkan tombol aksi individual menjadi dua tombol terpisah: *Unduh Perjanjian Kerja* (ikon dokumen biru) dan *Unduh Surat Keputusan (SK)* (ikon sertifikat/stamp berwarna amber/oranye `.btn-table-icon-sk`).
+  - **Aksi Massal (Batch Action Bar):** Tombol batch download dipisahkan menjadi *Unduh Kontrak (N)* dan *Unduh SK (N)* (`.btn-batch-sk`), memungkinkan pengguna mengunduh arsip ZIP kontrak atau SK secara independen.
+  - **Modal Detail Pegawai:** Memisahkan tombol cetak di bagian footer menjadi *Cetak Kontrak* dan *Cetak SK*.
+  - **Modal Pengaturan Unduh:** Mendukung prop `initialDocType` ('kontrak' | 'sk') dengan ikon, judul, dan keterangan yang menyesuaikan jenis dokumen yang sedang diproses.
+- **Fitur Impor Massal Nomor SK via Excel (`ImportNomorSkModal.vue`):**
+  - Menyediakan modal impor massal nomor SK dengan alur yang identik dengan impor nomor perjanjian kerja.
+  - Mendukung target pembaruan periode SK: *Otomatis (Periode Aktif)*, *Khusus SK Pertama*, dan *Khusus SK Perpanjangan*.
+  - Dilengkapi fitur unduh template Excel (`NOMOR SK`), parsing format penomoran `800.1.2.5/[Nomor]/BKPSDM`, pencocokan NIP, dan pratinjau statistik (Total Baris, NIP Cocok, NIP Tidak Ditemukan, Format Valid) serta 5 data pertama sebelum disimpan ke Firestore.
+  - Tombol akses *Impor No. SK* diletakkan di header aplikasi bersanding dengan tombol *Impor No. Kontrak*.
+- **Integrasi Master Template SK Dokumen Word (.docx) di Menu Pengaturan:**
+  - Menambahkan Card 3 di Tab Master Dokumen: *Template Surat Keputusan (SK)* (`template_sk`) dengan badge status *Universal (Penuh & Paruh Waktu)*.
+  - Pengguna dapat mengunggah template Word SK kustom, menggantinya kapan saja, atau menghapusnya (kembali ke template bawaan).
+  - Generator SK otomatis memprioritaskan template kustom yang diunggah pengguna ke Firestore (`config/templates`).
+- **Pembaruan Daftar Tag Template untuk SK di Menu Pengaturan:**
+  - Menambahkan kategori tag baru *Dokumen SK* pada tabel referensi tag di halaman pengaturan:
+    - `{{NOMOR_SK}}` / `{{NO_SK}}`: Nomor SK format lengkap `800.1.2.5/[Nomor]/BKPSDM`.
+    - `{{NAMA_LENGKAP}}`: Nama lengkap pegawai beserta gelar.
+    - `{{NIP}}`: NIP Baru PPPK.
+    - `{{TEMPAT_TGL_LAHIR}}`: Tempat dan tanggal lahir format Indonesia.
+    - `{{JENIS_KELAMIN}}`: Jenis kelamin (Pria / Wanita).
+    - `{{PENDIDIKAN_LULUS}}`: Pendidikan dan tahun kelulusan.
+    - `{{JABATAN_NAMA}}`: Nama jabatan kerja PPPK.
+    - `{{GOLONGAN}}`: Golongan PPPK.
+    - `{{GAJI}}`: Gaji/Upah otomatis (nominal rupiah untuk Penuh Waktu atau klausul paruh waktu).
+    - `{{UNOR_NAMA}}`: Unit kerja / OPD penempatan.
+    - `{{TMT_AWAL}}` & `{{TMT_AKHIR}}`: Tanggal masa hubungan perjanjian kerja.
+    - `{{TANGGAL_SK}}`: Tanggal penetapan SK oleh Bupati.
+    - `{{NAMA_BUPATI}}` & `{{JABATAN_BUPATI}}`: Nama dan jabatan penandatangan (Pihak Pertama).
+    - `{{QR_CODE}}` / `{{BARCODE}}`: Posisi penyisipan gambar Barcode/QR Code resmi BKN berlogo Garuda.
+- **Otomatisasi Klausul Gaji/Upah pada SK (Penuh vs Paruh Waktu):**
+  - Mengimplementasikan `getGajiSkText(item)`:
+    - Untuk PPPK Paruh Waktu: secara konsisten menampilkan teks `"AKAN DICANTUMKAN DALAM PERJANJIAN KERJA"`.
+    - Untuk PPPK Penuh Waktu: menampilkan nominal gaji pokok terformat rupiah (misal `"Rp 3.200.000"`).
+  - Generator SK mampu menggantikan tag `{{GAJI}}` secara dinamis, serta otomatis menggantikan teks statis paruh waktu menjadi nominal gaji rupiah jika template paruh waktu digunakan untuk mencetak SK pegawai penuh waktu.
+- **Penamaan Berkas Unduh Dinamis:**
+  - Penamaan berkas unduh SK kini secara cerdas menggunakan awalan `SK_PPPK_Paruh_Waktu_[NIP]_[NAMA].docx` untuk paruh waktu dan `SK_PPPK_[NIP]_[NAMA].docx` untuk penuh waktu, serta arsip batch `SK_PPPK_Batch_[Jumlah]_Pegawai_[Tanggal].zip`.
