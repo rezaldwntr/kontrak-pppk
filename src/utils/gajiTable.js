@@ -6,7 +6,7 @@
  * kecuali Golongan V dari MKG 0 ke MKG 1 yang naik setelah 1 tahun.
  */
 
-import { parseDate } from './pppkLogic'
+import { parseDate } from './pppkLogic.js'
 
 // ============================================================
 // TABEL GAJI LENGKAP

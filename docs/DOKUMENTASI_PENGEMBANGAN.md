@@ -2,7 +2,7 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
-## [v3.8.0] - 2026-09-26 (Staging)
+## [v3.8.0] - 2026-09-29 (Production & Staging)
 
 ### Pembersihan Kode, Eliminasi Duplikasi, dan Optimasi Sesuai Kaidah Ponytail Master Rules
 - **Pembersihan File Mati & Dead Routes (`ponytail-debt` & YAGNI)**:
@@ -35,6 +35,10 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - Mengembalikan metode kloning mendalam ke `JSON.parse(JSON.stringify(item))` dengan fallback `{ ...item }`, serta memperluas watcher reaktif ke tuple `[() => props.isOpen, () => props.item]` dengan `{ immediate: true }` sehingga data profil pegawai selalu terisi dengan andal.
 - **Perbaikan Bug Google Drive Sync (`docxGenerator.js` & `useDriveSync.js`)**:
   - Memperbaiki error `BULAN is not defined` saat proses sinkronisasi dokumen kontrak ke Google Drive. Variabel array konstanta `BULAN` terhapus saat refaktorisasi utilitas penanggalan sebelumnya, padahal masih digunakan untuk mengisi tag `{{KONTRAK_BULAN}}` pada pembuatan file Word. Konstanta `BULAN` telah dipulihkan pada `docxGenerator.js` sehingga seluruh file kontrak dapat dibuat dan disinkronkan ke Google Drive tanpa hambatan.
+- **Perbaikan Cacat Nilai Batas Tanggal Kosong / DEF-001 (`pppkLogic.js`)**:
+  - Memperbaiki penanganan data pegawai yang belum memiliki tanggal TMT atau data kosong (`{}`). Sebelumnya fungsi mengembalikan `"Format Tanggal Invalid"`. Kini dikembalikan tanda strip `"-"` sehingga tampilan tabel dan kartu data tetap rapi.
+- **Integrasi Standar QA, QC & Software Testing (`QA, QA and Testing.md`)**:
+  - Menetapkan kerangka kerja pengujian resmi dan memverifikasi kepatuhan 61 skenario uji dinamis pada 164 data pegawai riil dengan tingkat kelulusan 100%.
 
 ## [v3.7.0] - 2026-09-20 (Production & Staging)
 
