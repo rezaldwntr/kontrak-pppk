@@ -11,7 +11,7 @@ import {
 } from './pppkLogic'
 import { calculateGajiFromItem } from './gajiTable'
 import { generateBknQrUint8Array } from './qrCode'
-import bundledSkTemplateUrl from '../assets/img/data_samples/Template SK PPPK Paruh Waktu.docx?url'
+import bundledSkTemplateUrl from '../assets/img/data_samples/Template SK PPPK.docx?url'
 
 function escapeXml(str) {
   return String(str ?? '')
@@ -95,6 +95,13 @@ async function loadSkTemplateBytes() {
     }
   } catch (e) {
     console.warn('Gagal memuat template SK dari Firestore, gunakan template bawaan:', e)
+  }
+
+  try {
+    const res = await fetch('/templates/Template_SK_PPPK.docx')
+    if (res.ok) return await res.arrayBuffer()
+  } catch (e) {
+    console.warn('Fetch /templates/Template_SK_PPPK.docx gagal:', e)
   }
 
   try {

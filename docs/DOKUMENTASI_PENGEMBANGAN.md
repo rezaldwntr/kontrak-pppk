@@ -561,3 +561,13 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - Generator SK mampu menggantikan tag `{{GAJI}}` secara dinamis, serta otomatis menggantikan teks statis paruh waktu menjadi nominal gaji rupiah jika template paruh waktu digunakan untuk mencetak SK pegawai penuh waktu.
 - **Penamaan Berkas Unduh Dinamis:**
   - Penamaan berkas unduh SK kini secara cerdas menggunakan awalan `SK_PPPK_Paruh_Waktu_[NIP]_[NAMA].docx` untuk paruh waktu dan `SK_PPPK_[NIP]_[NAMA].docx` untuk penuh waktu, serta arsip batch `SK_PPPK_Batch_[Jumlah]_Pegawai_[Tanggal].zip`.
+- **Pemisahan Modal Unduh Menjadi Dua Komponen Terpisah:**
+  - **`DownloadContractModal.vue`:** Dikembalikan fokus sepenuhnya untuk dokumen Perjanjian Kerja / Kontrak (opsi ukuran kertas F4/A4, bagian dokumen penuh/perjanjian/tanda tangan/pisah, tanggal penandatanganan kontrak, dan ekspor gabung/ZIP).
+  - **`DownloadSkModal.vue`:** Komponen modal baru yang mandiri dan berfokus khusus pada Surat Keputusan (SK). Menyediakan opsi QR Code (URL verifikasi publik vs nomor NIP), tanggal penetapan SK oleh Bupati, pratinjau tanggal Indonesia, serta proses pembuatan dokumen SK (.docx/ZIP).
+  - Integrasi di `PegawaiView.vue` dan `PerpanjanganView.vue`: Tombol "Unduh Perjanjian Kerja" membuka modal kontrak, sedangkan tombol "Unduh Surat Keputusan (SK)" membuka modal SK secara independen.
+- **Pemisahan Daftar Tag Template di Menu Pengaturan (`SettingsView.vue`):**
+  - Daftar tag tidak lagi digabung dalam satu baris list/tabel yang panjang.
+  - Disediakan sub-tab switcher interaktif di bagian atas tabel:
+    - **Tag Perjanjian Kerja (Kontrak)** (25 tag): Berisi tag khusus kontrak dengan aksen hijau emerald.
+    - **Tag Surat Keputusan (SK)** (17 tag): Berisi tag khusus SK dengan aksen amber/oranye.
+  - Setiap sub-tab memiliki judul, deskripsi panduan yang spesifik, badge kategori mandiri, dan kotak pencarian reaktif.

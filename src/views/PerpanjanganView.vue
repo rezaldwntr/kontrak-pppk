@@ -64,10 +64,14 @@
       @success="executeBatchExtend"
     />
     <DownloadContractModal
-      :isOpen="showDownloadModal"
-      :items="downloadItems"
-      :initialDocType="downloadDocType"
-      @close="showDownloadModal = false"
+      :isOpen="showDownloadContractModal"
+      :items="contractDownloadItems"
+      @close="showDownloadContractModal = false"
+    />
+    <DownloadSkModal
+      :isOpen="showDownloadSkModal"
+      :items="skDownloadItems"
+      @close="showDownloadSkModal = false"
     />
   </div>
 </template>
@@ -82,6 +86,7 @@ import DetailModal from '../components/pegawai/DetailModal.vue'
 import ExtendModal from '../components/pegawai/ExtendModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
+import DownloadSkModal from '../components/pegawai/DownloadSkModal.vue'
 import { calculateContractPeriod, getUnorAtasan, getUnorInduk } from '../utils/pppkLogic'
 import { customSwal } from '../utils/swal'
 
@@ -177,20 +182,29 @@ const showPasswordModal = ref(false)
 const passwordPromptDesc = ref('')
 let pendingExtendData = null
 
-const showDownloadModal = ref(false)
-const downloadItems = ref([])
-const downloadDocType = ref('kontrak')
+const showDownloadContractModal = ref(false)
+const contractDownloadItems = ref([])
+const showDownloadSkModal = ref(false)
+const skDownloadItems = ref([])
 
 const handleDownload = (item, type = 'kontrak') => {
-  downloadItems.value = [item]
-  downloadDocType.value = type
-  showDownloadModal.value = true
+  if (type === 'sk') {
+    skDownloadItems.value = [item]
+    showDownloadSkModal.value = true
+  } else {
+    contractDownloadItems.value = [item]
+    showDownloadContractModal.value = true
+  }
 }
 
 const handleBatchDownload = (items, type = 'kontrak') => {
-  downloadItems.value = items
-  downloadDocType.value = type
-  showDownloadModal.value = true
+  if (type === 'sk') {
+    skDownloadItems.value = items
+    showDownloadSkModal.value = true
+  } else {
+    contractDownloadItems.value = items
+    showDownloadContractModal.value = true
+  }
 }
 
 onMounted(() => {
@@ -206,9 +220,13 @@ const handleView = (item) => {
 
 const handlePrint = (item, type = 'kontrak') => {
   selectedItem.value = item
-  downloadItems.value = [item]
-  downloadDocType.value = type
-  showDownloadModal.value = true
+  if (type === 'sk') {
+    skDownloadItems.value = [item]
+    showDownloadSkModal.value = true
+  } else {
+    contractDownloadItems.value = [item]
+    showDownloadContractModal.value = true
+  }
 }
 
 const handleBatchExtend = (selectedIds) => {

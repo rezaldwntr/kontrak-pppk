@@ -3,17 +3,16 @@
     <div class="modal-container responsive-modal">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="modal-header-icon" style="width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;" :style="docType === 'sk' ? 'background: rgba(245, 158, 11, 0.15); color: #d97706;' : 'background: rgba(37, 99, 235, 0.12); color: #2563eb;'">
-            <i :class="docType === 'sk' ? 'fa-solid fa-file-shield' : 'fa-solid fa-file-contract'"></i>
+          <div class="modal-header-icon" style="width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+            <i class="fa-solid fa-file-contract"></i>
           </div>
           <div>
             <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text-dark);">
-              {{ docType === 'sk' ? 'Unduh Surat Keputusan (SK)' : 'Unduh Perjanjian Kerja' }}
+              Unduh Perjanjian Kerja
             </h3>
             <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">
-              {{ items.length === 1 ? (docType === 'sk' ? 'Generate dan unduh dokumen Surat Keputusan (SK) PPPK resmi' : 'Generate dan unduh dokumen perjanjian kerja PPPK') : (docType === 'sk' ? `Generate SK serentak untuk ${items.length} pegawai terpilih` : `Generate dokumen serentak untuk ${items.length} pegawai terpilih`) }}
+              {{ items.length === 1 ? 'Generate dan unduh dokumen perjanjian kerja PPPK' : `Generate dokumen serentak untuk ${items.length} pegawai terpilih` }}
             </p>
-
           </div>
         </div>
         <button class="close-btn" @click="emit('close')" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
@@ -31,74 +30,12 @@
           <i class="fa-solid fa-users" style="font-size: 1.5rem; color: #2563eb;"></i>
           <div>
             <div style="font-weight: bold;">{{ items.length }} Pegawai Terpilih</div>
-            <div class="text-muted" style="font-size: 0.85rem;">Dokumen akan diunduh dalam format <strong>.zip</strong></div>
+            <div class="text-muted" style="font-size: 0.85rem;">Dokumen akan diunduh dalam format <strong>.zip</strong> atau <strong>.docx</strong> gabungan</div>
           </div>
         </div>
 
-        <!-- Pemilihan Jenis Dokumen -->
-        <div class="form-group" style="margin-bottom: 18px;">
-          <label style="font-weight: bold; margin-bottom: 10px; display: block;">Jenis Dokumen</label>
-          <div class="options-container">
-            <label class="paper-option" :class="{ active: docType === 'kontrak' }" @click="docType = 'kontrak'">
-              <i class="fa-solid fa-file-contract"></i>
-              <span>Perjanjian Kerja</span>
-              <small class="text-muted" style="font-size:11px">Kontrak Kerja PPPK</small>
-            </label>
-            <label class="paper-option" :class="{ active: docType === 'sk' }" @click="docType = 'sk'">
-              <i class="fa-solid fa-file-shield"></i>
-              <span>Surat Keputusan (SK)</span>
-              <small class="text-muted" style="font-size:11px">SK Paruh Waktu + QR BKN</small>
-            </label>
-          </div>
-        </div>
-
-        <!-- Opsi Barcode / QR Code (Khusus SK) -->
-        <div v-if="docType === 'sk'" class="form-group" style="margin-bottom: 18px;">
-          <label style="font-weight: bold; margin-bottom: 10px; display: block;">
-            <i class="fa-solid fa-qrcode" style="color: #2563eb; margin-right: 6px;"></i>
-            Isian Barcode / QR Code SK
-          </label>
-          <div class="options-container">
-            <label class="paper-option" :class="{ active: qrMode === 'url' }" @click="qrMode = 'url'">
-              <i class="fa-solid fa-link"></i>
-              <span>URL Verifikasi Publik</span>
-              <small class="text-muted" style="font-size:11px">Scan membuka sertifikat keaslian</small>
-            </label>
-            <label class="paper-option" :class="{ active: qrMode === 'nip' }" @click="qrMode = 'nip'">
-              <i class="fa-solid fa-id-card"></i>
-              <span>Nomor NIP Saja</span>
-              <small class="text-muted" style="font-size:11px">Scan menampilkan nomor NIP</small>
-            </label>
-          </div>
-          <div style="margin-top: 10px; font-size: 0.82rem; color: #1e40af; background: rgba(37, 99, 235, 0.08); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(37, 99, 235, 0.2);">
-            <i class="fa-solid fa-circle-info"></i> SK berlaku untuk PPPK Penuh Waktu dan Paruh Waktu (klausul gaji/upah otomatis disesuaikan).
-          </div>
-        </div>
-
-        <!-- Tanggal Penetapan SK (Khusus SK) -->
-        <div v-if="docType === 'sk'" class="form-group" style="margin-bottom: 18px;">
-          <label style="font-weight: bold; margin-bottom: 8px; display: block;">
-            <i class="fa-solid fa-calendar-day" style="color: #2563eb; margin-right: 6px;"></i>
-            Tanggal Penetapan SK
-          </label>
-          <input
-            type="date"
-            v-model="tanggalSkStr"
-            class="form-control"
-            style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); font-size: 0.95rem; background: var(--bg-primary, #fff); color: var(--text-primary);"
-          />
-          <div v-if="tanggalSkStr" style="margin-top: 6px; font-size: 0.82rem; color: var(--text-muted);">
-            <i class="fa-solid fa-circle-info"></i>
-            Akan mengisi tanggal penetapan SK: <strong>{{ previewTanggalSk }}</strong>
-          </div>
-          <div v-else style="margin-top: 6px; font-size: 0.82rem; color: #f59e0b;">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            Tanggal belum dipilih — akan menggunakan tanggal default template SK (30 September 2026)
-          </div>
-        </div>
-
-        <!-- Mode Ekspor (Hanya untuk lebih dari 1 pegawai dan dokumen kontrak) -->
-        <div v-if="items.length > 1 && docType === 'kontrak'" class="form-group" style="margin-bottom: 18px;">
+        <!-- Mode Ekspor (Hanya untuk lebih dari 1 pegawai) -->
+        <div v-if="items.length > 1" class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Format Output (Batch)</label>
           <div class="options-container">
             <label class="paper-option" :class="{ active: exportFormat === 'merged', disabled: documentPart === 'pisah' }" @click="documentPart !== 'pisah' && (exportFormat = 'merged')">
@@ -114,9 +51,8 @@
           </div>
         </div>
 
-        <!-- Bagian Dokumen yang Diunduh (Hanya untuk Dokumen Kontrak) -->
-        <div v-if="docType === 'kontrak'" class="form-group" style="margin-bottom: 18px;">
-
+        <!-- Bagian Dokumen yang Diunduh -->
+        <div class="form-group" style="margin-bottom: 18px;">
           <label style="font-weight: bold; margin-bottom: 10px; display: block;">Bagian Dokumen (Isi)</label>
           
           <div class="grid-options">
@@ -155,8 +91,8 @@
           </div>
         </div>
 
-        <!-- Tanggal Penandatanganan Kontrak (Khusus Perjanjian Kerja) -->
-        <div v-if="docType === 'kontrak'" class="form-group" style="margin-bottom: 0;">
+        <!-- Tanggal Penandatanganan Kontrak -->
+        <div class="form-group" style="margin-bottom: 0;">
           <label style="font-weight: bold; margin-bottom: 8px; display: block;">
             <i class="fa-solid fa-calendar-day" style="color: #2563eb; margin-right: 6px;"></i>
             Tanggal Penandatanganan Kontrak
@@ -199,7 +135,7 @@
         <button class="btn btn-primary" @click="handleDownload" :disabled="isGenerating || isSavingToDrive" style="background-color: #2563eb;">
           <i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i>
           <i v-else class="fa-solid fa-download"></i>
-          {{ docType === 'sk' ? (items.length > 1 ? 'Unduh SK (ZIP)' : 'Unduh SK Word') : ((items.length > 1 && exportFormat === 'zip') || documentPart === 'pisah' ? 'Unduh ZIP' : 'Unduh Word') }}
+          {{ (items.length > 1 && exportFormat === 'zip') || documentPart === 'pisah' ? 'Unduh ZIP' : 'Unduh Word' }}
         </button>
 
         <button
@@ -219,12 +155,10 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { downloadSingleContract, downloadBatchContracts } from '../../utils/docxGenerator'
-import { downloadSingleSk, downloadBatchSk, generateSkDocxBlob } from '../../utils/skGenerator'
-import { getNamaLengkap, formatIndoDate } from '../../utils/pppkLogic'
+import { getNamaLengkap } from '../../utils/pppkLogic'
 import { useDriveStore } from '../../stores/driveStore'
 import { useGoogleDrive } from '../../composables/useGoogleDrive'
 import { useDriveSync } from '../../composables/useDriveSync'
@@ -243,13 +177,10 @@ onMounted(async () => {
 
 const props = defineProps({
   isOpen: Boolean,
-  items: { type: Array, default: () => [] },
-  initialDocType: { type: String, default: 'kontrak' }
+  items: { type: Array, default: () => [] }
 })
 const emit = defineEmits(['close', 'success'])
 
-const docType = ref('kontrak') // 'kontrak' | 'sk'
-const qrMode = ref('url') // 'url' | 'nip'
 const selectedPaper = ref('f4')
 const exportFormat = ref('merged') // 'merged' | 'zip'
 const documentPart = ref('full') // 'full' | 'perjanjian' | 'tandatangan' | 'pisah'
@@ -258,21 +189,8 @@ const isGenerating = ref(false)
 const errorMsg = ref('')
 const progress = ref(0)
 const tanggalKontrakStr = ref('') // format YYYY-MM-DD dari input type="date"
-const tanggalSkStr = ref('') // format YYYY-MM-DD untuk SK
 
 const progressPct = computed(() => props.items.length > 0 ? Math.round((progress.value / props.items.length) * 100) : 0)
-
-const previewTanggalSk = computed(() => {
-  const d = parseDateInput(tanggalSkStr.value)
-  return d ? formatIndoDate(d) : ''
-})
-
-const hasNonParuhWaktu = computed(() => {
-  return props.items.some(item => {
-    const jenis = (item['JENIS PPPK'] || '').toLowerCase()
-    return !jenis.includes('paruh')
-  })
-})
 
 watch(documentPart, (newVal) => {
   if (newVal === 'pisah') {
@@ -285,9 +203,6 @@ watch(() => props.isOpen, (v) => {
     errorMsg.value = ''
     progress.value = 0
     isGenerating.value = false
-    docType.value = props.initialDocType || 'kontrak'
-    qrMode.value = 'url'
-    tanggalSkStr.value = ''
     if (props.items.length === 1 && exportFormat.value === 'merged') {
       exportFormat.value = 'zip'
     } else if (props.items.length > 1 && documentPart.value !== 'pisah') {
@@ -296,9 +211,6 @@ watch(() => props.isOpen, (v) => {
   }
 })
 
-/**
- * Konversi string YYYY-MM-DD dari input date menjadi Date object lokal
- */
 function parseDateInput(str) {
   if (!str) return null
   const [y, m, d] = str.split('-').map(Number)
@@ -312,24 +224,13 @@ const handleDownload = async () => {
   progress.value = 0
 
   try {
-    if (docType.value === 'sk') {
-      const tanggalSk = parseDateInput(tanggalSkStr.value)
-      if (props.items.length === 1) {
-        await downloadSingleSk(props.items[0], qrMode.value, tanggalSk)
-      } else {
-        await downloadBatchSk(props.items, qrMode.value, tanggalSk, (done) => {
-          progress.value = done
-        })
-      }
+    const tanggalKontrak = parseDateInput(tanggalKontrakStr.value)
+    if (props.items.length === 1) {
+      await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak, documentPart.value)
     } else {
-      const tanggalKontrak = parseDateInput(tanggalKontrakStr.value)
-      if (props.items.length === 1) {
-        await downloadSingleContract(props.items[0], selectedPaper.value, tanggalKontrak, documentPart.value)
-      } else {
-        await downloadBatchContracts(props.items, selectedPaper.value, (done) => {
-          progress.value = done
-        }, tanggalKontrak, exportFormat.value, documentPart.value)
-      }
+      await downloadBatchContracts(props.items, selectedPaper.value, (done) => {
+        progress.value = done
+      }, tanggalKontrak, exportFormat.value, documentPart.value)
     }
     emit('success')
     emit('close')
@@ -345,9 +246,7 @@ const handleSaveToDrive = async () => {
   isSavingToDrive.value = true
   errorMsg.value = ''
   progress.value = 0
-
   const tanggalKontrak = parseDateInput(tanggalKontrakStr.value)
-  const tanggalSk = parseDateInput(tanggalSkStr.value)
 
   try {
     for (let i = 0; i < props.items.length; i++) {
@@ -355,33 +254,23 @@ const handleSaveToDrive = async () => {
       progress.value = i + 1
       const unorInduk = getUnorInduk(item)
 
-      if (docType.value === 'sk') {
-        const skBlob = await generateSkDocxBlob(item, { qrMode: qrMode.value, tanggalSk })
-        const targetFolder = await getTargetFolder('full', unorInduk, 'individual')
-        const nip = String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')
-        const nama = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')
-        await upsertFile(skBlob, `SK_${nip}_${nama}.docx`, targetFolder)
+      const result = await downloadSingleContract(item, selectedPaper.value, tanggalKontrak, documentPart.value, { returnBlob: true })
+      if (documentPart.value === 'pisah') {
+        const pFolder = await getTargetFolder('perjanjian', unorInduk, 'individual')
+        const tFolder = await getTargetFolder('tandatangan', unorInduk, 'individual')
+        await upsertFile(result.perjanjianBlob, getFileName(item, '_perjanjian'), pFolder)
+        await upsertFile(result.tandatanganBlob, getFileName(item, '_tandatangan'), tFolder)
       } else {
-        const result = await downloadSingleContract(item, selectedPaper.value, tanggalKontrak, documentPart.value, { returnBlob: true })
-        if (documentPart.value === 'pisah') {
-          const pFolder = await getTargetFolder('perjanjian', unorInduk, 'individual')
-          const tFolder = await getTargetFolder('tandatangan', unorInduk, 'individual')
-          await upsertFile(result.perjanjianBlob, getFileName(item, '_perjanjian'), pFolder)
-          await upsertFile(result.tandatanganBlob, getFileName(item, '_tandatangan'), tFolder)
-        } else {
-          const targetFolder = await getTargetFolder(documentPart.value, unorInduk, 'individual')
-          const blobToUpload = documentPart.value === 'perjanjian' ? result.perjanjianBlob :
-                               documentPart.value === 'tandatangan' ? result.tandatanganBlob :
-                               result.fullBlob
-          await upsertFile(blobToUpload, getFileName(item), targetFolder)
-        }
+        const targetFolder = await getTargetFolder(documentPart.value, unorInduk, 'individual')
+        const blobToUpload = documentPart.value === 'perjanjian' ? result.perjanjianBlob :
+                             documentPart.value === 'tandatangan' ? result.tandatanganBlob :
+                             result.fullBlob
+        await upsertFile(blobToUpload, getFileName(item), targetFolder)
       }
     }
-
-
     customSwal.fire({
       icon: 'success',
-      title: 'Tersimpan di Google Drive!',
+      title: 'Tersimpan ke Drive!',
       text: `${props.items.length} dokumen berhasil disimpan ke Google Drive.`,
       timer: 2000,
       showConfirmButton: false
@@ -389,121 +278,149 @@ const handleSaveToDrive = async () => {
     emit('success')
     emit('close')
   } catch (e) {
-    console.error('Save to Drive error:', e)
-    errorMsg.value = e.message || 'Gagal menyimpan ke Google Drive. Pastikan folder sudah dipilih di menu Pengaturan.'
+    console.error('Drive save error:', e)
+    errorMsg.value = e.message || 'Gagal menyimpan ke Google Drive.'
   } finally {
     isSavingToDrive.value = false
   }
 }
+
+const KONTRAK_HARI = computed(() => {
+  const d = parseDateInput(tanggalKontrakStr.value)
+  if (!d) return ''
+  const days = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU']
+  return days[d.getDay()]
+})
+
+const KONTRAK_TANGGAL_TERBILANG = computed(() => {
+  const d = parseDateInput(tanggalKontrakStr.value)
+  if (!d) return ''
+  return angkaKeTerbilang(d.getDate()).toUpperCase()
+})
+
+const KONTRAK_BULAN = computed(() => {
+  const d = parseDateInput(tanggalKontrakStr.value)
+  if (!d) return ''
+  const months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
+                  'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER']
+  return months[d.getMonth()]
+})
+
+const KONTRAK_TAHUN_TERBILANG = computed(() => {
+  const d = parseDateInput(tanggalKontrakStr.value)
+  if (!d) return ''
+  return angkaKeTerbilang(d.getFullYear()).toUpperCase()
+})
+
+function angkaKeTerbilang(nilai) {
+  const bilangan = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas']
+  nilai = Math.floor(Math.abs(nilai))
+  if (nilai < 12) return bilangan[nilai]
+  if (nilai < 20) return angkaKeTerbilang(nilai - 10) + ' belas'
+  if (nilai < 100) return angkaKeTerbilang(Math.floor(nilai / 10)) + ' puluh' + (nilai % 10 !== 0 ? ' ' + bilangan[nilai % 10] : '')
+  if (nilai < 200) return 'seratus' + (nilai % 100 !== 0 ? ' ' + angkaKeTerbilang(nilai % 100) : '')
+  if (nilai < 1000) return angkaKeTerbilang(Math.floor(nilai / 100)) + ' ratus' + (nilai % 100 !== 0 ? ' ' + angkaKeTerbilang(nilai % 100) : '')
+  if (nilai < 2000) return 'seribu' + (nilai % 1000 !== 0 ? ' ' + angkaKeTerbilang(nilai % 1000) : '')
+  if (nilai < 1000000) return angkaKeTerbilang(Math.floor(nilai / 1000)) + ' ribu' + (nilai % 1000 !== 0 ? ' ' + angkaKeTerbilang(nilai % 1000) : '')
+  if (nilai < 1000000000) return angkaKeTerbilang(Math.floor(nilai / 1000000)) + ' juta' + (nilai % 1000000 !== 0 ? ' ' + angkaKeTerbilang(nilai % 1000000) : '')
+  return String(nilai)
+}
 </script>
 
-
 <style scoped>
-.paper-option {
-  flex: 1;
-  border: 1.5px solid var(--border-color);
-  border-radius: 12px;
-  padding: 14px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: center;
-  user-select: none;
-  background: var(--bg-primary, #ffffff);
-}
-.paper-option i {
-  font-size: 1.6rem;
-  color: var(--text-muted);
-  transition: color 0.2s ease;
-}
-.paper-option span {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-.paper-option.active {
-  border-color: #2563eb;
-  background: rgba(37, 99, 235, 0.04);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-  transform: translateY(-1px);
-}
-.paper-option.active i {
-  color: #2563eb;
-}
-.paper-option:hover:not(.active):not(.disabled) {
-  border-color: var(--primary-color);
-  background: rgba(var(--primary-color-rgb), 0.02);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-}
-.paper-option.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-.paper-option.small-opt {
-  flex-direction: column;
-  text-align: center;
-  padding: 12px 10px;
-  gap: 6px;
-  align-items: center;
-}
-.paper-option.small-opt i {
-  font-size: 1.35rem;
-  margin-top: 0;
-}
-.paper-option.small-opt .opt-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.paper-option.small-opt span {
-  font-size: 0.85rem;
-}
-.paper-option.small-opt small {
-  font-size: 0.7rem;
+.responsive-modal {
+  max-width: 580px;
+  width: 95%;
 }
 
 .options-container {
   display: flex;
   gap: 12px;
-  flex-direction: row;
+}
+
+.paper-option {
+  flex: 1;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  background: var(--bg-primary, #fff);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.paper-option i {
+  font-size: 1.35rem;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.paper-option span {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.paper-option:hover:not(.disabled) {
+  border-color: var(--primary-color);
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.paper-option.active {
+  border-color: var(--primary-color);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.paper-option.active i {
+  color: var(--primary-color);
+}
+
+.paper-option.active span {
+  color: var(--primary-color);
+}
+
+.paper-option.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: var(--bg-secondary);
 }
 
 .grid-options {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.paper-option.small-opt {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 14px;
   gap: 12px;
+  text-align: left;
 }
 
-.responsive-modal {
-  width: clamp(520px, 60vw, 850px);
-  max-width: 95vw;
+.paper-option.small-opt i {
+  font-size: 1.2rem;
 }
 
-@media (max-width: 800px) {
-  .grid-options {
-    grid-template-columns: 1fr 1fr;
-  }
+.opt-text {
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 600px) {
-  .responsive-modal {
-    width: 95vw;
-  }
+.opt-text span {
+  font-size: 0.85rem;
+  line-height: 1.2;
 }
 
-@media (max-width: 480px) {
-  .responsive-modal {
-    max-width: 100%;
-  }
-  .options-container {
-    flex-direction: column;
-  }
-  .grid-options {
-    grid-template-columns: 1fr;
-  }
+.opt-text small {
+  font-size: 0.72rem;
+  margin-top: 2px;
 }
 </style>

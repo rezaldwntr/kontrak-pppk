@@ -210,16 +210,42 @@
           <i class="fa-solid fa-triangle-exclamation"></i> {{ errorMsg }}
         </div>
 
-        <!-- Tag Reference Section with Search Filter & Copy to Clipboard -->
+        <!-- Tag Reference Section with Tabs, Search Filter & Copy to Clipboard -->
         <div class="tag-reference-section">
+          <!-- Sub-Tab Switcher Tag Template -->
+          <div class="tag-type-switcher">
+            <button
+              type="button"
+              class="tag-type-btn"
+              :class="{ active: activeTagType === 'kontrak' }"
+              @click="activeTagType = 'kontrak'"
+            >
+              <i class="fa-solid fa-file-contract"></i>
+              <span>Tag Perjanjian Kerja (Kontrak)</span>
+              <span class="tag-type-count">{{ contractTags.length }}</span>
+            </button>
+            <button
+              type="button"
+              class="tag-type-btn is-sk"
+              :class="{ active: activeTagType === 'sk' }"
+              @click="activeTagType = 'sk'"
+            >
+              <i class="fa-solid fa-file-shield"></i>
+              <span>Tag Surat Keputusan (SK)</span>
+              <span class="tag-type-count">{{ skTags.length }}</span>
+            </button>
+          </div>
+
           <div class="tag-header-row">
             <div>
               <h4 class="tag-section-title">
-                <i class="fa-solid fa-tags"></i>
-                <span>Daftar Tag Template Kontrak</span>
+                <i :class="activeTagType === 'sk' ? 'fa-solid fa-file-shield' : 'fa-solid fa-file-contract'" :style="activeTagType === 'sk' ? 'color: #d97706;' : 'color: var(--primary-color);'"></i>
+                <span>{{ activeTagType === 'sk' ? 'Daftar Tag Template Surat Keputusan (SK)' : 'Daftar Tag Template Perjanjian Kerja (Kontrak)' }}</span>
               </h4>
               <p class="tag-section-desc text-muted">
-                Salin tag berikut ke dalam dokumen Word (.docx). Klik tombol salin atau ketuk langsung tag untuk menyalin. Geser tabel ke kanan untuk melihat kolom selengkapnya.
+                {{ activeTagType === 'sk'
+                  ? 'Salin tag berikut ke dalam dokumen Word Surat Keputusan (.docx). Tag akan otomatis digantikan dengan data penetapan SK dan Barcode / QR Code validasi BKN.'
+                  : 'Salin tag berikut ke dalam dokumen Word Perjanjian Kerja (.docx). Tag akan otomatis digantikan dengan data pegawai saat dokumen dicetak.' }}
               </p>
             </div>
             <div class="tag-search-input-wrap">
@@ -227,7 +253,7 @@
               <input
                 type="text"
                 v-model="searchTagQuery"
-                placeholder="Cari tag template..."
+                :placeholder="activeTagType === 'sk' ? 'Cari tag SK...' : 'Cari tag kontrak...'"
                 class="form-control form-control-sm tag-search-input"
               />
               <button
@@ -259,7 +285,7 @@
                 </tr>
                 <tr v-for="item in filteredTags" :key="item.tag">
                   <td>
-                    <span class="tag-category-badge">{{ item.category }}</span>
+                    <span class="tag-category-badge" :style="activeTagType === 'sk' ? 'background: rgba(245, 158, 11, 0.12); color: #d97706;' : ''">{{ item.category }}</span>
                   </td>
                   <td>
                     <code
@@ -344,10 +370,11 @@ const authStore = useAuthStore()
 
 // --- Sub-Tab State ---
 const activeTab = ref('pihak-pertama')
+const activeTagType = ref('kontrak') // 'kontrak' | 'sk'
 const searchTagQuery = ref('')
 
-// --- Reference Template Tags ---
-const templateTags = [
+// --- Reference Template Tags: Perjanjian Kerja (Kontrak) ---
+const contractTags = [
   { category: 'Pihak Pertama', tag: '{{NAMA_BUPATI}}', desc: 'Nama Pihak Pertama — otomatis HURUF BESAR' },
   { category: 'Pihak Pertama', tag: '{{JABATAN_BUPATI}}', desc: 'Jabatan Pihak Pertama' },
   { category: 'Data Kontrak', tag: '{{NO_KONTRAK_BARU}}', desc: 'Nomor Perjanjian Kontrak (bagian tengah saja, misal: 19 pada 800.1.2.5/19/BKPSDM)' },
@@ -372,29 +399,39 @@ const templateTags = [
   { category: 'Tanggal Penandatanganan Kontrak', tag: '{{KONTRAK_BULAN}}', desc: 'Bulan penandatanganan kontrak (contoh: AGUSTUS)' },
   { category: 'Tanggal Penandatanganan Kontrak', tag: '{{KONTRAK_TAHUN_TERBILANG}}', desc: 'Tahun penandatanganan — terbilang huruf besar (contoh: DUA RIBU DUA PULUH ENAM)' },
   { category: 'Pemisahan Halaman', tag: '{{#perjanjian}} ... {{/perjanjian}}', desc: 'Bungkus Halaman Isi Perjanjian dengan tag ini (khusus mode unduh Pisah)' },
-  { category: 'Pemisahan Halaman', tag: '{{#tandatangan}} ... {{/tandatangan}}', desc: 'Bungkus Halaman Tanda Tangan dengan tag ini (khusus mode unduh Pisah)' },
-  { category: 'Dokumen SK', tag: '{{NOMOR_SK}}', desc: 'Nomor Surat Keputusan PPPK (format otomatis 800.1.2.5/[No]/BKPSDM)' },
-  { category: 'Dokumen SK', tag: '{{NAMA_LENGKAP}}', desc: 'Nama Lengkap PPPK beserta gelar' },
-  { category: 'Dokumen SK', tag: '{{NIP}}', desc: 'NIP Baru PPPK' },
-  { category: 'Dokumen SK', tag: '{{TEMPAT_TGL_LAHIR}}', desc: 'Tempat dan Tanggal Lahir (Format: Kota, DD Bulan YYYY)' },
-  { category: 'Dokumen SK', tag: '{{JENIS_KELAMIN}}', desc: 'Jenis Kelamin (Pria / Wanita)' },
-  { category: 'Dokumen SK', tag: '{{PENDIDIKAN_LULUS}}', desc: 'Pendidikan Terakhir dan Tahun Lulus (Format: Pendidikan Tahun YYYY)' },
-  { category: 'Dokumen SK', tag: '{{JABATAN_NAMA}}', desc: 'Nama Jabatan PPPK' },
-  { category: 'Dokumen SK', tag: '{{GOLONGAN}}', desc: 'Golongan PPPK (contoh: IX)' },
-  { category: 'Dokumen SK', tag: '{{GAJI}}', desc: 'Gaji/Upah: "AKAN DICANTUMKAN DALAM PERJANJIAN KERJA" (Paruh Waktu) atau nominal Rupiah (Penuh Waktu)' },
-  { category: 'Dokumen SK', tag: '{{UNOR_NAMA}}', desc: 'Unit Organisasi / Penempatan (sumber: UNOR NAMA)' },
-  { category: 'Dokumen SK', tag: '{{TMT_AWAL}}', desc: 'Tanggal Mulai Berlaku SK (Format: DD Bulan YYYY)' },
-  { category: 'Dokumen SK', tag: '{{TMT_AKHIR}}', desc: 'Tanggal Berakhir Masa Hubungan Perjanjian Kerja SK (Format: DD Bulan YYYY)' },
-  { category: 'Dokumen SK', tag: '{{TANGGAL_SK}}', desc: 'Tanggal Penetapan SK Bupati (Format: DD Bulan YYYY)' },
-  { category: 'Dokumen SK', tag: '{{NAMA_BUPATI}}', desc: 'Nama Bupati / Pejabat yang menetapkan' },
-  { category: 'Dokumen SK', tag: '{{JABATAN_BUPATI}}', desc: 'Jabatan Bupati / Pejabat yang menetapkan' },
-  { category: 'Dokumen SK', tag: '{{QR_CODE}}', desc: 'Posisi Barcode / QR Code validasi BKN (Bisa juga gunakan {{BARCODE}} atau MERGEBARCODE)' }
+  { category: 'Pemisahan Halaman', tag: '{{#tandatangan}} ... {{/tandatangan}}', desc: 'Bungkus Halaman Tanda Tangan dengan tag ini (khusus mode unduh Pisah)' }
 ]
 
+// --- Reference Template Tags: Surat Keputusan (SK) ---
+const skTags = [
+  { category: 'Nomor SK', tag: '{{NOMOR_SK}}', desc: 'Nomor Surat Keputusan PPPK (format otomatis: 800.1.2.5/[No]/BKPSDM)' },
+  { category: 'Nomor SK', tag: '{{NO_SK}}', desc: 'Alias Nomor SK (sama dengan NOMOR_SK)' },
+  { category: 'Identitas Pegawai', tag: '{{NAMA_LENGKAP}}', desc: 'Nama Lengkap PPPK beserta gelar' },
+  { category: 'Identitas Pegawai', tag: '{{NIP}}', desc: 'NIP Baru PPPK' },
+  { category: 'Identitas Pegawai', tag: '{{TEMPAT_TGL_LAHIR}}', desc: 'Tempat dan Tanggal Lahir (Format: Kota, DD Bulan YYYY)' },
+  { category: 'Identitas Pegawai', tag: '{{JENIS_KELAMIN}}', desc: 'Jenis Kelamin (Pria / Wanita)' },
+  { category: 'Pendidikan & Jabatan', tag: '{{PENDIDIKAN_LULUS}}', desc: 'Pendidikan Terakhir dan Tahun Lulus (Format: Pendidikan Tahun YYYY)' },
+  { category: 'Pendidikan & Jabatan', tag: '{{JABATAN_NAMA}}', desc: 'Nama Jabatan PPPK' },
+  { category: 'Pendidikan & Jabatan', tag: '{{GOLONGAN}}', desc: 'Golongan PPPK (contoh: IX)' },
+  { category: 'Pendidikan & Jabatan', tag: '{{UNOR_NAMA}}', desc: 'Unit Organisasi / Penempatan (sumber: UNOR NAMA)' },
+  { category: 'Gaji & Upah', tag: '{{GAJI}}', desc: 'Klausul Gaji: "AKAN DICANTUMKAN DALAM PERJANJIAN KERJA" (Paruh Waktu) atau nominal Rupiah (Penuh Waktu)' },
+  { category: 'Masa Hubungan Kerja', tag: '{{TMT_AWAL}}', desc: 'Tanggal Mulai Berlaku SK (Format: DD Bulan YYYY)' },
+  { category: 'Masa Hubungan Kerja', tag: '{{TMT_AKHIR}}', desc: 'Tanggal Berakhir Masa Hubungan Perjanjian Kerja SK (Format: DD Bulan YYYY)' },
+  { category: 'Penetapan SK', tag: '{{TANGGAL_SK}}', desc: 'Tanggal Penetapan SK Bupati (Format: DD Bulan YYYY)' },
+  { category: 'Penetapan SK', tag: '{{NAMA_BUPATI}}', desc: 'Nama Bupati / Pejabat yang menetapkan' },
+  { category: 'Penetapan SK', tag: '{{JABATAN_BUPATI}}', desc: 'Jabatan Bupati / Pejabat yang menetapkan' },
+  { category: 'Validasi Resmi', tag: '{{QR_CODE}}', desc: 'Posisi Barcode / QR Code validasi BKN (Bisa juga gunakan {{BARCODE}} atau MERGEBARCODE)' }
+]
+
+const currentTags = computed(() => {
+  return activeTagType.value === 'sk' ? skTags : contractTags
+})
+
 const filteredTags = computed(() => {
-  if (!searchTagQuery.value.trim()) return templateTags
+  const list = currentTags.value
+  if (!searchTagQuery.value.trim()) return list
   const q = searchTagQuery.value.trim().toLowerCase()
-  return templateTags.filter(item =>
+  return list.filter(item =>
     item.tag.toLowerCase().includes(q) ||
     item.desc.toLowerCase().includes(q) ||
     item.category.toLowerCase().includes(q)
@@ -901,6 +938,71 @@ const handleChangePassword = async () => {
   border-top: 1px solid var(--border-color);
   padding-top: 24px;
   margin-top: 16px;
+}
+
+.tag-type-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.tag-type-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tag-type-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.tag-type-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.tag-type-btn.is-sk:hover {
+  border-color: #d97706;
+}
+
+.tag-type-btn.is-sk.active {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25);
+}
+
+.tag-type-count {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+.tag-type-btn.active .tag-type-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.tag-type-btn:not(.active) .tag-type-count {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
 }
 
 .tag-header-row {
