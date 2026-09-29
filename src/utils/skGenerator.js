@@ -6,7 +6,8 @@ import {
   getNamaLengkap,
   cleanNomorKontrakTag,
   formatIndoDate,
-  calculateContractPeriod
+  calculateContractPeriod,
+  formatJenisKelamin
 } from './pppkLogic'
 import { generateBknQrUint8Array } from './qrCode'
 import bundledSkTemplateUrl from '../assets/img/data_samples/Template SK PPPK Paruh Waktu.docx?url'
@@ -23,6 +24,19 @@ function escapeXml(str) {
 function formatIndo(str) {
   const res = formatIndoDate(str)
   return res === '-' ? '' : res
+}
+
+/**
+ * Muat konfigurasi Pihak Pertama (Bupati) dari database Firestore
+ */
+export async function loadPihakPertama() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'pihak_pertama'))
+    if (snap.exists()) return snap.data()
+  } catch (e) {
+    console.warn('Gagal memuat pihak_pertama dari Firestore:', e)
+  }
+  return null
 }
 
 /**
@@ -80,10 +94,10 @@ function buildSkFields(item) {
     NOMOR_KONTRAK: cleanNomorKontrakTag(item['NO KONTRAK'] || item['NOMOR KONTRAK'] || item['NOMOR_KONTRAK'] || ''),
     TMT_AWAL_BARU: tmtAwal || '-',
     TMT_AKHIR_BARU: tmtAkhir || '-',
-    Nama_Lengkap: getNamaLengkap(item),
+    Nama_Lengkap: getNamaLengkap(item, true),
     NIP: String(item['NIP BARU'] || item['NIP'] || '').trim(),
     TEMPAT_TGL_LAHIR: tempatTglLahir || '-',
-    JENIS_KELAMIN: item['JENIS KELAMIN'] || item['JENIS_KELAMIN'] || '-',
+    JENIS_KELAMIN: formatJenisKelamin(item['JENIS KELAMIN'] || item['JENIS_KELAMIN'] || item['GENDER'] || ''),
     PENDIDIKAN_LULUS: pendidikanLulus || '-',
     JABATAN_NAMA: item['JABATAN NAMA'] || item['JABATAN'] || item['NAMA JABATAN'] || '-',
     UNOR_NAMA: item['UNOR NAMA'] || item['NAMA UNOR'] || '-'
@@ -109,7 +123,7 @@ function replaceMergeFields(xml, fields) {
 }
 
 /**
- * Ganti tabel sel barcode dengan gambar QR Code inline drawing
+ * Ganti tabel sel barcode dengan gambar QR Code inline drawing rata kiri (seperti Gambar 3)
  */
 function replaceBarcodeWithQrDrawing(xml) {
   const barcodeIdx = xml.indexOf('MERGEBARCODE')
@@ -122,7 +136,8 @@ function replaceBarcodeWithQrDrawing(xml) {
 
   const tcPrEnd = xml.indexOf('</w:tcPr>', tcStart) + '</w:tcPr>'.length
 
-  const drawingXml = '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="1080000" cy="1080000"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="101" name="BKN_QRCode"/><wp:cNvGraphicFramePr/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="qr_code.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rIdQR"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1080000" cy="1080000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>'
+  // Ukuran cx=850000 cy=850000 (~2.25cm) dengan posisi rata kiri (w:jc w:val="left") sesuai Gambar 3
+  const drawingXml = '<w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="850000" cy="850000"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="101" name="BKN_QRCode"/><wp:cNvGraphicFramePr/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="qr_code.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rIdQR"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="850000" cy="850000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>'
 
   return xml.substring(0, tcPrEnd) + drawingXml + xml.substring(tcEnd)
 }
@@ -143,7 +158,7 @@ function ensureQrRelationship(relsXml) {
 /**
  * Buat dokumen SK PPPK Paruh Waktu dalam bentuk Blob
  * @param {object} item - Data pegawai
- * @param {object} options - Opsi qrMode ('url' | 'nip')
+ * @param {object} options - Opsi qrMode ('url' | 'nip'), tanggalSk (Date|string), pihakPertama
  * @returns {Promise<Blob>}
  */
 export async function generateSkDocxBlob(item, options = {}) {
@@ -153,22 +168,45 @@ export async function generateSkDocxBlob(item, options = {}) {
     ? nip
     : `${window.location.origin}/verifikasi?nip=${encodeURIComponent(nip)}`
 
-  const [templateBuffer, qrBytes] = await Promise.all([
+  const [templateBuffer, qrBytes, pihakPertama] = await Promise.all([
     loadSkTemplateBytes(),
-    generateBknQrUint8Array(qrText, { size: 500 })
+    generateBknQrUint8Array(qrText, { size: 500 }),
+    options.pihakPertama !== undefined ? options.pihakPertama : loadPihakPertama()
   ])
 
   const zip = await JSZip.loadAsync(templateBuffer)
 
-  // 1. Ganti MERGEFIELD dan Barcode di word/document.xml
   const docXmlFile = zip.file('word/document.xml')
   if (!docXmlFile) throw new Error('File word/document.xml tidak ditemukan di template SK.')
   let xml = await docXmlFile.async('string')
+
+  // 1. Ganti 10 MERGEFIELD dan Barcode
   xml = replaceMergeFields(xml, buildSkFields(item))
   xml = replaceBarcodeWithQrDrawing(xml)
+
+  // 2. Ganti Tanggal SK berdasarkan inputan user
+  if (options.tanggalSk) {
+    const formattedTgl = formatIndo(options.tanggalSk)
+    if (formattedTgl) {
+      xml = xml.replace(/>30 September 2026</g, `>${escapeXml(formattedTgl)}<`)
+    }
+  }
+
+  // 3. Ganti Nama & Jabatan Bupati berdasarkan Pengaturan Pihak Pertama
+  if (pihakPertama?.nama) {
+    const namaBupati = pihakPertama.nama.trim().toUpperCase()
+    const pattBupati = /<w:r[^>]*>(?:(?!<w:r[ >]).)*?<w:t[^>]*>H\.\s*<\/w:t>[\s\S]*?<w:t[^>]*>SAHRUJANI<\/w:t>(?:(?!<\/w:r>).)*?<\/w:r>/i
+    const repBupati = `<w:r><w:rPr><w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/><w:b/><w:bCs/><w:sz w:val="18"/><w:szCs w:val="18"/><w:lang w:val="sv-SE"/></w:rPr><w:t>${escapeXml(namaBupati)}</w:t></w:r>`
+    xml = xml.replace(pattBupati, repBupati)
+  }
+  if (pihakPertama?.jabatan) {
+    const jabatanBupati = pihakPertama.jabatan.trim().toUpperCase()
+    xml = xml.replace(/>BUPATI HULU SUNGAI UTARA</g, `>${escapeXml(jabatanBupati)}<`)
+  }
+
   zip.file('word/document.xml', xml)
 
-  // 2. Tambahkan relasi rIdQR di word/_rels/document.xml.rels
+  // 4. Tambahkan relasi rIdQR di word/_rels/document.xml.rels
   const relsFile = zip.file('word/_rels/document.xml.rels')
   if (relsFile) {
     let relsXml = await relsFile.async('string')
@@ -176,7 +214,7 @@ export async function generateSkDocxBlob(item, options = {}) {
     zip.file('word/_rels/document.xml.rels', relsXml)
   }
 
-  // 3. Masukkan file gambar QR Code ke word/media/qr_code.png
+  // 5. Masukkan file gambar QR Code ke word/media/qr_code.png
   zip.file('word/media/qr_code.png', qrBytes)
 
   return await zip.generateAsync({
@@ -188,29 +226,30 @@ export async function generateSkDocxBlob(item, options = {}) {
 /**
  * Download dokumen SK untuk satu pegawai
  */
-export async function downloadSingleSk(item, qrMode = 'url') {
-  const blob = await generateSkDocxBlob(item, { qrMode })
+export async function downloadSingleSk(item, qrMode = 'url', tanggalSk = null) {
+  const blob = await generateSkDocxBlob(item, { qrMode, tanggalSk })
   const nip = String(item['NIP BARU'] || item['NIP'] || '').replace(/[^a-zA-Z0-9]/g, '')
-  const nama = getNamaLengkap(item).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')
+  const nama = getNamaLengkap(item, true).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')
   saveAs(blob, `SK_PPPK_Paruh_Waktu_${nip}_${nama}.docx`)
 }
 
 /**
  * Download batch dokumen SK untuk banyak pegawai dalam 1 ZIP
  */
-export async function downloadBatchSk(items, qrMode = 'url', onProgress = null) {
+export async function downloadBatchSk(items, qrMode = 'url', tanggalSk = null, onProgress = null) {
   if (!items || items.length === 0) return
   if (items.length === 1) {
-    return await downloadSingleSk(items[0], qrMode)
+    return await downloadSingleSk(items[0], qrMode, tanggalSk)
   }
 
+  const pihakPertama = await loadPihakPertama()
   const zip = new JSZip()
   let done = 0
 
   for (const item of items) {
-    const blob = await generateSkDocxBlob(item, { qrMode })
+    const blob = await generateSkDocxBlob(item, { qrMode, tanggalSk, pihakPertama })
     const nip = String(item['NIP BARU'] || item['NIP'] || '').replace(/[^a-zA-Z0-9]/g, '')
-    const nama = getNamaLengkap(item).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')
+    const nama = getNamaLengkap(item, true).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '')
     zip.file(`SK_PPPK_Paruh_Waktu_${nip}_${nama}.docx`, blob)
     done++
     if (onProgress) onProgress(done, items.length)

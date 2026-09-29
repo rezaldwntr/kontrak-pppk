@@ -23,7 +23,7 @@
         <div v-if="items.length === 1" style="background: var(--bg-secondary, rgba(0,0,0,0.05)); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
           <i class="fa-solid fa-user-circle" style="font-size: 1.8rem; color: var(--primary-color); opacity: 0.7;"></i>
           <div>
-            <div style="font-weight: bold; font-size: 1rem;">{{ getNamaLengkap(items[0]) }}</div>
+            <div style="font-weight: bold; font-size: 1rem;">{{ getNamaLengkap(items[0], true) }}</div>
             <div class="text-muted" style="font-size: 0.85rem;">{{ items[0]['JABATAN NAMA'] }} · {{ items[0]['NIP BARU'] }}</div>
           </div>
         </div>
@@ -72,6 +72,28 @@
           </div>
           <div v-if="hasNonParuhWaktu" style="margin-top: 10px; font-size: 0.82rem; color: #b45309; background: rgba(245, 158, 11, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.25);">
             <i class="fa-solid fa-circle-info"></i> Catatan: Template SK saat ini khusus untuk PPPK Paruh Waktu.
+          </div>
+        </div>
+
+        <!-- Tanggal Penetapan SK (Khusus SK) -->
+        <div v-if="docType === 'sk'" class="form-group" style="margin-bottom: 18px;">
+          <label style="font-weight: bold; margin-bottom: 8px; display: block;">
+            <i class="fa-solid fa-calendar-day" style="color: #2563eb; margin-right: 6px;"></i>
+            Tanggal Penetapan SK
+          </label>
+          <input
+            type="date"
+            v-model="tanggalSkStr"
+            class="form-control"
+            style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border-color); font-size: 0.95rem; background: var(--bg-primary, #fff); color: var(--text-primary);"
+          />
+          <div v-if="tanggalSkStr" style="margin-top: 6px; font-size: 0.82rem; color: var(--text-muted);">
+            <i class="fa-solid fa-circle-info"></i>
+            Akan mengisi tanggal penetapan SK: <strong>{{ previewTanggalSk }}</strong>
+          </div>
+          <div v-else style="margin-top: 6px; font-size: 0.82rem; color: #f59e0b;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Tanggal belum dipilih — akan menggunakan tanggal default template SK (30 September 2026)
           </div>
         </div>
 
@@ -202,7 +224,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { downloadSingleContract, downloadBatchContracts } from '../../utils/docxGenerator'
 import { downloadSingleSk, downloadBatchSk, generateSkDocxBlob } from '../../utils/skGenerator'
-import { getNamaLengkap } from '../../utils/pppkLogic'
+import { getNamaLengkap, formatIndoDate } from '../../utils/pppkLogic'
 import { useDriveStore } from '../../stores/driveStore'
 import { useGoogleDrive } from '../../composables/useGoogleDrive'
 import { useDriveSync } from '../../composables/useDriveSync'
@@ -235,8 +257,14 @@ const isGenerating = ref(false)
 const errorMsg = ref('')
 const progress = ref(0)
 const tanggalKontrakStr = ref('') // format YYYY-MM-DD dari input type="date"
+const tanggalSkStr = ref('') // format YYYY-MM-DD untuk SK
 
 const progressPct = computed(() => props.items.length > 0 ? Math.round((progress.value / props.items.length) * 100) : 0)
+
+const previewTanggalSk = computed(() => {
+  const d = parseDateInput(tanggalSkStr.value)
+  return d ? formatIndoDate(d) : ''
+})
 
 const hasNonParuhWaktu = computed(() => {
   return props.items.some(item => {
@@ -258,6 +286,7 @@ watch(() => props.isOpen, (v) => {
     isGenerating.value = false
     docType.value = 'kontrak'
     qrMode.value = 'url'
+    tanggalSkStr.value = ''
     if (props.items.length === 1 && exportFormat.value === 'merged') {
       exportFormat.value = 'zip'
     } else if (props.items.length > 1 && documentPart.value !== 'pisah') {
@@ -283,10 +312,11 @@ const handleDownload = async () => {
 
   try {
     if (docType.value === 'sk') {
+      const tanggalSk = parseDateInput(tanggalSkStr.value)
       if (props.items.length === 1) {
-        await downloadSingleSk(props.items[0], qrMode.value)
+        await downloadSingleSk(props.items[0], qrMode.value, tanggalSk)
       } else {
-        await downloadBatchSk(props.items, qrMode.value, (done) => {
+        await downloadBatchSk(props.items, qrMode.value, tanggalSk, (done) => {
           progress.value = done
         })
       }
@@ -316,6 +346,7 @@ const handleSaveToDrive = async () => {
   progress.value = 0
 
   const tanggalKontrak = parseDateInput(tanggalKontrakStr.value)
+  const tanggalSk = parseDateInput(tanggalSkStr.value)
 
   try {
     for (let i = 0; i < props.items.length; i++) {
@@ -324,7 +355,7 @@ const handleSaveToDrive = async () => {
       const unorInduk = getUnorInduk(item)
 
       if (docType.value === 'sk') {
-        const skBlob = await generateSkDocxBlob(item, { qrMode: qrMode.value })
+        const skBlob = await generateSkDocxBlob(item, { qrMode: qrMode.value, tanggalSk })
         const targetFolder = await getTargetFolder('full', unorInduk, 'individual')
         const nip = String(item['NIP BARU'] || '').replace(/[^a-zA-Z0-9]/g, '')
         const nama = (item['NAMA'] || 'pegawai').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '')

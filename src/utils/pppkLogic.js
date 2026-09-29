@@ -502,12 +502,43 @@ export function formatNomorKontrakDisplay(raw) {
 }
 
 /**
- * Mendapatkan nama lengkap pegawai secara konsisten
+ * Mendapatkan nama lengkap pegawai beserta gelar jika diminta/tersedia
+ * @param {object} item - data pegawai
+ * @param {boolean} withGelar - jika true, sertakan gelar depan dan belakang (default: true)
  */
-export const getNamaLengkap = (item) => {
+export const getNamaLengkap = (item, withGelar = true) => {
   if (!item) return ''
-  return (item['NAMA'] || '').trim()
+  let nama = (item['NAMA'] || item['Nama'] || item['NAMA LENGKAP'] || '').trim()
+  if (!withGelar) return nama
+
+  const gelarDepan = (item['GELAR DEPAN'] || item['GELAR_DEPAN'] || '').trim()
+  const gelarBelakang = (item['GELAR BELAKANG'] || item['GELAR_BELAKANG'] || '').trim()
+
+  if (gelarDepan && gelarDepan !== '-' && !nama.toLowerCase().startsWith(gelarDepan.toLowerCase())) {
+    nama = `${gelarDepan} ${nama}`
+  }
+  if (gelarBelakang && gelarBelakang !== '-' && !nama.toLowerCase().endsWith(gelarBelakang.toLowerCase())) {
+    nama = `${nama}, ${gelarBelakang}`
+  }
+  return nama
 }
+
+/**
+ * Memformat jenis kelamin menjadi Pria / Wanita
+ * @param {string} val - L, P, Laki-laki, Perempuan, Pria, Wanita
+ */
+export function formatJenisKelamin(val) {
+  if (!val) return '-'
+  const str = String(val).trim().toUpperCase()
+  if (str === 'L' || str === 'LAKI-LAKI' || str === 'PRIA' || str.startsWith('LAKI')) {
+    return 'Pria'
+  }
+  if (str === 'P' || str === 'PEREMPUAN' || str === 'WANITA' || str.startsWith('PEREMPUAN')) {
+    return 'Wanita'
+  }
+  return val
+}
+
 
 /**
  * Memformat objek Date ke string YYYY-MM-DD untuk input HTML type="date"

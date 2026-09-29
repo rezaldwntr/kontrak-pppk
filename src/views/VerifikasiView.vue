@@ -52,7 +52,7 @@
               </tr>
               <tr>
                 <td class="td-label">Nama Pegawai</td>
-                <td class="td-val font-semibold">{{ getNamaLengkap(pegawaiFound) }}</td>
+                <td class="td-val font-semibold">{{ getNamaLengkap(pegawaiFound, true) }}</td>
               </tr>
               <tr>
                 <td class="td-label">NIP</td>
@@ -60,7 +60,7 @@
               </tr>
               <tr>
                 <td class="td-label">Jenis Kelamin</td>
-                <td class="td-val">{{ pegawaiFound['JENIS KELAMIN'] || '-' }}</td>
+                <td class="td-val">{{ formatJenisKelamin(pegawaiFound['JENIS KELAMIN'] || pegawaiFound['JENIS_KELAMIN'] || pegawaiFound['GENDER'] || '') }}</td>
               </tr>
               <tr>
                 <td class="td-label">Tempat / Tanggal Lahir</td>
@@ -77,6 +77,10 @@
               <tr>
                 <td class="td-label">Unit Organisasi (UNOR)</td>
                 <td class="td-val">{{ pegawaiFound['UNOR NAMA'] || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="td-label">Pejabat Penetap</td>
+                <td class="td-val font-semibold">{{ pejabatPenetapDisplay }}</td>
               </tr>
               <tr>
                 <td class="td-label">Masa Hubungan Kontrak</td>
@@ -141,7 +145,16 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePegawaiStore } from '../stores/pegawaiStore'
-import { getNamaLengkap, getStatusPppk, cleanNomorKontrakTag, formatIndoDate, calculateContractPeriod } from '../utils/pppkLogic'
+import { db } from '../services/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import {
+  getNamaLengkap,
+  getStatusPppk,
+  cleanNomorKontrakTag,
+  formatIndoDate,
+  calculateContractPeriod,
+  formatJenisKelamin
+} from '../utils/pppkLogic'
 import garudaUrl from '../assets/garuda.png'
 
 const route = useRoute()
@@ -152,12 +165,21 @@ const inputNip = ref('')
 const searchedNip = ref('')
 const isLoading = ref(false)
 const currentTimestamp = ref('')
+const pihakPertama = ref(null)
 
 onMounted(async () => {
   currentTimestamp.value = new Date().toLocaleString('id-ID', {
     dateStyle: 'full',
     timeStyle: 'medium'
   })
+
+  // Muat data pihak pertama untuk menampilkan nama Pejabat Penetap (Bupati)
+  try {
+    const pSnap = await getDoc(doc(db, 'config', 'pihak_pertama'))
+    if (pSnap.exists()) pihakPertama.value = pSnap.data()
+  } catch (e) {
+    console.warn('Gagal memuat pihak pertama di verifikasi:', e)
+  }
 
   if (!pegawaiStore.pppkData || pegawaiStore.pppkData.length === 0) {
     isLoading.value = true
@@ -218,6 +240,12 @@ const pendidikanDisplay = computed(() => {
   if (pend && thn) return `${pend} Tahun ${thn}`
   if (thn) return `Tahun ${thn}`
   return pend || '-'
+})
+
+const pejabatPenetapDisplay = computed(() => {
+  const jab = (pihakPertama.value?.jabatan || 'BUPATI HULU SUNGAI UTARA').trim()
+  const nama = (pihakPertama.value?.nama || 'H. SAHRUJANI').trim()
+  return `${jab} (${nama})`
 })
 
 const masaKontrakDisplay = computed(() => {

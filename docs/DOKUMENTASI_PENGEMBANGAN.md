@@ -8,7 +8,11 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
 - **Generator Dokumen SK PPPK Paruh Waktu (`src/utils/skGenerator.js`)**:
   - Mengintegrasikan template resmi Word SK PPPK Paruh Waktu (`Template SK PPPK Paruh Waktu.docx`).
   - Mengganti seluruh 10 MERGEFIELD Word secara presisi tanpa merusak struktur XML OpenXML: `NOMOR_KONTRAK`, `TMT_AWAL_BARU`, `TMT_AKHIR_BARU`, `Nama_Lengkap`, `NIP`, `TEMPAT_TGL_LAHIR`, `JENIS_KELAMIN`, `PENDIDIKAN_LULUS`, `JABATAN_NAMA`, dan `UNOR_NAMA`.
-  - Mengganti tag barcode lama Word (`MERGEBARCODE` / `DISPLAYBARCODE`) dalam sel tabel dengan drawing OpenXML gambar PNG resolusi tinggi `word/media/qr_code.png` yang terhubung secara valid melalui relasi dokumen (`rIdQR`).
+  - **Nama Lengkap Bergelar (`getNamaLengkap`)**: Otomatis menggabungkan `GELAR DEPAN`, `NAMA`, dan `GELAR BELAKANG` (contoh: `"AYU ALDIANI, S.Pd."` atau `"H. SAHRUJANI, S.AP., M.AP."`) dengan proteksi anti-duplikasi gelar.
+  - **Standarisasi Jenis Kelamin (`formatJenisKelamin`)**: Mengonversi kode singkat `"P"` / `"L"` menjadi teks resmi `"Wanita"` / `"Pria"`.
+  - **Posisi Barcode / QR Code Rata Kiri**: Memperbaiki tata letak penempatan drawing gambar QR code di tabel tanda tangan menjadi rata kiri (`<w:jc w:val="left"/>`) dengan ukuran proporsional `cx="850000" cy="850000"` (~2.25 cm) sesuai referensi resmi (Gambar 3).
+  - **Tanggal Penetapan SK Fleksibel & Dinamis**: Mendukung input tanggal penetapan SK dari modal unduh pengguna (`tanggalSkStr`), yang otomatis diformat ke penanggalan Indonesia (contoh: `"30 September 2026"`) dan menggantikan tanggal penetapan default di dokumen Word.
+  - **Nama & Jabatan Bupati Dinamis dari Database**: Memuat data Pejabat Penetap langsung dari koleksi Firestore `config/pihak_pertama` untuk menggantikan nama bupati (misal `"H. SAHRUJANI"`) dan jabatan bupati (`"BUPATI HULU SUNGAI UTARA"`) secara dinamis di dokumen SK.
   - Mendukung unduh tunggal (`downloadSingleSk`) maupun unduh massal (`downloadBatchSk`) dalam format file ZIP berpenamaan rapi.
 - **Generator QR Code BKN Transparan Murni (`src/utils/qrCode.js` & `src/utils/qrcode-generator.js`)**:
   - Dibuat secara mandiri (*zero-dependency*) menggunakan algoritma matriks QR standar ISO/IEC 18004 level error correction 'H' (kapasitas koreksi kesalahan 30%) dan di-render di atas elemen HTML5 Canvas browser.
@@ -19,11 +23,11 @@ Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada
   - **Opsi 2**: Nomor NIP saja (teks polos NIP pegawai).
 - **Halaman Verifikasi Publik Dokumen SK (`src/views/VerifikasiView.vue` & Rute `/verifikasi`)**:
   - Dibuka sebagai rute publik tanpa memerlukan autentikasi login (`requiresAuth: false`) agar dapat diakses seketika saat kode QR pada SK fisik dipindai menggunakan kamera ponsel atau pemindai barcode.
-  - Menampilkan sertifikat keabsahan dokumen resmi Pemerintah Kabupaten Hulu Sungai Utara lengkap dengan lambang Garuda Pancasila, nomor SK, identitas pegawai, jabatan, unit kerja, masa kontrak, status keaktifan, dan waktu verifikasi elektronik BKPSDM.
+  - Menampilkan sertifikat keabsahan dokumen resmi Pemerintah Kabupaten Hulu Sungai Utara lengkap dengan lambang Garuda Pancasila, nomor SK, nama pegawai bergelar lengkap, jenis kelamin format Pria/Wanita, jabatan, unit kerja, nama Pejabat Penetap (Bupati), masa kontrak, status keaktifan, dan waktu verifikasi elektronik BKPSDM.
   - Menyediakan kolom pencarian NIP manual untuk memudahkan verifikasi dokumen kepegawaian lainnya.
 - **Pembaruan Modal Unduh (`DownloadContractModal.vue`)**:
   - Menambahkan pemilihan **Jenis Dokumen**: "Perjanjian Kerja" vs "Surat Keputusan (SK)".
-  - Saat memilih SK, antarmuka otomatis menyesuaikan untuk menampilkan pilihan **Isian Barcode / QR Code** (URL Verifikasi Publik vs Nomor NIP Saja).
+  - Saat memilih SK, antarmuka otomatis menyesuaikan untuk menampilkan pilihan **Isian Barcode / QR Code** (URL Verifikasi Publik vs Nomor NIP Saja) serta **Input Tanggal Penetapan SK**.
   - Mendukung unduh file Word tunggal, unduh batch ZIP, serta penyimpanan langsung ke Google Drive.
 - **Kepatuhan Ponytail Master Rules**:
   - Tetap menerapkan pendekatan pragmatis (*lazy senior developer*), tidak menambah dependensi library npm baru (*reject library bloat*), fungsi pembantu murni diletakkan di layer `src/utils/`, dan setiap fungsi dipantau agar tidak melebihi 50 baris (*ponytail-runtime*).
