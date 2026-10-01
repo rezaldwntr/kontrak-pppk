@@ -144,15 +144,11 @@ export const downloadTemplateNomorKontrak = () => {
     {
       'NIP': '198507122023211005',
       'NOMOR KONTRAK': '19',
-      'NOMOR SK': '800.1.2.5/05/BKPSDM',
-      'TANGGAL SK': '2026-01-02',
       'KETERANGAN (OPSIONAL)': 'Cukup isi nomor tengah (misal: 19) -> otomatis ditampilkan 800.1.2.5/19/BKPSDM'
     },
     {
       'NIP': '199003152023212003',
       'NOMOR KONTRAK': '27',
-      'NOMOR SK': '800.1.2.5/06/BKPSDM',
-      'TANGGAL SK': '2026-01-02',
       'KETERANGAN (OPSIONAL)': 'Cukup isi nomor tengah saja (misal: 27)'
     }
   ]
@@ -162,9 +158,7 @@ export const downloadTemplateNomorKontrak = () => {
   ws['!cols'] = [
     { wch: 22 }, // NIP
     { wch: 28 }, // NOMOR KONTRAK
-    { wch: 28 }, // NOMOR SK
-    { wch: 15 }, // TANGGAL SK
-    { wch: 40 }  // KETERANGAN
+    { wch: 45 }  // KETERANGAN
   ]
 
   const wb = XLSX.utils.book_new()
@@ -219,8 +213,6 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
         // Header alias matching
         const nipKeys = ['NIP', 'NIP BARU', 'NIP_BARU', 'NO NIP', 'NO_NIP', 'NIP PEGAWAI']
         const noKontrakKeys = ['NOMOR KONTRAK', 'NO KONTRAK', 'NOMOR_KONTRAK', 'NO_KONTRAK', 'NOMOR PERJANJIAN', 'NO PERJANJIAN', 'NO_PERJANJIAN', 'KONTRAK']
-        const noSkKeys = ['NOMOR SK', 'NO SK', 'NOMOR_SK', 'NO_SK', 'NOMOR SK PERPANJANGAN', 'NO SK PERPANJANGAN']
-        const tglSkKeys = ['TANGGAL SK', 'TGL SK', 'TANGGAL_SK', 'TGL_SK', 'TANGGAL SK PERPANJANGAN']
 
         // Clone current data
         const updatedData = currentData.map(item => ({ ...item }))
@@ -243,8 +235,6 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
           const rawNip = findRowValue(row, nipKeys)
           const rawNomorKontrak = findRowValue(row, noKontrakKeys).replace(/^'/, '').trim()
           const nomorKontrak = cleanNomorKontrakTag(rawNomorKontrak)
-          const nomorSk = findRowValue(row, noSkKeys).replace(/^'/, '').trim()
-          const tanggalSk = findRowValue(row, tglSkKeys).replace(/^'/, '').trim()
 
           const cleaned = cleanNip(rawNip)
           if (!cleaned) return // Lewati baris kosong
@@ -285,8 +275,6 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
                 periode: 1,
                 jenis: 'Kontrak Pertama (Awal)',
                 nomorKontrak: targetPeriodNum === 1 ? nomorKontrak : (emp['NOMOR KONTRAK AKTIF'] || emp['NOMOR KONTRAK BARU'] || emp['NO_KONTRAK'] || ''),
-                nomorSk: targetPeriodNum === 1 ? (nomorSk || emp['NOMOR SK CPNS'] || '') : (emp['NOMOR SK CPNS'] || ''),
-                tanggalSk: targetPeriodNum === 1 ? (tanggalSk || emp['TANGGAL SK CPNS'] || '') : (emp['TANGGAL SK CPNS'] || ''),
                 tmtAwal: tmtCpns,
                 tmtAkhir: targetPeriodNum === 1 ? tmtAkhirAktif : ''
               })
@@ -299,17 +287,13 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
             if (existingEntryIdx !== -1) {
               history[existingEntryIdx] = {
                 ...history[existingEntryIdx],
-                nomorKontrak: nomorKontrak || history[existingEntryIdx].nomorKontrak,
-                nomorSk: nomorSk || history[existingEntryIdx].nomorSk,
-                tanggalSk: tanggalSk || history[existingEntryIdx].tanggalSk,
+                nomorKontrak: nomorKontrak || history[existingEntryIdx].nomorKontrak
               }
             } else {
               history.push({
                 periode: targetPeriodNum,
                 jenis: periodeLabel,
                 nomorKontrak: nomorKontrak,
-                nomorSk: nomorSk,
-                tanggalSk: tanggalSk,
                 tmtAwal: tmtAwalAktif,
                 tmtAkhir: tmtAkhirAktif
               })
@@ -321,8 +305,6 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
             // Perbarui NOMOR KONTRAK AKTIF jika menargetkan periode aktif saat ini
             if (targetMode === 'auto' || targetMode === 'extension' || (targetMode === 'initial' && targetPeriodNum === 1 && (!tmtAwalAktif || tmtAwalAktif === tmtCpns))) {
               emp['NOMOR KONTRAK AKTIF'] = nomorKontrak
-              if (nomorSk) emp['NOMOR SK PERPANJANGAN'] = nomorSk
-              if (tanggalSk) emp['TANGGAL SK PERPANJANGAN'] = tanggalSk
             }
 
             matchedCount++
@@ -333,8 +315,7 @@ export const processImportNomorKontrak = async (file, targetMode = 'auto', curre
                 nama: emp['NAMA'] || '-',
                 jabatan: emp['JABATAN NAMA'] || '-',
                 periode: periodeLabel,
-                nomorKontrak: nomorKontrak,
-                nomorSk: nomorSk || '-'
+                nomorKontrak: nomorKontrak
               })
             }
           } else {

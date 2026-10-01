@@ -1,6 +1,48 @@
 # Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
+## [v3.10.1] - 2026-10-01 (Preview / Staging)
+
+### Pembersihan Tuntas Sisa Fitur SK & Perbaikan Bug BUP pada Menu Perpanjangan Kontrak
+- **Pembersihan Tuntas Sisa Kolom/Input SK**:
+  - **Modal Perpanjangan Kontrak (`src/components/pegawai/ExtendModal.vue`)**:
+    - Menghapus input "Nomor SK Perpanjangan" dan "Tanggal SK Perpanjangan" yang sebelumnya masih tertinggal di form.
+    - Mengatur ulang grid layout menjadi 4 kolom bersih: Nomor Kontrak Baru, Gaji Pokok, TMT Kontrak Baru, dan Tanggal Akhir Kontrak Baru.
+    - Menghapus state `nomorSk` & `tanggalSk` serta membersihkannya dari payload emit submit form.
+    - Membersihkan teks tip pada perpanjangan massal (menghapus kata "Nomor SK dan").
+  - **Template & Logika Impor Nomor Kontrak (`src/utils/exportImport.js`)**:
+    - Menghapus kolom header `NOMOR SK` dan `TANGGAL SK` dari generator file template Excel (`downloadTemplateNomorKontrak`).
+    - Menghapus pembacaan kolom SK (`noSkKeys`, `tglSkKeys`) dan assignment atribut SK di fungsi `processImportNomorKontrak`.
+  - **Penyimpanan Store Pegawai (`src/stores/pegawaiStore.js`)**:
+    - Menghapus penyimpanan field `nomorSk`, `tanggalSk`, `'NOMOR SK PERPANJANGAN'`, dan `'TANGGAL SK PERPANJANGAN'` pada fungsi `batchExtend` maupun `cancelExtension`.
+  - **Modal Detail Pegawai (`src/components/pegawai/DetailModal.vue`)**:
+    - Menghapus inisialisasi default field `NOMOR SK PERPANJANGAN` dan `TANGGAL SK PERPANJANGAN`.
+
+- **Perbaikan Bug BUP pada Menu Perpanjangan Kontrak**:
+  - **Latar Belakang Bug**:
+    - Pegawai yang masa kontraknya berakhir bertepatan dengan Batas Usia Pensiun (BUP) — contohnya pegawai NORMAS (NIP `196901012025212025`, PPPK Paruh Waktu, lahir 01/01/1969, BUP pada 31/01/2027) — sebelumnya keliru masuk ke dalam tab perpanjangan kontrak.
+    - Selain itu, ketika modal perpanjangan dibuka untuk pegawai tersebut dengan TMT baru `01/02/2027`, tanggal akhir kontrak barunya malah mundur ke `31/01/2027` (karena formula lama membandingkan `bupEndDate` dengan `standardEndDate` tanpa memvalidasi apakah `bupEndDate <= tmtStart`).
+  - **Solusi & Logika Baru di `src/utils/pppkLogic.js`**:
+    - Menambahkan fungsi murni `isEligibleForExtension(item)` yang mengevaluasi syarat kelayakan perpanjangan kontrak:
+      1. Mengecualikan status manual non-aktif: `Diberhentikan`, `Meninggal`, `Mengundurkan Diri`, `Tidak Diperpanjang`, dan `Pensiun`.
+      2. Mengecualikan pegawai yang masa kontraknya berakhir karena BUP (`period.isBup === true`).
+      3. Mengecualikan pegawai yang tanggal akhir kontraknya telah mencapai atau melampaui tanggal BUP (`period.rawDate >= bupDate`).
+      4. Memastikan status kontrak saat ini adalah `Kontrak Hampir Habis` atau `Kontrak Habis`.
+    - Menyesuaikan penentuan status pada `calculateContractPeriod`: Jika `isBup === true` dan berada dalam batas bulan hampir habis, status kontrak ditandai secara spesifik sebagai `"Mendekati Pensiun (BUP)"` bukan lagi `"Kontrak Hampir Habis"`.
+    - Menyesuaikan fungsi `getStatusPppk` agar mengenali `"Mendekati Pensiun (BUP)"` sebagai status `"Aktif"`.
+  - **Integrasi di Tampilan Perpanjangan (`src/views/PerpanjanganView.vue`)**:
+    - Menggunakan `isEligibleForExtension(item)` pada penghitungan badge tab (`tabCounts`), penyaringan data tabel (`filteredData`), serta penentuan unit kerja tunggal (`isSingleInduk`).
+    - Pegawai yang mencapai BUP kini otomatis tidak muncul di tab perpanjangan kontrak.
+  - **Integrasi di Tabel Pegawai (`src/components/pegawai/PegawaiTable.vue`)**:
+    - Menerapkan `isEligibleForExtension(item)` pada `filteredData` dan `baseData` saat properti `onlyNeedExtension` bernilai true.
+    - Menyembunyikan tombol aksi perpanjangan per baris jika pegawai tidak memenuhi syarat perpanjangan.
+    - Menambahkan styling badge peringatan akhir kontrak untuk status `"Mendekati Pensiun (BUP)"`.
+  - **Pencegahan Tanggal Mundur di Modal Perpanjangan (`src/components/pegawai/ExtendModal.vue`)**:
+    - Pada fungsi `recalculate()`, ditambahkan validasi: jika `bupEndDate <= tmtStart`, sistem menandai state `isBupExceeded = true` dan mengosongkan nilai `tanggalAkhir` (mencegah tanggal akhir jatuh lebih awal daripada tanggal mulai).
+    - Menampilkan banner peringatan berwarna merah yang menginformasikan bahwa pegawai telah mencapai Batas Usia Pensiun pada tanggal BUP-nya dan tidak dapat diperpanjang lagi.
+    - Menonaktifkan tombol submit "Proses Perpanjangan" saat `isBupExceeded` bernilai true.
+  - **Safety Guard di Store (`src/stores/pegawaiStore.js`)**:
+    - Menambahkan pengecekan pengaman di `batchExtend` agar otomatis melewatkan (*skip*) pegawai yang tanggal BUP-nya sudah tercapai sebelum atau tepat pada TMT baru.
 
 ## [v3.10.0] - 2026-10-01 (Preview / Staging)
 

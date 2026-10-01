@@ -480,8 +480,6 @@ watch([() => props.isOpen, () => props.item], ([isOpen, item]) => {
     })
 
     if (!editForm.value['NOMOR KONTRAK BARU']) editForm.value['NOMOR KONTRAK BARU'] = ''
-    if (!editForm.value['NOMOR SK PERPANJANGAN']) editForm.value['NOMOR SK PERPANJANGAN'] = ''
-    if (!editForm.value['TANGGAL SK PERPANJANGAN']) editForm.value['TANGGAL SK PERPANJANGAN'] = ''
     if (!editForm.value['TMT KONTRAK BARU']) editForm.value['TMT KONTRAK BARU'] = ''
 
     activeTab.value = 'personal'

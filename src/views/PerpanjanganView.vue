@@ -81,7 +81,7 @@ import DetailModal from '../components/pegawai/DetailModal.vue'
 import ExtendModal from '../components/pegawai/ExtendModal.vue'
 import PasswordPromptModal from '../components/auth/PasswordPromptModal.vue'
 import DownloadContractModal from '../components/pegawai/DownloadContractModal.vue'
-import { calculateContractPeriod, getUnorAtasan, getUnorInduk } from '../utils/pppkLogic'
+import { calculateContractPeriod, getUnorAtasan, getUnorInduk, isEligibleForExtension } from '../utils/pppkLogic'
 import { customSwal } from '../utils/swal'
 
 const route = useRoute()
@@ -97,20 +97,11 @@ const tabs = [
 ]
 
 const tableRef = ref(null)
-  const activeTab = computed(() => route.params.jenis || 'pppk')
-
-// Helper function to check if item is eligible for extension
-const isEligibleForExtension = (item) => {
-  const contractStatus = calculateContractPeriod(item).statusText
-  const manualStatus = item['STATUS KEAKTIFAN PPPK'] || item['STATUS KEDUDUKAN'];
-  if (['Diberhentikan', 'Meninggal', 'Mengundurkan Diri', 'Tidak Diperpanjang'].includes(manualStatus)) return false;
-  return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus)
-}
+const activeTab = computed(() => route.params.jenis || 'pppk')
 
 const tabCounts = computed(() => {
   const counts = { 'pppk': 0, 'paruh-waktu': 0 }
   pegawaiStore.pppkData.forEach(item => {
-    // Only count those eligible for extension to match the table's default behavior
     if (isEligibleForExtension(item)) {
       if (item['JENIS PPPK'] === 'PPPK Paruh Waktu') {
         counts['paruh-waktu']++
@@ -124,6 +115,7 @@ const tabCounts = computed(() => {
 
 const filteredData = computed(() => {
   return pegawaiStore.pppkData.filter(item => {
+    if (!isEligibleForExtension(item)) return false
     if (activeTab.value === 'paruh-waktu') {
       return item['JENIS PPPK'] === 'PPPK Paruh Waktu'
     } else {
@@ -135,9 +127,7 @@ const filteredData = computed(() => {
 const isSingleInduk = computed(() => {
   const uniqueInduk = new Set()
   filteredData.value.forEach(item => {
-    if (isEligibleForExtension(item)) {
-      uniqueInduk.add(getUnorInduk(item['UNOR NAMA']))
-    }
+    uniqueInduk.add(getUnorInduk(item['UNOR NAMA']))
   })
   return uniqueInduk.size === 1
 })

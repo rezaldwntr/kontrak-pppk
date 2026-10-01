@@ -3,7 +3,7 @@ import { db, savePegawaiChunks } from '../services/firebase'
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import LZString from 'lz-string'
 import { initialMockData } from '../utils/mockData'
-import { toRoman, cleanNomorKontrakTag } from '../utils/pppkLogic'
+import { toRoman, cleanNomorKontrakTag, parseDate } from '../utils/pppkLogic'
 
 export const usePegawaiStore = defineStore('pegawai', {
   state: () => ({
@@ -168,6 +168,22 @@ export const usePegawaiStore = defineStore('pegawai', {
         // Process local data
         this.pppkData = this.pppkData.map(item => {
           if (selectedIds.includes(item['PNS ID'])) {
+            // Guard: Lewati pegawai yang sudah mencapai BUP pada TMT baru
+            const birthDate = parseDate(item['TANGGAL LAHIR'] || '')
+            if (birthDate && !isNaN(birthDate.getTime())) {
+              const jabatan = (item['JABATAN NAMA'] || '').toLowerCase()
+              const bupAge = jabatan.includes('guru') ? 60 : 58
+              const bupDate = new Date(birthDate)
+              bupDate.setFullYear(bupDate.getFullYear() + bupAge)
+              bupDate.setMonth(bupDate.getMonth() + 1)
+              bupDate.setDate(0)
+              const newTmt = parseDate(formData.newTmtDate)
+              if (newTmt && bupDate.getTime() <= newTmt.getTime()) {
+                console.warn(`Pegawai ${item['NAMA']} telah mencapai BUP (${bupDate}), dilewati dari perpanjangan.`)
+                return item
+              }
+            }
+
             const oldTmt = item['AWAL KONTRAK AKTIF'] || item['TMT CPNS'] || ''
             // Log history
             historyEntries.push({
@@ -187,8 +203,6 @@ export const usePegawaiStore = defineStore('pegawai', {
                 periode: 1,
                 jenis: 'Kontrak Pertama (Awal)',
                 nomorKontrak: cleanNomorKontrakTag(item['NOMOR KONTRAK AKTIF'] || item['NOMOR KONTRAK BARU'] || item['NO_KONTRAK'] || ''),
-                nomorSk: item['NOMOR SK CPNS'] || '',
-                tanggalSk: item['TANGGAL SK CPNS'] || '',
                 tmtAwal: item['TMT CPNS'] || oldTmt,
                 tmtAkhir: item['AKHIR KONTRAK AKTIF'] || ''
               })
@@ -199,8 +213,6 @@ export const usePegawaiStore = defineStore('pegawai', {
               periode: nextPeriodNum,
               jenis: `Perpanjangan ${toRoman(nextPeriodNum - 1)}`,
               nomorKontrak: newNomorKontrak,
-              nomorSk: isSingle ? (formData.nomorSk || '') : '',
-              tanggalSk: isSingle ? (formData.tanggalSk || '') : '',
               tmtAwal: formData.newTmtDate,
               tmtAkhir: (isSingle && formData.tanggalAkhir) ? formData.tanggalAkhir : ''
             })
@@ -209,8 +221,6 @@ export const usePegawaiStore = defineStore('pegawai', {
               ...item,
               'AWAL KONTRAK AKTIF': formData.newTmtDate,
               'NOMOR KONTRAK AKTIF': newNomorKontrak,
-              'NOMOR SK PERPANJANGAN': isSingle ? (formData.nomorSk || '') : '',
-              'TANGGAL SK PERPANJANGAN': isSingle ? (formData.tanggalSk || '') : '',
               STATUS_PERPANJANGAN: 'Selesai Diperpanjang',
               'STATUS KEAKTIFAN PPPK': 'Aktif',
               FORCE_AKTIF: true,
@@ -269,8 +279,6 @@ export const usePegawaiStore = defineStore('pegawai', {
             emp.RIWAYAT_KONTRAK.pop()
             const prev = emp.RIWAYAT_KONTRAK[emp.RIWAYAT_KONTRAK.length - 1]
             emp['NOMOR KONTRAK AKTIF'] = prev?.nomorKontrak || ''
-            emp['NOMOR SK PERPANJANGAN'] = prev?.nomorSk || ''
-            emp['TANGGAL SK PERPANJANGAN'] = prev?.tanggalSk || ''
           }
         }
 

@@ -207,7 +207,7 @@
                 </div>
               </td>
               <td v-if="!isBupTab" class="cell-date">
-                <span :class="calculateContractPeriod(item).statusText === 'Kontrak Hampir Habis' ? 'badge-warning-soft' : ''">
+                <span :class="['Kontrak Hampir Habis', 'Mendekati Pensiun (BUP)'].includes(calculateContractPeriod(item).statusText) ? 'badge-warning-soft' : ''">
                   {{ calculateContractPeriod(item).endDateStr }}
                 </span>
               </td>
@@ -234,7 +234,7 @@
                   </button>
                   <button
                     class="btn btn-sm btn-success btn-table-icon"
-                    v-if="authStore.user && allowBatchExtend && getStatusPppk(item) === 'Aktif'"
+                    v-if="authStore.user && allowBatchExtend && isEligibleForExtension(item)"
                     @click="emit('batchExtend', [item['PNS ID']])"
                     title="Perpanjang Kontrak Pegawai Ini"
                   >
@@ -332,7 +332,8 @@ import {
   getUnorAtasan,
   getUnorInduk,
   getNamaLengkap,
-  formatIndoDate
+  formatIndoDate,
+  isEligibleForExtension
 } from '../../utils/pppkLogic';
 
 const handleSearch = () => {
@@ -412,8 +413,7 @@ const filteredData = computed(() => {
     })();
     
     if (props.onlyNeedExtension) {
-      if (getStatusPppk(item) === 'Diberhentikan') return false;
-        if (!['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus)) {
+      if (!isEligibleForExtension(item)) {
         return false;
       }
     }
@@ -433,11 +433,7 @@ const baseData = computed(() => {
   // Jika ada customData (mode tab terfilter dari parent), gunakan itu
   const source = props.customData !== null ? props.customData : pegawaiStore.pppkData
   if (props.onlyNeedExtension) {
-    return source.filter(item => {
-      const contractStatus = calculateContractPeriod(item).statusText;
-      if (getStatusPppk(item) === 'Diberhentikan') return false;
-        return ['Kontrak Hampir Habis', 'Kontrak Habis'].includes(contractStatus);
-    });
+    return source.filter(item => isEligibleForExtension(item));
   }
   return source;
 });

@@ -74,7 +74,7 @@ export const calculateContractPeriod = (item) => {
     let finalEndDate = standardEndDate;
     let isBup = false;
     
-    if (bupEndDate && bupEndDate.getTime() < standardEndDate.getTime()) {
+    if (bupEndDate && bupEndDate.getTime() <= standardEndDate.getTime()) {
         finalEndDate = bupEndDate;
         isBup = true;
     }
@@ -93,7 +93,7 @@ export const calculateContractPeriod = (item) => {
     if (finalEndDate.getTime() < new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) {
         statusText = isBup ? "Kontrak Habis (BUP)" : "Kontrak Habis";
     } else if (diffMonths <= thresholdHampirHabis) {
-        statusText = "Kontrak Hampir Habis";
+        statusText = isBup ? "Mendekati Pensiun (BUP)" : "Kontrak Hampir Habis";
     }
     
     return {
@@ -116,11 +116,52 @@ export const getStatusPppk = (item) => {
     if (contractStatus === "Kontrak Habis (BUP)") return "Pensiun";
     if (contractStatus === "Kontrak Habis") return "Diberhentikan";
     
-    if (contractStatus === "Kontrak Hampir Habis" || contractStatus === "Kontrak Masih Berlaku") {
+    if (contractStatus === "Kontrak Hampir Habis" || contractStatus === "Mendekati Pensiun (BUP)" || contractStatus === "Kontrak Masih Berlaku") {
         return "Aktif";
     }
     
     return "Aktif";
+};
+
+/**
+ * Mengecek apakah seorang pegawai memenuhi syarat untuk perpanjangan kontrak.
+ * Pegawai TIDAK DAPAT diperpanjang jika:
+ * 1. Berstatus manual Diberhentikan, Meninggal, Mengundurkan Diri, Tidak Diperpanjang, Pensiun
+ * 2. Masa kontrak saat ini berakhir karena BUP (period.isBup)
+ * 3. Akhir masa kontrak saat ini sudah mencapai atau melampaui tanggal BUP
+ * 4. Status kontrak bukan 'Kontrak Hampir Habis' atau 'Kontrak Habis'
+ */
+export const isEligibleForExtension = (item) => {
+    if (!item || typeof item !== "object") return false;
+    
+    const manualStatus = item["STATUS KEAKTIFAN PPPK"] || item["STATUS KEDUDUKAN"];
+    if (["Diberhentikan", "Meninggal", "Mengundurkan Diri", "Tidak Diperpanjang", "Pensiun"].includes(manualStatus)) {
+        return false;
+    }
+    
+    const period = calculateContractPeriod(item);
+    if (!period || !period.rawDate || isNaN(period.rawDate.getTime())) return false;
+    
+    // Pegawai yang masa kontraknya berakhir karena mencapai BUP tidak dapat diperpanjang
+    if (period.isBup) return false;
+    
+    // Validasi batas usia pensiun berdasarkan tanggal lahir & jabatan
+    const birthDate = parseDate(item["TANGGAL LAHIR"] || "");
+    if (birthDate && !isNaN(birthDate.getTime())) {
+        const jabatan = (item["JABATAN NAMA"] || "").toLowerCase();
+        const bupAge = jabatan.includes("guru") ? 60 : 58;
+        const bupDate = new Date(birthDate);
+        bupDate.setFullYear(bupDate.getFullYear() + bupAge);
+        bupDate.setMonth(bupDate.getMonth() + 1);
+        bupDate.setDate(0);
+        
+        // Jika akhir kontrak saat ini sudah mencapai atau melampaui tanggal BUP:
+        if (period.rawDate.getTime() >= bupDate.getTime()) {
+            return false;
+        }
+    }
+    
+    return period.statusText === "Kontrak Hampir Habis" || period.statusText === "Kontrak Habis";
 };
 
 export const getKeteranganDiberhentikan = (item) => {

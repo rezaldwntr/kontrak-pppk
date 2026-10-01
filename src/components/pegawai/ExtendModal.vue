@@ -61,6 +61,7 @@
                   class="form-control" 
                   style="border-radius: 0; text-align: center; font-weight: 700;" 
                   placeholder="Nomor (misal: 27)"
+                  :disabled="isBupExceeded"
                 >
                 <span style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: none; padding: 8px 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); border-radius: 0 6px 6px 0; user-select: none;">/BKPSDM</span>
               </div>
@@ -70,18 +71,14 @@
               </small>
             </div>
             <div class="form-group">
-              <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">Nomor SK Perpanjangan</label>
-              <input type="text" v-model="nomorSk" class="form-control" placeholder="Contoh: 800.1.2/05/BKPSDM/2026">
-            </div>
-            <div class="form-group">
-              <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">Tanggal SK Perpanjangan</label>
-              <input type="date" v-model="tanggalSk" class="form-control">
+              <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">Gaji Pokok Baru (Rp)</label>
+              <input type="text" v-model="gajiPokok" class="form-control" placeholder="Otomatis terisi dari tabel gaji" :disabled="isBupExceeded">
             </div>
             <div class="form-group">
               <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">
                 TMT Kontrak Baru (Mulai) <span style="color: #ef4444;">*</span>
               </label>
-              <input type="date" v-model="newTmtDate" class="form-control" required @change="recalculate">
+              <input type="date" v-model="newTmtDate" class="form-control" required @change="recalculate" :disabled="isBupExceeded">
             </div>
             <div class="form-group">
               <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
@@ -91,18 +88,25 @@
                   style="display: inline-block; background: rgba(239,68,68,0.15); color: #ef4444; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.5px; border: 1px solid rgba(239,68,68,0.35);"
                 >BUP</span>
               </label>
-              <input type="date" v-model="tanggalAkhir" class="form-control">
-            </div>
-            <div class="form-group">
-              <label style="font-weight: 600; font-size: 0.82rem; margin-bottom: 6px; display: block;">Gaji Pokok Baru (Rp)</label>
-              <input type="text" v-model="gajiPokok" class="form-control" placeholder="Otomatis terisi dari tabel gaji">
+              <input type="date" v-model="tanggalAkhir" class="form-control" :disabled="isBupExceeded">
             </div>
           </div>
 
-          <!-- BUP info banner -->
-          <div v-if="isBup" style="margin-top: 14px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; color: #dc2626; font-size: 0.82rem; display: flex; align-items: center; gap: 10px;">
+          <!-- BUP Exceeded Error Banner -->
+          <div v-if="isBupExceeded" style="margin-top: 14px; background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.4); border-radius: 8px; padding: 12px 16px; color: #dc2626; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 12px;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem; margin-top: 2px;"></i>
+            <div>
+              <div style="font-weight: 700; margin-bottom: 2px;">Pegawai Telah Mencapai Batas Usia Pensiun (BUP)</div>
+              <div style="font-size: 0.82rem; line-height: 1.45;">
+                Pegawai ini mencapai batas usia pensiun pada <strong>{{ bupDateFormatted }}</strong>. Kontrak kerja tidak dapat diperpanjang lagi karena sudah memasuki masa pensiun.
+              </div>
+            </div>
+          </div>
+
+          <!-- BUP Adjusted Warning Banner -->
+          <div v-else-if="isBup" style="margin-top: 14px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px 14px; color: #dc2626; font-size: 0.82rem; display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-user-clock" style="font-size: 1.1rem;"></i>
-            <span>Tanggal akhir kontrak disesuaikan dengan <strong>Batas Usia Pensiun (BUP)</strong> pegawai ini.</span>
+            <span>Tanggal akhir kontrak disesuaikan dengan <strong>Batas Usia Pensiun (BUP)</strong> pegawai ini ({{ bupDateFormatted }}).</span>
           </div>
         </template>
         
@@ -124,7 +128,7 @@
               <i class="fa-solid fa-lightbulb"></i>
               <span>Tips Penomoran Kontrak:</span>
             </div>
-            Nomor SK dan Nomor Kontrak pada perpanjangan massal dikosongkan sementara. Anda dapat melengkapinya secara otomatis dan cepat menggunakan fitur <strong>"Impor No. Kontrak"</strong> via Excel di Header, atau mengeditnya satu per satu di menu Detail Pegawai.
+            Nomor Kontrak pada perpanjangan massal dikosongkan sementara. Anda dapat melengkapinya secara otomatis dan cepat menggunakan fitur <strong>"Impor No. Kontrak"</strong> via Excel di Header, atau mengeditnya satu per satu di menu Detail Pegawai.
           </div>
         </template>
       </div>
@@ -136,7 +140,7 @@
           class="btn btn-primary" 
           style="background-color: #1eaa6e; border-color: #1eaa6e; color: white;" 
           @click="handleSubmit" 
-          :disabled="!newTmtDate"
+          :disabled="!newTmtDate || isBupExceeded"
         >
           <i class="fa-solid fa-file-signature" style="margin-right: 6px;"></i>
           <span>{{ selectedIds.length === 1 ? 'Proses Perpanjangan' : `Perpanjang (${selectedIds.length} Pegawai)` }}</span>
@@ -155,7 +159,8 @@ import {
   getGolonganPegawai, 
   cleanNomorKontrakTag, 
   formatNomorKontrakDisplay,
-  formatDateToInput 
+  formatDateToInput,
+  formatIndoDate
 } from '../../utils/pppkLogic'
 import { calculateGajiFromItem, formatRupiah } from '../../utils/gajiTable'
 
@@ -169,11 +174,11 @@ const pegawaiStore = usePegawaiStore()
 
 const newTmtDate = ref('')
 const nomorKontrakBaru = ref('')
-const nomorSk = ref('')
-const tanggalSk = ref('')
 const tanggalAkhir = ref('')
 const gajiPokok = ref('')
 const isBup = ref(false)
+const isBupExceeded = ref(false)
+const bupDateFormatted = ref('')
 
 const currentPegawai = ref(null)
 
@@ -201,11 +206,21 @@ const recalculate = () => {
     bupEndDate.setFullYear(bupEndDate.getFullYear() + bupAge)
     bupEndDate.setMonth(bupEndDate.getMonth() + 1)
     bupEndDate.setDate(0)
+    bupDateFormatted.value = formatIndoDate(bupEndDate)
   }
 
-  // Pilih tanggal yang lebih awal
-  let finalEndDate = standardEndDate
   isBup.value = false
+  isBupExceeded.value = false
+
+  // Validasi jika pegawai sudah mencapai atau melampaui BUP sebelum/pada tanggal TMT mulai baru
+  if (bupEndDate && bupEndDate.getTime() <= tmtStart.getTime()) {
+    isBupExceeded.value = true
+    tanggalAkhir.value = ''
+    return
+  }
+
+  // Pilih tanggal yang lebih awal (jika BUP datang sebelum akhir kontrak standar)
+  let finalEndDate = standardEndDate
   if (bupEndDate && bupEndDate.getTime() < standardEndDate.getTime()) {
     finalEndDate = bupEndDate
     isBup.value = true
@@ -230,11 +245,11 @@ const recalculate = () => {
 
 watch(() => props.isOpen, (newVal) => {
   nomorKontrakBaru.value = ''
-  nomorSk.value = ''
-  tanggalSk.value = ''
   tanggalAkhir.value = ''
   gajiPokok.value = ''
   isBup.value = false
+  isBupExceeded.value = false
+  bupDateFormatted.value = ''
   currentPegawai.value = null
 
   if (newVal && props.selectedIds && props.selectedIds.length > 0) {
@@ -257,12 +272,10 @@ watch(() => props.isOpen, (newVal) => {
 }, { immediate: true })
 
 const handleSubmit = () => {
-  if (!newTmtDate.value) return
+  if (!newTmtDate.value || isBupExceeded.value) return
   emit('submit', {
     newTmtDate: newTmtDate.value,
     nomorKontrakBaru: cleanNomorKontrakTag(nomorKontrakBaru.value),
-    nomorSk: nomorSk.value,
-    tanggalSk: tanggalSk.value,
     tanggalAkhir: tanggalAkhir.value,
     gajiPokok: gajiPokok.value
   })
