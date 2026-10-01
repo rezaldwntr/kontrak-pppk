@@ -2,6 +2,33 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
+## [v3.10.0] - 2026-10-01 (Preview / Staging)
+
+### Pencabutan / Rollback Fitur SK (Surat Keputusan) PPPK & Pemulihan Fokus Penuh ke Perjanjian Kerja
+- **Latar Belakang Kebijakan**:
+  - Fitur penerbitan dan pencetakan Surat Keputusan (SK) PPPK resmi telah diakomodasi dan diterbitkan langsung melalui sistem terpusat BKN (Badan Kepegawaian Negara).
+  - Untuk menghindari tumpang tindih regulasi, inkonsistensi format resmi, dan duplikasi beban kerja, seluruh modul internal pencetakan SK, barcode/QR code SK, serta halaman verifikasi publik dicabut dari aplikasi E-Kontrak PPPK.
+  - Aplikasi dikembalikan ke fungsi inti utamanya: manajemen data kepegawaian PPPK, monitoring masa berlaku, evaluasi perpanjangan kontrak, serta pencetakan Surat Perjanjian Kerja (Kontrak).
+- **Pencabutan Berkas & Modul Terkait SK**:
+  - Menghapus generator SK: `src/utils/skGenerator.js`.
+  - Menghapus modul pembuat QR Code BKN & aset gambar lambang Garuda: `src/utils/qrCode.js`, `src/utils/qrcode-generator.js`, dan `src/assets/garuda.png`.
+  - Menghapus tampilan verifikasi publik dokumen: `src/views/VerifikasiView.vue` beserta rute publik `/verifikasi` pada `src/router/index.js`.
+  - Menghapus komponen modal cetak SK mandiri: `src/components/pegawai/DownloadSkModal.vue`.
+  - Menghapus fitur impor nomor SK massal: `src/components/pegawai/ImportNomorSkModal.vue` serta helper `downloadTemplateNomorSk` dan `processImportNomorSk` dari `src/utils/exportImport.js`.
+  - Menghapus berkas template dokumen SK dari direktori `public/templates/` (`Template_SK_PPPK.docx`, `Template_SK_PPPK_Paruh_Waktu.docx`) dan sampel data `src/assets/img/data_samples/`.
+- **Pembersihan Antarmuka Pengguna (UI & State)**:
+  - **Header Navigasi (`src/components/layout/Header.vue`)**: Menghapus tombol "Impor No. SK" dan membersihkan state `showImportNomorSkModal` pada `src/stores/pegawaiStore.js` serta `src/App.vue`.
+  - **Tabel Pegawai (`src/components/pegawai/PegawaiTable.vue`)**: Menghapus tombol unduh SK di level baris per-pegawai maupun tombol aksi batch SK di bilah bawah; mengembalikan alur emit murni ke `download` dan `batchDownload` untuk kontrak kerja.
+  - **Modal Detail Pegawai (`src/components/pegawai/DetailModal.vue`)**: Menghapus tombol "Cetak SK", memfokuskan kembali aksi cetak hanya pada "Cetak Kontrak".
+  - **Halaman Manajemen & Perpanjangan (`src/views/PegawaiView.vue` & `src/views/PerpanjanganView.vue`)**: Menghilangkan seluruh percabangan `type === 'sk'`, state modal SK, dan mengembalikan penanganan cetak/unduh tunggal ke `DownloadContractModal.vue`.
+  - **Pengaturan Template & Tag (`src/views/SettingsView.vue`)**: Menghapus kartu upload template SK, reactive state `template_sk`, tombol switcher tag SK, serta CSS terkait (`.badge-status-sk`, `.tag-type-switcher`). Halaman pengaturan kini menampilkan daftar tag kontrak murni.
+- **Retensi Fungsi Bermanfaat (Pure Functions & KISS)**:
+  - Fungsi utilitas `getNamaLengkap` (penggabungan gelar depan + nama + gelar belakang anti-duplikasi) dan `formatJenisKelamin` (konversi P/L menjadi Pria/Wanita) di `src/utils/pppkLogic.js` tetap dipertahankan karena bermanfaat langsung untuk kebutuhan cetak Surat Perjanjian Kerja dan visualisasi data pegawai.
+- **Kepatuhan Ponytail Master Rules**:
+  - Mengeliminasi dead code dan menjaga arsitektur tetap flat tanpa pembungkus yang tidak diperlukan (*KISS & YAGNI*).
+  - Tidak ada dependensi eksternal baru yang ditinggalkan (*zero library bloat*).
+  - Seluruh berkas Vue dan utilitas JavaScript telah lulus pengujian sintaksis 100%.
+
 ## [v3.9.0] - 2026-09-29 (Preview / Staging)
 
 ### Fitur Baru: Cetak SK (Surat Keputusan) PPPK Paruh Waktu & QR Code BKN Transparan

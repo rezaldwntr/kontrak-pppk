@@ -45,12 +45,6 @@ const routes = [
     name: 'settings',
     component: () => import('../views/SettingsView.vue'),
     meta: { requiresAuth: true, title: 'Pengaturan Sistem', subtitle: 'Konfigurasi akun dan preferensi aplikasi' }
-  },
-  {
-    path: '/verifikasi',
-    name: 'verifikasi',
-    component: () => import('../views/VerifikasiView.vue'),
-    meta: { requiresAuth: false, title: 'Verifikasi Dokumen SK PPPK', subtitle: 'Layanan publik validasi keaslian Surat Keputusan PPPK' }
   }
 ]
 

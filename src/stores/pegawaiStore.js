@@ -13,7 +13,6 @@ export const usePegawaiStore = defineStore('pegawai', {
     filterDashboard: 'all',
     showImportModal: false,
     showImportNomorKontrakModal: false,
-    showImportNomorSkModal: false,
   }),
   actions: {
     async deleteAllPegawai() {

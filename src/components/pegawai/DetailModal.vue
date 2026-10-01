@@ -336,22 +336,11 @@
             type="button"
             class="btn btn-outline" 
             v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" 
-            @click="emit('print', editForm, 'kontrak')"
+            @click="emit('print', editForm)"
             title="Cetak atau unduh dokumen perjanjian kerja"
           >
             <i class="fa-solid fa-file-contract" style="margin-right: 6px; color: var(--primary-color);"></i>
             <span>Cetak Kontrak</span>
-          </button>
-          <button 
-            type="button"
-            class="btn btn-outline" 
-            v-if="authStore.user && getStatusPppk(editForm) === 'Aktif'" 
-            @click="emit('print', editForm, 'sk')"
-            title="Cetak atau unduh dokumen Surat Keputusan (SK)"
-            style="border-color: rgba(245, 158, 11, 0.5); color: #b45309;"
-          >
-            <i class="fa-solid fa-file-shield" style="margin-right: 6px; color: #d97706;"></i>
-            <span>Cetak SK</span>
           </button>
           <button 
             type="button"

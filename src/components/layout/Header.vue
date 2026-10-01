@@ -25,10 +25,6 @@
           <i class="fa-solid fa-file-contract"></i>
           <span>Impor No. Kontrak</span>
         </button>
-        <button class="btn btn-outline btn-header-action" id="btn-import-nomor-sk" @click="pegawaiStore.showImportNomorSkModal = true" title="Impor nomor Surat Keputusan (SK) secara massal via Excel">
-          <i class="fa-solid fa-file-shield" style="color: #d97706;"></i>
-          <span>Impor No. SK</span>
-        </button>
         <button v-if="route.name === 'pegawai'" class="btn btn-outline btn-header-action" id="btn-export" @click="handleExport" title="Ekspor seluruh data ke format Excel">
           <i class="fa-solid fa-file-export"></i>
           <span>Ekspor</span>
