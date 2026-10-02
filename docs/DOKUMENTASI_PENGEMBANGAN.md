@@ -1,7 +1,7 @@
 # Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
-## [v3.10.1] - 2026-10-01 (Preview / Staging)
+## [v3.10.1] - 2026-10-02 (Production & Staging)
 
 ### Pembersihan Tuntas Sisa Fitur SK & Perbaikan Bug BUP pada Menu Perpanjangan Kontrak
 - **Pembersihan Tuntas Sisa Kolom/Input SK**:
