@@ -1,6 +1,22 @@
 # Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
+## [v3.11.1] - 2026-10-12 (Production & Staging)
+
+### Implementasi Audit Keamanan Fase 2: Pengamanan Serverless OAuth Proxy & Token Lifecycle (SEC-001 & SEC-004)
+- **Eliminasi CORS Wildcard pada Serverless API (`api/drive/token.js`)**:
+  - Mencabut header `Access-Control-Allow-Origin: *` yang sebelumnya mengizinkan situs luar mana pun memanggil endpoint backend.
+  - Menerapkan fungsi validasi origin dinamis (`setCorsHeaders`) yang hanya mengizinkan domain resmi aplikasi (`https://kontrak-pppk.vercel.app`, preview domain `.vercel.app`, serta origin local dev yang diizinkan).
+  - Menambahkan header `Vary: Origin` dan respon preflight `OPTIONS` status 204.
+- **Transmisi Token Rahasia via POST JSON Body (`api/drive/token.js` & `useGoogleAuth.js`)**:
+  - Mengubah aksi pertukaran token sensitif (`exchange`, `refresh`, dan `revoke`) dari metode `GET` dengan query parameter URL menjadi metode `POST` dengan JSON request body.
+  - Mencegah `refreshToken` dan `code` otorisasi terekspos di log akses web server Vercel, proxy perantara, riwayat peramban, dan header Referer.
+  - Mempertahankan backward-compatibility dengan fallback parsing dari query params untuk menjaga kompatibilitas transisi.
+- **Penyelarasan Client Composable (`src/composables/useGoogleAuth.js`)**:
+  - Menyelaraskan seluruh fungsi pemanggil (`handleOAuthCallback`, `getValidToken`, `disconnectDrive`) agar mengirim payload token secara aman via HTTP `POST` dengan header `Content-Type: application/json`.
+- **Kepatuhan Ponytail Master Rules**:
+  - Kode ditulis secara datar (*flat*), mandiri tanpa dependensi baru, dan menjaga integritas alur sinkronisasi Google Drive 100%.
+
 ## [v3.11.0] - 2026-10-12 (Production & Staging)
 
 ### Implementasi Audit Keamanan Fase 1: Proteksi Data Kepegawaian & Hardening Infrastruktur

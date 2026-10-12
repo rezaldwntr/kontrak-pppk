@@ -1,24 +1,47 @@
 // api/drive/token.js
-// Vercel Serverless Function — menangani OAuth2 token exchange & refresh
-// Tidak menggunakan firebase-admin. Frontend (authenticated) yang menulis ke Firestore.
+// Vercel Serverless Function — menangani OAuth2 token exchange & refresh secara aman
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const DEFAULT_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://kontrak-pppk.vercel.app/drive'
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+const ALLOWED_ORIGINS = [
+  'https://kontrak-pppk.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+]
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin || ''
+  if (ALLOWED_ORIGINS.includes(origin) || (origin.startsWith('https://') && origin.endsWith('.vercel.app'))) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'https://kontrak-pppk.vercel.app')
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Vary', 'Origin')
+}
 
-  if (req.method === 'OPTIONS') return res.status(200).end()
+export default async function handler(req, res) {
+  setCorsHeaders(req, res)
 
-  const action = req.query.action || 'exchange'
+  if (req.method === 'OPTIONS') return res.status(204).end()
+
+  let body = {}
+  if (req.body) {
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  }
+
+  const action = body.action || req.query.action || 'exchange'
 
   try {
     if (action === 'exchange') {
-      const { code, redirectUri } = req.query
+      const code = body.code || req.query.code
+      const redirectUri = body.redirectUri || req.query.redirectUri
       if (!code) return res.status(400).json({ error: 'Missing code parameter' })
 
       const finalRedirectUri = redirectUri || DEFAULT_REDIRECT_URI
@@ -46,7 +69,6 @@ export default async function handler(req, res) {
       })
       const userInfo = await userInfoRes.json()
 
-      // Kembalikan semua data ke frontend. Frontend yang menulis ke Firestore (sudah terautentikasi).
       return res.status(200).json({
         accessToken: tokenData.access_token,
         refreshToken: tokenData.refresh_token,
@@ -57,8 +79,7 @@ export default async function handler(req, res) {
       })
 
     } else if (action === 'refresh') {
-      // Frontend membaca refreshToken dari Firestore dan mengirimkannya ke sini
-      const refreshToken = req.query.refreshToken
+      const refreshToken = body.refreshToken || req.query.refreshToken
       if (!refreshToken) {
         return res.status(400).json({ error: 'Missing refreshToken parameter' })
       }
@@ -93,7 +114,7 @@ export default async function handler(req, res) {
       })
 
     } else if (action === 'revoke') {
-      const { refreshToken } = req.query
+      const refreshToken = body.refreshToken || req.query.refreshToken
       if (refreshToken) {
         await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(refreshToken)}`, {
           method: 'POST',

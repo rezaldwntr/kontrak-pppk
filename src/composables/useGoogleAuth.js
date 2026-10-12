@@ -66,7 +66,15 @@ export function useGoogleAuth() {
 
   async function handleOAuthCallback(code) {
     const redirectUri = getRedirectUri()
-    const res = await fetch(`/api/drive/token?action=exchange&code=${encodeURIComponent(code)}&redirectUri=${encodeURIComponent(redirectUri)}`)
+    const res = await fetch('/api/drive/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'exchange',
+        code,
+        redirectUri,
+      }),
+    })
     if (!res.ok) {
       const err = await res.json()
       throw new Error(err.error || 'Failed to exchange token')
@@ -99,8 +107,15 @@ export function useGoogleAuth() {
 
     const refreshToken = tokenDoc.data().refreshToken
 
-    // Kirim ke Vercel function untuk di-refresh
-    const res = await fetch(`/api/drive/token?action=refresh&refreshToken=${encodeURIComponent(refreshToken)}`)
+    // Kirim ke Vercel function untuk di-refresh via POST JSON body
+    const res = await fetch('/api/drive/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'refresh',
+        refreshToken,
+      }),
+    })
     if (!res.ok) {
       const errData = await res.json()
       // Jika token sudah tidak valid, hapus dari Firestore
@@ -128,10 +143,15 @@ export function useGoogleAuth() {
     const tokenDoc = await getDoc(doc(db, 'config', 'drive_tokens'))
     const refreshToken = tokenDoc.exists() ? tokenDoc.data().refreshToken : null
 
-    // Revoke di Google
+    // Revoke di Google via POST JSON body
     if (refreshToken) {
-      await fetch(`/api/drive/token?action=revoke&refreshToken=${encodeURIComponent(refreshToken)}`, {
+      await fetch('/api/drive/token', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'revoke',
+          refreshToken,
+        }),
       }).catch(() => {})
     }
 
