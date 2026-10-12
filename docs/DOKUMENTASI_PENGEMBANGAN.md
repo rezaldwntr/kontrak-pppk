@@ -1,6 +1,32 @@
 # Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
+## [v3.11.0] - 2026-10-12 (Production & Staging)
+
+### Implementasi Audit Keamanan Fase 1: Proteksi Data Kepegawaian & Hardening Infrastruktur
+- **Latar Belakang**:
+  - Pelaksanaan Audit Keamanan berbasis **Cloudflare Security Audit Skill Framework** (`cloudflare/security-audit-skill`) untuk melindungi kerahasiaan Data Pokok Kepegawaian ASN/PPPK dan integritas sistem E-Kontrak.
+  - Eksekusi Fase 1 difokuskan pada eliminasi celah kebocoran data (*zero-risk quick wins*) dan *hardening* konfigurasi hosting/database.
+- **Perlindungan Rute & Pencegahan Kebocoran Data PII (SEC-002)**:
+  - Mengubah rute Dashboard (`/`) pada `src/router/index.js` dari `requiresAuth: false` menjadi `requiresAuth: true`.
+  - Menambahkan tampilan kunci keamanan (*Security Lock Screen*) di `src/views/DashboardView.vue` saat pengguna belum terautentikasi.
+  - Memastikan `pegawaiStore.loadData()` tidak pernah dieksekusi atau memuat data pegawai ke memori peramban sebelum pengguna resmi melakukan login.
+  - Memperbarui `router.beforeEach` untuk mencegah *infinite redirect loop* saat membuka halaman utama tanpa sesi login.
+- **Penyusunan Aturan Keamanan Database Firestore (SEC-003 & SEC-004)**:
+  - Menyusun berkas aturan keamanan resmi `firestore.rules` di repositori proyek.
+  - Mengunci seluruh koleksi `database/*`, `config/*`, dan `sync_queue/*` dengan syarat mutlak `request.auth != null` di level server Google Cloud Firebase.
+  - Menolak seluruh permintaan akses read/write tanpa autentikasi secara *default*.
+- **Penerapan HTTP Security Headers pada Vercel (SEC-005)**:
+  - Menambahkan blok konfigurasi `headers` pada `vercel.json` untuk seluruh rute (`/(.*)`).
+  - Mengaktifkan `X-Frame-Options: DENY` untuk mencegah serangan pembajakan klik (*Clickjacking / UI Redressing*).
+  - Mengaktifkan `X-Content-Type-Options: nosniff` guna mencegah eksploitasi *MIME-type sniffing*.
+  - Mengaktifkan `Referrer-Policy: strict-origin-when-cross-origin` dan pembatasan `Permissions-Policy`.
+- **Sanitasi Prototype Pollution pada Impor Excel (SEC-006)**:
+  - Menambahkan filter pengaman *anti-prototype pollution* di `src/utils/exportImport.js` pada fungsi `processImportFile`.
+  - Mengabaikan (*strip*) properti berbahaya (`__proto__`, `constructor`, `prototype`) saat memproses lembar kerja spreadsheet Excel ke objek data pegawai.
+- **Kepatuhan Ponytail Master Rules**:
+  - Seluruh perbaikan menerapkan kode flat, fungsi murni, tanpa dependensi library pihak ketiga baru, dan menjaga integritas UX aplikasi 100%.
+
 ## [v3.10.1] - 2026-10-02 (Production & Staging)
 
 ### Pembersihan Tuntas Sisa Fitur SK & Perbaikan Bug BUP pada Menu Perpanjangan Kontrak

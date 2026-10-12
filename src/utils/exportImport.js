@@ -44,11 +44,13 @@ export const processImportFile = async (file, options = {}) => {
         // Assign jenisPppk and format date columns
         const dateColumns = ['TMT CPNS', 'TANGGAL LAHIR', 'TMT GOLONGAN', 'TMT JABATAN', 'TMT PNS']
         
+        const dangerousKeys = ['__proto__', 'constructor', 'prototype']
         const processedData = jsonData.map(row => {
           const newRow = {}
           
-          // Strip leading single quotes from all values
+          // Strip leading single quotes from all values & sanitize dangerous prototype keys
           Object.keys(row).forEach(key => {
+            if (dangerousKeys.includes(key.trim().toLowerCase())) return
             if (typeof row[key] === 'string') {
               newRow[key] = row[key].replace(/^'/, '')
             } else {

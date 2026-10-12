@@ -1,4 +1,20 @@
 <template>
+  <!-- Tampilan Terkunci Jika Belum Login -->
+  <div v-if="!authStore.user" class="dashboard-empty-card" style="padding: 3.5rem 2rem; margin-top: 2rem; text-align: center;">
+    <div class="empty-icon-circle" style="background: rgba(37,99,235,0.1); color: #2563eb; width: 68px; height: 68px; font-size: 1.8rem; margin: 0 auto 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+    <h3 style="font-weight: 700; margin: 0 0 0.5rem; color: var(--text-primary); font-size: 1.35rem;">Akses Dashboard Terproteksi</h3>
+    <p style="color: var(--text-secondary); max-width: 520px; margin: 0 auto 1.8rem; font-size: 0.9rem; line-height: 1.55;">
+      Data analisis kepegawaian dan ringkasan kontrak kerja PPPK dilindungi sistem. Silakan masuk sebagai Administrator untuk mengakses data.
+    </p>
+    <button class="btn btn-primary" @click="authStore.showLoginModal = true" style="padding: 10px 24px; font-size: 0.95rem; background-color: var(--primary-color);">
+      <i class="fa-solid fa-right-to-bracket" style="margin-right: 8px;"></i>
+      <span>Masuk ke Sistem</span>
+    </button>
+  </div>
+
+  <template v-else>
   <!-- Modern Dashboard Filters Toolbar -->
   <div class="dashboard-filter-card">
     <div class="filter-row-primary">
@@ -115,10 +131,11 @@
     <ChartCard title="Jadwal Perpanjangan" icon="fa-solid fa-calendar-check" chartType="bar" :chartData="kontrakChartData" />
     <ChartCard title="Proyeksi Pensiun (BUP)" icon="fa-solid fa-user-clock" chartType="line" :chartData="bupChartData" />
   </div>
+  </template>
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useAuthStore } from '../stores/authStore'
 import { usePegawaiStore } from '../stores/pegawaiStore'
 import ChartCard from '../components/dashboard/ChartCard.vue'
@@ -140,7 +157,13 @@ const setKelompok = (val) => {
 }
 
 onMounted(() => {
-  if (pegawaiStore.pppkData.length === 0) {
+  if (authStore.user && pegawaiStore.pppkData.length === 0) {
+    pegawaiStore.loadData()
+  }
+})
+
+watch(() => authStore.user, (user) => {
+  if (user && pegawaiStore.pppkData.length === 0) {
     pegawaiStore.loadData()
   }
 })

@@ -6,7 +6,7 @@ const routes = [
     path: '/',
     name: 'dashboard',
     component: () => import('../views/DashboardView.vue'),
-    meta: { requiresAuth: false, title: 'Dashboard Analisis', subtitle: 'Ringkasan status perpanjangan kontrak kerja PPPK' }
+    meta: { requiresAuth: true, title: 'Dashboard Analisis', subtitle: 'Ringkasan status perpanjangan kontrak kerja PPPK' }
   },
   {
     path: '/data-pegawai',
@@ -67,7 +67,11 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     authStore.showLoginModal = true
-    next({ path: '/', query: { redirect: to.fullPath } })
+    if (to.path !== '/') {
+      next({ path: '/', query: { redirect: to.fullPath } })
+    } else {
+      next()
+    }
   } else {
     next()
   }
