@@ -27,7 +27,7 @@ service cloud.firestore {
     
     // Tolak semua akses ke dokumen lain secara default
     match /{document=**} {
-      allow read, write: false;
+      allow read, write: if false;
     }
   }
 }
