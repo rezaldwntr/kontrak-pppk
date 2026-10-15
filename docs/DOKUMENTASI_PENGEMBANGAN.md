@@ -2,7 +2,7 @@
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
 
-## [v3.12.0] - 2026-10-15 (Staging)
+## [v3.12.0] - 2026-10-15 (Production & Staging)
 
 ### Sinkronisasi Google Drive Massal Latar Belakang (Persistent Background Sync, Global Widget, & Auto-Resume)
 - **Latar Belakang**:
