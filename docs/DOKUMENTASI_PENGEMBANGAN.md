@@ -1,6 +1,34 @@
 # Dokumentasi Pengembangan Aplikasi Manajemen Kontrak PPPK
 
 Dokumen ini mencatat riwayat pembaruan, perbaikan bug, dan penambahan fitur pada aplikasi, khususnya di environment `staging`.
+
+## [v3.12.0] - 2026-10-15 (Staging)
+
+### Sinkronisasi Google Drive Massal Latar Belakang (Persistent Background Sync, Global Widget, & Auto-Resume)
+- **Latar Belakang**:
+  - Sinkronisasi massal dokumen Google Drive (725+ pegawai) sebelumnya berjalan inline pada komponen lokal `DriveSyncTab.vue`. Berpindah menu atau menutup halaman menyebabkan eksekusi terputus mendadak tanpa riwayat checkpoint.
+  - Pengguna meminta agar proses sinkronisasi massal dapat terus berjalan di latar belakang saat berpindah menu, memiliki indikator status di seluruh halaman, memunculkan peringatan saat tab browser ditutup, dan dapat otomatis melanjutkan sisa pegawai saat aplikasi dibuka kembali.
+- **Penyimpanan Sesi & Checkpoint Persisten (`src/utils/driveSyncStorage.js`)**:
+  - Modul utilitas murni untuk menyimpan status sesi (`drive_bulk_sync_session`) di `localStorage`.
+  - Menyimpan array sisa ID pegawai (`remainingIds`), total pegawai, jumlah sukses, dan jumlah gagal setelah tiap pegawai selesai diproses.
+  - Menyediakan fungsi pemulihan kandidat pegawai (`extractRemainingCandidates`) berbasis `Map` pencarian cepat O(N).
+- **Orkestrator Global & State Terpusat (`src/stores/driveStore.js` & `src/composables/useDriveSync.js`)**:
+  - Memindahkan `isSyncingAll`, `syncTotal`, `syncCurrent`, `syncDoneCount`, `syncFailCount`, dan `syncCurrentItemName` ke Pinia store global `driveStore`.
+  - Menambahkan aksi `startBulkSync(candidates)`, `resumeBulkSync(pppkData)`, dan `cancelBulkSync()` pada composable `useDriveSync`.
+  - Menerapkan *idempotency guard* untuk mencegah eksekusi ganda loop sinkronisasi.
+- **Indikator Progres Mengambang Global & Proteksi Tab Unload (`src/App.vue`)**:
+  - Memasang floating progress widget di sudut kanan bawah yang tetap aktif di seluruh rute aplikasi (`DashboardView`, `PegawaiView`, `PerpanjanganView`, dll.) lengkap dengan progress bar dinamis, nama pegawai yang sedang diproses, indikator sukses/gagal, dan tombol jeda.
+  - Memasang listener `beforeunload` untuk memperingatkan pengguna jika mencoba menutup atau me-refresh tab saat sinkronisasi masih berlangsung.
+  - Memasang deteksi `checkAndResumeSync` pada saat aplikasi dibuka untuk otomatis melanjutkan sisa antrian yang belum selesai diproses.
+- **Penyempurnaan Tampilan Tab Sinkronisasi (`src/components/settings/DriveSyncTab.vue`)**:
+  - Menghubungkan tombol "Sync Semua Sekarang" ke `driveStore.isSyncingAll`.
+  - Menampilkan tombol "Hentikan Sync" saat proses berjalan dan live progress banner di dalam kartu pengaturan.
+  - Menyediakan tombol "Lanjutkan Sync Tertunda" dan "Hapus Sesi" jika terdapat sisa antrian di `localStorage`.
+- **Kepatuhan Ponytail Master Rules & Security Checklist**:
+  - Seluruh fungsi berukuran pendek (rata-rata 10-35 baris, <= 50 baris).
+  - Utilitas penyimpanan diimplementasikan sebagai fungsi murni di `src/utils/`.
+  - Tidak ada penambahan library pihak ketiga (memanfaatkan Pinia, browser `localStorage`, dan event listener native).
+
 ## [v3.11.1] - 2026-10-12 (Production & Staging)
 
 ### Implementasi Audit Keamanan Fase 2: Pengamanan Serverless OAuth Proxy & Token Lifecycle (SEC-001 & SEC-004)

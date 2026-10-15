@@ -4,6 +4,7 @@ import { db } from '../services/firebase'
 import { collection, addDoc, updateDoc, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore'
 import { getKelompokPegawai, parseDate, getUnorInduk as resolveUnorInduk, getUnorAtasan as resolveUnorAtasan, getDriveFolderName, formatNamaFilePegawai } from '../utils/pppkLogic'
 import { downloadSingleContract } from '../utils/docxGenerator'
+import { getPegawaiSyncId, extractRemainingCandidates } from '../utils/driveSyncStorage'
 
 export function useDriveSync() {
   const driveStore = useDriveStore()
@@ -142,5 +143,96 @@ export function useDriveSync() {
     }
   }
 
-  return { shouldSync, matchRules, syncEmployee, addToQueue, processQueue, getUnorInduk, getDriveFolderName, getFileName }
+  // Loop eksekusi sinkronisasi massal dengan checkpoint penyimpanan sesi
+  async function executeSyncLoop(items, startIndex = 0) {
+    driveStore.isSyncingAll = true
+    driveStore.syncCancelRequested = false
+
+    for (let i = 0; i < items.length; i++) {
+      if (driveStore.syncCancelRequested) break
+
+      const item = items[i]
+      driveStore.syncCurrent = startIndex + i + 1
+      driveStore.syncCurrentItemName = item['NAMA'] || 'Pegawai'
+
+      try {
+        await syncEmployee(item)
+        driveStore.syncDoneCount++
+      } catch (err) {
+        driveStore.syncFailCount++
+        await addToQueue(item, err)
+      }
+
+      // Simpan sisa antrian ke localStorage setelah tiap pegawai selesai
+      const remainingIds = items.slice(i + 1).map(getPegawaiSyncId).filter(Boolean)
+      driveStore.saveCurrentSession(remainingIds)
+    }
+
+    if (!driveStore.syncCancelRequested) {
+      driveStore.clearSavedSession()
+    }
+    driveStore.isSyncingAll = false
+    driveStore.syncCurrentItemName = ''
+  }
+
+  // Mulai sinkronisasi massal baru
+  async function startBulkSync(candidates) {
+    if (driveStore.isSyncingAll) return { started: false, reason: 'already_running' }
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+      return { started: false, reason: 'empty_candidates' }
+    }
+
+    driveStore.syncTotal = candidates.length
+    driveStore.syncDoneCount = 0
+    driveStore.syncFailCount = 0
+    driveStore.syncCurrent = 0
+    driveStore.syncCancelRequested = false
+
+    const initialIds = candidates.map(getPegawaiSyncId).filter(Boolean)
+    driveStore.saveCurrentSession(initialIds)
+
+    return executeSyncLoop(candidates, 0)
+  }
+
+  // Lanjutkan sinkronisasi massal dari sisa sesi di localStorage
+  async function resumeBulkSync(pppkData) {
+    if (driveStore.isSyncingAll) return { resumed: false, reason: 'already_running' }
+    const session = driveStore.getSavedSession()
+    if (!session || !Array.isArray(session.remainingIds) || session.remainingIds.length === 0) {
+      return { resumed: false, reason: 'no_session' }
+    }
+
+    const remaining = extractRemainingCandidates(session, pppkData)
+    if (remaining.length === 0) {
+      driveStore.clearSavedSession()
+      return { resumed: false, reason: 'no_matching_candidates' }
+    }
+
+    driveStore.syncTotal = session.total || (session.doneCount + remaining.length)
+    driveStore.syncDoneCount = session.doneCount || 0
+    driveStore.syncFailCount = session.failCount || 0
+    driveStore.syncCurrent = (session.doneCount || 0) + (session.failCount || 0)
+    driveStore.syncCancelRequested = false
+
+    return executeSyncLoop(remaining, driveStore.syncCurrent)
+  }
+
+  // Batalkan atau jeda sinkronisasi massal
+  function cancelBulkSync() {
+    driveStore.requestCancelSync()
+  }
+
+  return {
+    shouldSync,
+    matchRules,
+    syncEmployee,
+    addToQueue,
+    processQueue,
+    startBulkSync,
+    resumeBulkSync,
+    cancelBulkSync,
+    getUnorInduk,
+    getDriveFolderName,
+    getFileName,
+  }
 }

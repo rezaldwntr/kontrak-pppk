@@ -423,15 +423,68 @@
         </button>
 
         <button
+          v-if="!driveStore.isSyncingAll"
           type="button"
           class="btn btn-outline btn-sync-all"
           @click="syncAll"
-          :disabled="isSyncingAll"
         >
-          <i v-if="isSyncingAll" class="fa-solid fa-spinner fa-spin"></i>
-          <i v-else class="fa-solid fa-cloud-arrow-up"></i>
-          <span>{{ isSyncingAll ? `Menyinkronkan ${syncProgress}...` : 'Sync Semua Sekarang' }}</span>
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Sync Semua Sekarang</span>
         </button>
+
+        <button
+          v-else
+          type="button"
+          class="btn btn-outline btn-sync-all"
+          @click="handleCancelSync"
+          style="border-color: #ef4444; color: #ef4444;"
+          title="Klik untuk menjeda/menghentikan proses sinkronisasi"
+        >
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span>Hentikan Sync ({{ driveStore.syncProgressText }})</span>
+        </button>
+
+        <button
+          v-if="!driveStore.isSyncingAll && hasSavedSession"
+          type="button"
+          class="btn btn-outline"
+          @click="handleResumeSync"
+          style="border-color: #f59e0b; color: #f59e0b;"
+          title="Lanjutkan sinkronisasi dari posisi terakhir yang tertunda"
+        >
+          <i class="fa-solid fa-play"></i>
+          <span>Lanjutkan Sync (Sisa {{ savedRemainingCount }})</span>
+        </button>
+
+        <button
+          v-if="!driveStore.isSyncingAll && hasSavedSession"
+          type="button"
+          class="btn btn-outline btn-outline-danger"
+          @click="handleDiscardSavedSession"
+          title="Hapus sesi sinkronisasi yang tertunda"
+        >
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+
+      <!-- Live Progress Bar saat Sync Sedang Berjalan -->
+      <div v-if="driveStore.isSyncingAll" class="sync-active-banner" style="margin-top: 14px; padding: 12px 16px; background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.25); border-radius: 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:0.88rem;">
+          <span style="font-weight:600; color:var(--text-primary);">
+            <i class="fa-solid fa-cloud-arrow-up fa-bounce" style="color:#2563eb; margin-right:6px;"></i>
+            Menyinkronkan: <span style="color:#2563eb;">{{ driveStore.syncCurrentItemName || 'Memproses...' }}</span>
+          </span>
+          <span style="font-weight:700; color:var(--text-primary);">
+            {{ driveStore.syncProgressText }} ({{ driveStore.syncProgressPercent }}%)
+          </span>
+        </div>
+        <div style="width:100%; height:8px; background:rgba(0,0,0,0.1); border-radius:4px; overflow:hidden;">
+          <div :style="{ width: `${driveStore.syncProgressPercent}%` }" style="height:100%; background:linear-gradient(90deg, #2563eb, #10b981); transition:width 0.3s ease;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:0.78rem; color:var(--text-secondary);">
+          <span>Berhasil: {{ driveStore.syncDoneCount }} | Kendala: {{ driveStore.syncFailCount }}</span>
+          <span>Proses tetap berjalan aman meski berpindah halaman</span>
+        </div>
       </div>
     </div>
 
@@ -510,7 +563,7 @@ import { customSwal } from '../../utils/swal'
 const driveStore = useDriveStore()
 const { startOAuthFlow, handleOAuthCallback, disconnectDrive } = useGoogleAuth()
 const { openFolderPicker, getFolderInfo, createFolder } = useGoogleDrive()
-const { shouldSync, matchRules, syncEmployee, addToQueue } = useDriveSync()
+const { shouldSync, matchRules, syncEmployee, addToQueue, startBulkSync, resumeBulkSync, cancelBulkSync } = useDriveSync()
 const pegawaiStore = usePegawaiStore()
 
 const unorIndukOptions = computed(() => {
@@ -525,8 +578,13 @@ const manualFolderInput = ref('')
 const isValidatingFolder = ref(false)
 const showManualInput = ref(false)
 const isSavingRules = ref(false)
-const isSyncingAll = ref(false)
-const syncProgress = ref('')
+const savedSession = ref(driveStore.getSavedSession())
+const hasSavedSession = computed(() => !!(savedSession.value && savedSession.value.remainingIds?.length > 0))
+const savedRemainingCount = computed(() => savedSession.value?.remainingIds?.length || 0)
+
+function refreshSavedSession() {
+  savedSession.value = driveStore.getSavedSession()
+}
 const queueItems = ref([])
 
 const localRules = ref([])
@@ -829,36 +887,59 @@ async function syncAll() {
 
   if (!confirmResult.isConfirmed) return
 
-  isSyncingAll.value = true
-  let done = 0
-  let failed = 0
-  for (const item of candidates) {
-    syncProgress.value = `${++done}/${candidates.length}`
-    try {
-      await syncEmployee(item)
-    } catch (err) {
-      failed++
-      await addToQueue(item, err)
-    }
-  }
-  isSyncingAll.value = false
-  syncProgress.value = ''
+  await startBulkSync(candidates)
+  refreshSavedSession()
 
-  if (failed > 0) {
+  if (driveStore.syncCancelRequested) {
+    customSwal.fire({
+      icon: 'info',
+      title: 'Sinkronisasi Dijeda',
+      text: `Sinkronisasi dihentikan. Sisa antrian tersimpan aman dan dapat dilanjutkan kapan saja.`,
+    })
+  } else if (driveStore.syncFailCount > 0) {
     customSwal.fire({
       icon: 'warning',
       title: 'Sync Selesai dengan Catatan',
-      text: `${done - failed} dokumen berhasil disinkronkan, ${failed} dokumen masuk ke Antrian Retry karena kendala jaringan atau batas API Google.`,
+      text: `${driveStore.syncDoneCount} dokumen berhasil disinkronkan, ${driveStore.syncFailCount} dokumen masuk ke Antrian Retry karena kendala jaringan atau batas API Google.`,
     })
   } else {
     customSwal.fire({
       icon: 'success',
       title: 'Sync Selesai!',
-      text: `Seluruh ${done} dokumen pegawai berhasil disinkronkan ke Google Drive.`,
+      text: `Seluruh ${driveStore.syncDoneCount} dokumen pegawai berhasil disinkronkan ke Google Drive.`,
       timer: 2500,
       showConfirmButton: false
     })
   }
+}
+
+function handleCancelSync() {
+  cancelBulkSync()
+}
+
+async function handleResumeSync() {
+  if (driveStore.isSyncingAll) return
+  const result = await resumeBulkSync(pegawaiStore.pppkData)
+  refreshSavedSession()
+  if (!result || !result.resumed) {
+    customSwal.fire({
+      icon: 'info',
+      title: 'Tidak Ada Sisa Antrian',
+      text: 'Tidak ada data pegawai yang perlu dilanjutkan dari sesi tersimpan.'
+    })
+  }
+}
+
+function handleDiscardSavedSession() {
+  driveStore.clearSavedSession()
+  refreshSavedSession()
+  customSwal.fire({
+    icon: 'success',
+    title: 'Sesi Dihapus',
+    text: 'Sisa antrian sinkronisasi tertunda telah dibersihkan.',
+    timer: 1500,
+    showConfirmButton: false
+  })
 }
 
 async function retryItem(item) {
@@ -888,6 +969,7 @@ onMounted(async () => {
     pegawaiStore.loadData()
   }
   await driveStore.loadSettings()
+  refreshSavedSession()
 
   // Init localRules dari store
   localRules.value = driveStore.syncRules.map(r => ({ ...r }))
@@ -933,6 +1015,10 @@ onMounted(async () => {
 watch(() => driveStore.syncRules, (newRules) => {
   localRules.value = newRules.map(r => ({ ...r }))
 }, { deep: true })
+
+watch(() => driveStore.isSyncingAll, () => {
+  refreshSavedSession()
+})
 </script>
 
 <style scoped>
